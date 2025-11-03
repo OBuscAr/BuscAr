@@ -1,18 +1,17 @@
 
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom'; // Importe useNavigate
-import { mockRegister } from '../services/auth'; // Importe o mock de registro
+// import { mockRegister } from '../services/auth'; // Importe o mock de registro
 import type { RegisterData } from '../services/auth'; // Importe o tipo correto
-import BuscArLogo from '../assets/bus_leaf_icon.png'; // Use o mesmo logo
+import BuscArLogo from '../assets/bus_leaf_icon.png'; // logo
+import axios from 'axios';
 
 function RegisterPage() {
-  // Ajuste no estado para incluir 'username' e 'confirmarSenha'
   const [formData, setFormData] = useState<RegisterData & { confirmarSenha: string }>({
     nome: '',
     email: '',
-    username: '', // Adicionado
     senha: '',
-    confirmarSenha: '', // Adicionado
+    confirmarSenha: '',
   });
 
   const [mensagem, setMensagem] = useState('');
@@ -32,51 +31,76 @@ function RegisterPage() {
     setMensagem('');
     setLoading(true);
 
-    // Validação de campos vazios (poderia ser mais robusta)
-    if (!formData.nome || !formData.email || !formData.username || !formData.senha || !formData.confirmarSenha) {
+    // validações
+    if (!formData.nome || !formData.email || !formData.senha || !formData.confirmarSenha) {
       setMensagem('Por favor, preencha todos os campos obrigatórios.');
       setLoading(false);
       return;
     }
-
-    // Validação de senhas
     if (formData.senha !== formData.confirmarSenha) {
       setMensagem('As senhas não coincidem!');
       setLoading(false);
       return;
     }
-
-    // Validar comprimento mínimo da senha (exemplo)
-    if (formData.senha.length < 6) {
-      setMensagem('A senha deve ter pelo menos 6 caracteres.');
+    if (formData.senha.length < 8) {
+      setMensagem('A senha deve ter pelo menos 8 caracteres.');
       setLoading(false);
       return;
     }
+    // --- FIM DAS VALIDAÇÕES ---
 
     try {
-      // Prepara os dados para enviar (excluindo confirmarSenha)
-      const dataToSend: RegisterData = {
+      // Define a URL da API
+      const API_URL = 'http://localhost:8000/users/';
+
+      // Prepara os dados conforme BACKEND
+      const dadosParaEnviar = {
         nome: formData.nome,
         email: formData.email,
-        username: formData.username,
         senha: formData.senha,
       };
 
-      // Chama o serviço de mock de registro
-      const response = await mockRegister(dataToSend);
+      // Faz a requisição POST real
+      const response = await axios.post(API_URL, dadosParaEnviar);
 
-      if (response && response.message) {
-        setMensagem(response.message);
-        // Opcional: Redirecionar para o login após alguns segundos
-        setTimeout(() => {
-          navigate('/login');
-        }, 2000); // Redireciona após 2 segundos
-      } else {
-        setMensagem('Erro ao tentar registrar. Tente novamente.');
-      }
+      // Lida com o SUCESSO
+      console.log('Usuário criado:', response.data);
+      setMensagem('Cadastro realizado com sucesso!');
+
+      // Limpa o formulário
+      setFormData({
+        nome: '',
+        email: '',
+        senha: '',
+        confirmarSenha: '',
+      });
+
+      // Redireciona para o login
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000);
+
     } catch (error) {
-      setMensagem('Ocorreu um erro inesperado durante o registro.');
-      console.error('Erro de registro:', error);
+      // Lida com os ERROS (FastAPI retorna validações em data.detail como array)
+      if (axios.isAxiosError(error) && error.response) {
+        const data: any = error.response.data;
+        let erroMsg = 'Ocorreu um erro no cadastro.';
+
+        if (data) {
+          if (typeof data.detail === 'string') {
+            erroMsg = data.detail;
+          } else if (Array.isArray(data.detail)) {
+            erroMsg = data.detail.map((d: any) => d.msg || JSON.stringify(d)).join(' ');
+          } else if (data.detail && typeof data.detail === 'object') {
+            erroMsg = data.detail.message || JSON.stringify(data.detail);
+          }
+        }
+
+        setMensagem(erroMsg);
+      } else {
+        setMensagem('Não foi possível conectar ao servidor. Tente novamente.');
+      }
+      console.error('Erro no cadastro:', error);
     } finally {
       setLoading(false);
     }
@@ -86,7 +110,6 @@ function RegisterPage() {
     <div className="auth-page-container">
       <div className="auth-form-section">
         <h1 className="auth-title">Criar Conta</h1>
-        {/* Subtítulo opcional, se quiser adicionar */}
         {/* <p className="auth-subtitle">Preencha os campos abaixo para criar sua conta.</p> */}
         <form onSubmit={handleSubmit}>
           <div className="form-group">
@@ -114,31 +137,18 @@ function RegisterPage() {
             />
           </div>
           <div className="form-group">
-            <label htmlFor="username">Username*</label>
-            <input
-              type="text"
-              id="username"
-              name="username"
-              placeholder="Username"
-              value={formData.username}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div className="form-group">
             <label htmlFor="senha">Senha*</label>
             <div className="password-input-wrapper">
               <input
                 type="password"
                 id="senha"
                 name="senha"
-                placeholder="6+ caracteres"
+                placeholder="8+ caracteres"
                 value={formData.senha}
                 onChange={handleChange}
                 required
-                minLength={6}
+                minLength={8}
               />
-              {/* Ícone de olho pode ser adicionado aqui */}
             </div>
           </div>
           <div className="form-group">

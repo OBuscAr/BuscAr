@@ -13,7 +13,6 @@ export interface LoginCredentials {
 export interface RegisterData {
   nome: string;
   email: string;
-  username: string;
   senha: string;
 }
 
@@ -43,7 +42,7 @@ export const mockRegister = async (data: RegisterData): Promise<{ message: strin
 
   // Lógica de mock: sempre sucesso por enquanto
   // Em um cenário real, você verificaria se o email/username já existem
-  if (data.email && data.senha && data.nome && data.username) {
+  if (data.email && data.senha && data.nome) {
     return { message: 'Registro realizado com sucesso!' };
   }
   return null; // Dados incompletos

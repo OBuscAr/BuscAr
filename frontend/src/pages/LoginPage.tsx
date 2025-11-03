@@ -2,9 +2,11 @@
 
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom'; // Importe useNavigate para redirecionar após o login
-import { mockLogin } from '../services/auth'; // Importe o mock de login
+//import { mockLogin } from '../services/auth'; // Importe o mock de login
 import type { LoginCredentials } from '../services/auth';
-import BuscArLogo from '../assets/bus_leaf_icon.png'; // o logo aqui
+import BuscArLogo from '../assets/bus_leaf_icon.png'; // o logo
+import axios from 'axios';
+
 
 function LoginPage() {
   const [formData, setFormData] = useState<LoginCredentials>({
@@ -28,11 +30,44 @@ function LoginPage() {
     setKeepLoggedIn(e.target.checked);
   };
 
+  // const handleSubmit = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   setMensagem('');
+  //   setLoading(true); // Ativa o estado de loading
+
+  //   if (!formData.email || !formData.senha) {
+  //     setMensagem('Por favor, preencha todos os campos.');
+  //     setLoading(false);
+  //     return;
+  //   }
+
+  //   try {
+  //     // Chama o serviço de mock de login
+  //     const response = await mockLogin(formData);
+
+  //     if (response && response.token) {
+  //       setMensagem('Login realizado com sucesso!');
+  //       // Em um cenário real, salva o token aqui
+  //       // Ex: localStorage.setItem('authToken', response.token);
+  //       // E redirecionaria para o dashboard
+  //       navigate('/dashboard'); // Redireciona para o dashboard
+  //     } else {
+  //       setMensagem('E-mail ou senha inválidos.');
+  //     }
+  //   } catch (error) {
+  //     setMensagem('Ocorreu um erro ao tentar fazer login.');
+  //     console.error('Erro de login:', error);
+  //   } finally {
+  //     setLoading(false); // Desativa o estado de loading
+  //   }
+  // };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMensagem('');
     setLoading(true); // Ativa o estado de loading
 
+    // Validação de campos
     if (!formData.email || !formData.senha) {
       setMensagem('Por favor, preencha todos os campos.');
       setLoading(false);
@@ -40,21 +75,46 @@ function LoginPage() {
     }
 
     try {
-      // Chama o serviço de mock de login
-      const response = await mockLogin(formData);
+      // Define a URL da API e os dados para enviar
+      const API_URL = 'http://localhost:8000/login/';
+      
+      const dadosParaEnviar = {
+        email: formData.email,
+        senha: formData.senha,
+      };
 
-      if (response && response.token) {
-        setMensagem('Login realizado com sucesso!');
-        // Em um cenário real, salva o token aqui
-        // Ex: localStorage.setItem('authToken', response.token);
-        // E redirecionaria para o dashboard
-        navigate('/dashboard'); // Redireciona para o dashboard
-      } else {
-        setMensagem('E-mail ou senha inválidos.');
-      }
+      // Faz a chamada ao backend
+      const response = await axios.post(API_URL, dadosParaEnviar);
+
+      // Lida com a resposta de SUCESSO
+      const { access_token, nome } = response.data;
+
+      // Salva o token e o nome do usuário no localStorage
+      localStorage.setItem('authToken', access_token);
+      localStorage.setItem('userName', nome);
+
+      setMensagem('Login bem-sucedido! Redirecionando...');
+
+      // Redireciona para o dashboard após um breve delay
+      setTimeout(() => {
+        navigate('/dashboard'); 
+      }, 1500);
+
     } catch (error) {
-      setMensagem('Ocorreu um erro ao tentar fazer login.');
-      console.error('Erro de login:', error);
+      // Lida com os erros da API
+      if (axios.isAxiosError(error) && error.response) {
+        if (error.response.status === 401) {
+          // Erro de credencial inválida
+          setMensagem(error.response.data.detail || 'E-mail ou senha incorretos.');
+        } else {
+          // Outros erros do servidor (ex: 500)
+          setMensagem('Erro no servidor. Tente novamente mais tarde.');
+        }
+      } else {
+        // Erro de rede (API fora do ar, etc)
+        setMensagem('Não foi possível conectar ao servidor.');
+      }
+      console.error('Erro no login:', error);
     } finally {
       setLoading(false); // Desativa o estado de loading
     }
@@ -72,7 +132,7 @@ function LoginPage() {
               type="email"
               id="email"
               name="email"
-              placeholder="email@example.com"
+              placeholder="nome@gmail.com"
               value={formData.email}
               onChange={handleChange}
               required
@@ -90,7 +150,7 @@ function LoginPage() {
                 onChange={handleChange}
                 required
               />
-              {/* O ícone de "olho" para mostrar/esconder senha pode ser adicionado aqui */}
+              {}
             </div>
             <Link to="/cadastro" className="forgot-password-link">Esqueceu a senha?</Link>
           </div>
@@ -117,7 +177,7 @@ function LoginPage() {
       </div>
 
       <div className="auth-logo-section">
-        {/*ícone para o logo ou uma imagem */}
+        {/*logo*/}
         <img src={BuscArLogo} alt="BuscAr Logo" className="bus_logo_icon" />
         <h2 className="logo-text">BuscAr</h2>
       </div>
