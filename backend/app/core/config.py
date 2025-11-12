@@ -12,6 +12,9 @@ class Settings(BaseSettings):
     MYCLIMATE_PASSWORD: str = ""
     MYCLIMATE_PREFIX_URL: str = ""
 
+    # Database
+    DATABASE_URL: str = ""
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
