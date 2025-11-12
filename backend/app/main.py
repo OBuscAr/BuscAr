@@ -1,9 +1,8 @@
-from fastapi import FastAPI
-from app.core.database import Base, engine
-from app.models import line, line_stop, rota, stop  # noqa: F401
 from app.api import login_route  # importa a rota de login
-from app.api import user_route # importa a rota de cadastro
-from app.models import user
+from app.api import user_route  # importa a rota de cadastro
+from app.core.database import Base, engine
+from app.models import line, line_stop, rota, stop, user  # noqa: F401
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 # Inicializa a aplicação
@@ -17,21 +16,23 @@ origins = [
 # adiciona o Middleware de CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,       # lista de origens permitidas
-    allow_credentials=True,    # permite cookies (se necessário no futuro)
-    allow_methods=["*"],       # permite todos os métodos (GET, POST, OPTIONS, etc)
-    allow_headers=["*"],       # permite todos os cabeçalhos
+    allow_origins=origins,  # lista de origens permitidas
+    allow_credentials=True,  # permite cookies (se necessário no futuro)
+    allow_methods=["*"],  # permite todos os métodos (GET, POST, OPTIONS, etc)
+    allow_headers=["*"],  # permite todos os cabeçalhos
 )
 
 # Cria as tabelas no banco (temporário — depois faremos via Alembic)
 Base.metadata.create_all(bind=engine)
 
-# Inclui as rotas
-app.include_router(login_route.router)  #  registra o endpoint /login
-app.include_router(user_route.router) # registra o endpoint 
-
 # Rota inicial para teste
-@app.get("/")
-def home():
-    return {"status": "Banco conectado e API funcionando "}
 
+
+@app.get("/", tags=["Health Check"])
+def health_check():
+    return {"status": "API funcionando"}
+
+
+# Inclui as rotas
+app.include_router(login_route.router)  # registra o endpoint /login
+app.include_router(user_route.router)  # registra o endpoint
