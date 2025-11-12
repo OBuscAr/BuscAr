@@ -6,9 +6,9 @@ from sqlalchemy import select, update
 from tqdm import tqdm as progress_bar
 
 
-def create_lines() -> None:
+def create_stops() -> None:
     """
-    Create stops from the static SPTrans data. Also link lines with their stops.
+    Create stops from the SPTrans API. Also link lines with their stops.
     """
     user = sptrans_client.login()
     session = SessionLocal()
@@ -77,4 +77,4 @@ def create_lines() -> None:
 
 
 if __name__ == "__main__":
-    create_lines()
+    create_stops()
