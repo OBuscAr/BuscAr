@@ -4,6 +4,9 @@ create-lines:
 create-stops:
 	python -m app.commands.create_stops
 
+create-line-stops:
+	python -m app.commands.create_line_stops
+
 create-stops-from-api:
 	python -m app.commands.create_stops_from_api
 
