@@ -10,10 +10,10 @@ Sistema web para análise das linhas de ônibus de São Paulo em relação à em
 ## 👥 Equipe
 - Ana Lívia Rüegger Saldanha  (a definir)
 - Be Zilberman (a definir)
-- Diego Hurtado de Mendoza  (a definir)
-- Giovanna Hirata (a definir)
+- Diego Hurtado de Mendoza  (backend)
+- Giovanna Hirata (frontend)
 - Gustavo Mota Bastos (a definir)
-- Naili Marques (a definir)
+- Naili Marques (backend)
 
 ## 📌 Tecnologias
 - **Frontend:** a definir  
