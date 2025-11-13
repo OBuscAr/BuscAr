@@ -19,7 +19,7 @@ Sistema web para análise das linhas de ônibus de São Paulo em relação à em
 - **Frontend:** a definir  
 - **Backend:** Python 
 - **Banco de Dados:** PostgreSQL  
-- **API:** SPTrans Olho Vivo  
+- **API:** SPTrans Olho Vivo + MyClimate API
 - **Gestão do Projeto:** Scrum + ClickUp + GitHub Issues  
 
 ## 📂 Organização do Repositório
