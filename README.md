@@ -48,13 +48,20 @@ Sistema web para análise das linhas de ônibus de São Paulo em relação à em
     make init
 ```
 
-5. Instale [Postgres](https://www.postgresql.org/download/).
+5. Instale [PostgreSQL](https://www.postgresql.org/download/).
 
-6. Crie a base de dados `buscar_db`.
-
-7. Crie um usuário em Postgres. Exemplo:
+6. Crie um usuário em Postgres. Exemplo:
 - Username: buscar_user
 - Password: buscar123
+
+```bash
+    sudo -u postgres createuser -P -d buscar_user
+```
+
+7. Crie a base de dados `buscar_db`.
+```bash
+    sudo -u postgres createdb -h localhost -p 5432 -U buscar_user buscar_db
+```
 
 8. Preencha o arquivo `.env`. Os valores que faltarem podem ser solicitados a um membro do grupo. Para a variável `DATABASE_URL`, lembre-se de usar os dados do usuário e o nome do banco de dados que você criou nas duas etapas anteriores.
 
