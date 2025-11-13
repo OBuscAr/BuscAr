@@ -14,6 +14,7 @@ populate-database:
 
 init:
 	pip install -r requirements.txt
+	cp .env.sample .env
 
 update-dependencies:
 	pip-sync
