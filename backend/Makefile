@@ -7,6 +7,17 @@ create-stops:
 create-line-stops:
 	python -m app.commands.create_line_stops
 
+populate-database:
+	make create-lines
+	make create-stops
+	make create-line-stops
+
+init:
+	pip install -r requirements.txt
+
+update-dependencies:
+	pip-sync
+
 create-stops-from-api:
 	python -m app.commands.create_stops_from_api
 
