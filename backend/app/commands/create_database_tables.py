@@ -11,4 +11,3 @@ def create_database_tables() -> None:
 
 if __name__ == "__main__":
     create_database_tables()
-    create_database_tables()
