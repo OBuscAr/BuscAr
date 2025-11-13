@@ -1,0 +1,494 @@
+/* --- Variáveis de Cor (baseado no protótipo do figma) --- */
+:root {
+  --bg-dark: #2A3342;
+  --bg-light: #F7F8FC;
+  --bg-white: #FFFFFF;
+  --text-dark: #2A3342;
+  --text-light: #9FA2B4;
+  --text-white: #FFFFFF;
+  --accent-green: #21D56B;
+  --accent-blue: #3751FF;
+  --accent-red: #F12B2C;
+  --accent-yellow: #FFB100;
+  --border-color: #DFE0EB;
+}
+
+/* --- Layout Principal --- */
+.dashboard-layout {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  background-color: var(--bg-light);
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- Barra Lateral (Sidebar.tsx) --- */
+.sidebar {
+  flex: 0 0 255px; /* Largura fixa */
+  background-color: var(--bg-dark);
+  color: var(--text-light);
+  display: flex;
+  flex-direction: column;
+  padding: 2rem 0;
+}
+
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  padding: 0 2rem 2rem 2rem;
+  gap: 12px;
+}
+
+.sidebar-logo img {
+  width: 32px;
+  height: 32px;
+}
+
+.sidebar-logo h1 {
+  color: var(--text-white);
+  font-size: 1.2rem;
+  margin: 0;
+  font-weight: 700;
+}
+
+.sidebar-nav {
+  flex: 1;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-nav a {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 2rem;
+  text-decoration: none;
+  color: var(--text-light);
+  font-weight: 500;
+  border-left: 3px solid transparent;
+}
+
+.sidebar-nav a:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.sidebar-nav a.active {
+  color: var(--text-white);
+  background-color: rgba(255, 255, 255, 0.08);
+  border-left: 3px solid var(--accent-green);
+}
+
+.sidebar-nav a.active svg {
+  color: var(--accent-green);
+}
+
+.sidebar-nav svg {
+  font-size: 1.2rem;
+}
+
+.sidebar-footer {
+  padding: 1rem 2rem 0 2rem;
+  border-top: 1px solid #36404F;
+}
+
+/* --- Header (Header.tsx) --- */
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2rem 2.5rem;
+  background-color: var(--bg-light);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.header-title h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: var(--text-dark);
+}
+
+.header-title p {
+  margin: 0;
+  color: var(--text-light);
+  font-size: 0.9rem;
+}
+
+.header-profile {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.header-profile svg {
+  font-size: 1.2rem;
+  color: var(--text-light);
+  cursor: pointer;
+}
+
+.profile-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  border-left: 1px solid var(--border-color);
+  padding-left: 1.5rem;
+}
+
+.profile-info .avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background-color: var(--accent-blue);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.profile-info .username {
+  color: var(--text-dark);
+  font-weight: 600;
+}
+
+/* --- Conteúdo do Dashboard (DashboardPage.tsx) --- */
+.dashboard-content {
+  padding: 2rem 2.5rem;
+}
+
+.dashboard-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  background: var(--bg-white);
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border-color);
+  width: 300px;
+}
+
+.search-bar svg {
+  color: var(--text-light);
+  font-size: 1.2rem;
+}
+
+.search-bar input {
+  border: none;
+  outline: none;
+  font-size: 0.9rem;
+  padding-left: 0.75rem;
+  background: transparent;
+  color: var(--text-dark);
+  width: 100%;
+}
+
+.btn-add {
+  background-color: var(--accent-green);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-add svg {
+  font-size: 1rem;
+}
+
+/* --- Cards de Métrica (MetricCard.tsx) --- */
+.metric-cards-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.metric-card {
+  background: var(--bg-white);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.card-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.card-header h3 {
+  font-size: 1.2rem;
+  margin: 0;
+  color: var(--text-dark);
+}
+
+.card-body {
+  margin-bottom: 1rem;
+}
+
+.card-body p {
+  margin: 0 0 0.5rem 0;
+  color: var(--text-light);
+  font-size: 0.9rem;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 6px;
+  background-color: #eee;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 0.25rem;
+}
+
+.progress-bar-inner {
+  height: 100%;
+  border-radius: 3px;
+}
+
+.card-body .ratio {
+  font-size: 0.9rem;
+  color: var(--text-dark);
+  font-weight: 600;
+}
+
+.card-footer {
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-color);
+  color: var(--text-light);
+  font-size: 0.9rem;
+  text-align: right;
+}
+
+/* --- Layout Principal do Conteúdo (Grid) --- */
+.dashboard-main-grid {
+  display: grid;
+  grid-template-columns: 2.5fr 1fr; /* 2.5 partes para os gráficos, 1 parte para a sidebar */
+  gap: 1.5rem;
+}
+
+/* --- Card do Timeline --- */
+.timeline-card {
+  background: var(--bg-white);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.timeline-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.timeline-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.timeline-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.9rem;
+  color: var(--text-light);
+}
+
+.timeline-controls .date-picker {
+  cursor: pointer;
+}
+
+.timeline-controls .toggle-group {
+  display: flex;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+}
+
+.toggle-group button {
+  background: transparent;
+  border: none;
+  padding: 0.25rem 0.5rem;
+  cursor: pointer;
+  color: var(--text-light);
+}
+
+.toggle-group button.active {
+  background-color: var(--accent-blue);
+  color: white;
+  border-radius: 6px;
+}
+
+.timeline-chart-placeholder {
+  height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-light);
+  background: linear-gradient(180deg, rgba(0,0,0,0.01), rgba(0,0,0,0.03));
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+/* --- Sidebar da Direita --- */
+.dashboard-right-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.report-card {
+  background: var(--bg-white);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.report-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.report-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.report-header .toggle-group {
+  font-size: 0.8rem;
+}
+
+.report-header .toggle-group button {
+  padding: 0.1rem 0.4rem;
+}
+
+.report-header a {
+  font-size: 0.9rem;
+  color: var(--accent-blue);
+  text-decoration: none;
+}
+
+/* --- Gráfico de Emissões (Doughnut) --- */
+.emissions-gauge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem 0;
+}
+
+.gauge-circle {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: conic-gradient(
+    var(--accent-red) 0% 30%, 
+    var(--accent-yellow) 30% 70%, 
+    var(--accent-green) 70% 100%
+  );
+  position: relative;
+}
+
+.gauge-inner {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  width: 120px;
+  height: 120px;
+  background: var(--bg-white);
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.gauge-inner .percentage {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.gauge-inner .label {
+  font-size: 0.9rem;
+  color: var(--text-light);
+}
+
+/* --- Listas Rápidas (Histórico / Velocidade) --- */
+.quick-report-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.quick-report-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--border-color);
+}
+.quick-report-list li:last-child {
+  border-bottom: none;
+}
+
+.report-item-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.report-item-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.report-item-details .linha {
+  font-weight: 600;
+  color: var(--text-dark);
+  font-size: 0.9rem;
+}
+.report-item-details .data {
+  font-size: 0.8rem;
+  color: var(--text-light);
+}
+
+.report-item-value {
+  font-weight: 600;
+  font-size: 0.9rem;
+}

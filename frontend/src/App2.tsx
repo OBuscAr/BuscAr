@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
-//import LandingPage from './pages/LandingPage';
+import LandingPage from './pages/LandingPage';
 import DashboardLayout from './pages/DashboardLayout'; // 1. Importe o Layout
 import DashboardPage from './pages/DashboardPage';   // 2. Importe a Página
 import ProtectedRoute from './components/ProtectedRoute'; // 3. Importe a Rota Protegida
@@ -26,9 +26,8 @@ function App() {
     <Router>
       <Routes>
         {/* --- Rotas Públicas --- */}
-        {/* <Route path="/" element={<LandingPage />} /> */}
-        {/* <Route path="/login" element={<LoginPage />} /> */}
-        <Route path="/" element={<LoginPage />} />
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={<LoginPage />} />
         <Route path="/cadastro" element={<RegisterPage />} />
         <Route path="/analise" element={<AnalisePage />} />
         <Route path="/termos" element={<TermsPage />} />
