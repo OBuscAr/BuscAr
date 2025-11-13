@@ -28,5 +28,41 @@ Sistema web para análise das linhas de ônibus de São Paulo em relação à em
 - `/docs` → documentação do projeto (mapas de empatia, backlog, relatórios)  
 
 ## 🛠️ Como rodar o projeto (quando implementado)
-```bash
 
+### Backend
+1. Entre na pasta de backend.
+```bash
+    cd backend
+```
+
+2. Crie um ambiente virtual e ative-o.
+```bash
+    python -m venv .venv
+    source .venv/bin/activate
+```
+
+3. Instale as dependências do repositório.
+```bash
+    make init
+```
+
+4. Instale [Postgres](https://www.postgresql.org/download/).
+
+5. Crie a base de dados `buscar_db`.
+
+6. Crie um usuário em Postgres. Exemplo:
+- Username: buscar_user
+- Password: buscar123
+
+7. Preencha o arquivo `.env`. Os valores que faltarem podem ser solicitados a um membro do grupo. Para a variável `DATABASE_URL`, lembre-se de usar os dados do usuário e o nome do banco de dados que você criou nas duas etapas anteriores.
+
+8. Popule o banco de dados.
+```bash
+    make populate-database
+```
+
+9. Para levantar o servidor backend, você pode usar este comando:
+```bash
+    make run
+```
+ 
