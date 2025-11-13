@@ -22,6 +22,9 @@ create-database-tables:
 update-dependencies:
 	pip-sync
 
+run:
+	fastapi run
+
 create-stops-from-api:
 	python -m app.commands.create_stops_from_api
 
