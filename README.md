@@ -65,12 +65,17 @@ Sistema web para análise das linhas de ônibus de São Paulo em relação à em
 
 8. Preencha o arquivo `.env`. Os valores que faltarem podem ser solicitados a um membro do grupo. Para a variável `DATABASE_URL`, lembre-se de usar os dados do usuário e o nome do banco de dados que você criou nas duas etapas anteriores.
 
-9. Popule o banco de dados.
+9. Crie as tabelas no banco de dados.
+```bash
+    make create-database-tables
+```
+
+10. Popule o banco de dados.
 ```bash
     make populate-database
 ```
 
-10. Para levantar o servidor backend, você pode usar este comando:
+11. Para levantar o servidor backend, você pode usar este comando:
 ```bash
     make run
 ```

@@ -16,6 +16,9 @@ init:
 	pip install -r requirements.txt
 	cp .env.sample .env
 
+create-database-tables:
+	python -m app.commands.create_database_tables
+
 update-dependencies:
 	pip-sync
 
