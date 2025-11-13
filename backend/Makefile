@@ -4,6 +4,12 @@ create-lines:
 create-stops:
 	python -m app.commands.create_stops
 
+create-line-stops:
+	python -m app.commands.create_line_stops
+
+create-stops-from-api:
+	python -m app.commands.create_stops_from_api
+
 test:
 	pytest tests/ --html=tests/htmlcov/report.html --cov app --cov-config=tests/.coveragerc --cov-report html:tests/htmlcov
 
