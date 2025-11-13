@@ -23,8 +23,8 @@ Sistema web para análise das linhas de ônibus de São Paulo em relação à em
 - **Gestão do Projeto:** Scrum + ClickUp + GitHub Issues  
 
 ## 📂 Organização do Repositório
-- `/frontend` → códido do ... 
-- `/backend` → código do ...
+- `/frontend` → códido do frontend 
+- `/backend` → código do backend
 - `/docs` → documentação do projeto (mapas de empatia, backlog, relatórios)  
 
 ## 🛠️ Como rodar o projeto (quando implementado)
