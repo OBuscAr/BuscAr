@@ -1,7 +1,5 @@
 from app.api import login_route  # importa a rota de login
 from app.api import user_route  # importa a rota de cadastro
-from app.core.database import Base, engine
-from app.models import line, line_stop, rota, stop, user  # noqa: F401
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -22,12 +20,8 @@ app.add_middleware(
     allow_headers=["*"],  # permite todos os cabeçalhos
 )
 
-# Cria as tabelas no banco (temporário — depois faremos via Alembic)
-Base.metadata.create_all(bind=engine)
 
 # Rota inicial para teste
-
-
 @app.get("/", tags=["Health Check"])
 def health_check():
     return {"status": "API funcionando"}
