@@ -8,6 +8,7 @@ coverage==7.11.3
 dnspython==2.8.0
 ecdsa==0.19.1
 email-validator==2.3.0
+Faker==38.0.0
 fastapi==0.117.1
 fastapi-cli==0.0.16
 fastapi-cloud-cli==0.3.1
@@ -26,6 +27,7 @@ packaging==25.0
 passlib==1.7.4
 pip-tools==7.5.2
 pluggy==1.6.0
+polyfactory==2.22.4
 psycopg2-binary==2.9.10
 pyasn1==0.6.1
 pydantic==2.11.9
@@ -60,6 +62,7 @@ tqdm==4.67.1
 typer==0.20.0
 typing-inspection==0.4.1
 typing_extensions==4.15.0
+tzdata==2025.2
 urllib3==2.5.0
 uvicorn==0.37.0
 uvloop==0.22.1
