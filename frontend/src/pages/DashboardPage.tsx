@@ -1,29 +1,9 @@
 import MetricCard from '../components/MetricCard';
-import { BsCalendarEvent } from 'react-icons/bs';
+import TimelineCard from '../components/TimelineCard';
 import { Link } from 'react-router-dom';
 import '../Dashboard.css';
 
 // --- Sub-componentes estáticos para o protótipo ---
-
-const TimelineChart = () => (
-  <div className="timeline-card">
-    <div className="timeline-header">
-      <h3>Timeline</h3>
-      <div className="timeline-controls">
-        <span className="date-picker"><BsCalendarEvent /> 10 de Outubro, 2025</span>
-        <div className="toggle-group">
-          <button className="active">Dia</button>
-          <button>Semana</button>
-          <button>Mês</button>
-        </div>
-      </div>
-    </div>
-    <div className="timeline-chart-placeholder">
-      [Placeholder para o Gráfico de Linha (Emissões)]
-      {/* Você pode adicionar uma biblioteca como Recharts ou Chart.js aqui */}
-    </div>
-  </div>
-);
 
 const EmissionsGauge = () => (
   <div className="report-card">
@@ -120,7 +100,7 @@ const DashboardPage = () => {
           />
         </div>
         <div className="main-chart-area">
-          <TimelineChart />
+          <TimelineCard />
         </div>
       </div>
       <div className="dashboard-right-navbar">
