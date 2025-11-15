@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { BsBellFill, BsPersonCircle } from 'react-icons/bs';
 import '../Dashboard.css';
 
@@ -16,18 +16,18 @@ const Header = () => {
   return (
     <header className="dashboard-header">
       <div className="header-title">
-        <h2>Dashboard</h2>
-        <p>Olá, {userName}! Como está seu ar hoje?</p>
+        <h2>Olá, {userName}!</h2>
+        <p>Como está seu ar hoje?</p>
       </div>
       <div className="header-profile">
         <BsBellFill />
         <div className="profile-info">
-          <div className="username">{userName}</div>
           <div className="avatar">
             {/* <BsPersonCircle />  */}
             {/* Usando iniciais como no protótipo */}
             {userName.substring(0, 1)}
           </div>
+          <div className="username">{userName}</div>
         </div>
       </div>
     </header>

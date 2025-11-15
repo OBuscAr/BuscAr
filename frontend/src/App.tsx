@@ -1,4 +1,3 @@
-import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -33,10 +32,6 @@ function App() {
         <Route path="/analise" element={<AnalisePage />} />
         <Route path="/termos" element={<TermsPage />} />
 
-        {/* --- Rotas Restritas (Dashboard) --- */}
-        <Route element={<ProtectedRoute />}>
-        </Route>
-        
         <Route path="/dashboard" element={<DashboardLayout />}>
           {/* A rota "index" é a padrão para /dashboard */}
           <Route index element={<DashboardPage />} /> 
@@ -45,6 +40,10 @@ function App() {
           <Route path="comparativos" element={<ComparativosPage />} />
           <Route path="historico" element={<HistoricoPage />} />
           <Route path="fotografias" element={<FotografiasPage />} />
+        </Route>
+        
+        {/* --- Rotas Restritas (Dashboard) --- */}
+        <Route element={<ProtectedRoute />}>
         </Route>
         
         {/* Rota para qualquer URL não encontrada */}

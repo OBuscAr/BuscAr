@@ -1,12 +1,13 @@
 /* --- Variáveis de Cor (baseado no protótipo do figma) --- */
 :root {
   --bg-dark: #2A3342;
-  --bg-light: #F7F8FC;
+  --bg-light: #F5F5F5;
   --bg-white: #FFFFFF;
   --text-dark: #2A3342;
-  --text-light: #9FA2B4;
+  --text-light: #757575;
   --text-white: #FFFFFF;
-  --accent-green: #21D56B;
+  --text-red: #C64F4E;
+  --accent-green: #24BB68;
   --accent-blue: #3751FF;
   --accent-red: #F12B2C;
   --accent-yellow: #FFB100;
@@ -30,7 +31,7 @@
 /* --- Barra Lateral (Navbar.tsx) --- */
 .navbar {
   flex: 0 0 255px; /* Largura fixa */
-  background-color: var(--bg-dark);
+  background-color: var(--bg-white);
   color: var(--text-light);
   display: flex;
   flex-direction: column;
@@ -40,21 +41,25 @@
 .navbar-logo {
   display: flex;
   align-items: center;
-  padding: 2rem 2.5rem;
-  gap: 12px;
+  padding: 1.5rem 2.5rem;
   height: 60px;
 }
 
 .navbar-logo img {
-  width: 32px;
   height: 32px;
 }
 
 .navbar-logo h1 {
-  color: var(--text-white);
-  font-size: 1.2rem;
+  font-family: "Poppins";
+  color: var(--text-dark);
+  font-size: 1.5rem;
   margin: 0;
-  font-weight: 700;
+  font-weight: 500;
+}
+
+.navbar-logo h1 b {
+  font-weight: normal;
+  color: var(--accent-green);
 }
 
 .navbar-nav {
@@ -68,10 +73,10 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 1rem 1.5rem;
+  padding: 0.75rem 1.5rem;
   text-decoration: none;
   color: var(--text-light);
-  font-weight: 500;
+  font-weight: 400;
   border-left: 3px solid transparent;
 }
 
@@ -80,9 +85,10 @@
 }
 
 .navbar-nav a.active {
-  color: var(--text-white);
+  font-weight: 500;
+  color: var(--accent-green);
   background-color: rgba(255, 255, 255, 0.08);
-  border-left: 3px solid var(--accent-green);
+  border-right: 5px solid var(--accent-green);
 }
 
 .navbar-nav a.active svg {
@@ -103,11 +109,10 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 2rem 2.5rem;
+  padding: 1.5rem 2.5rem;
   gap: 1.5rem;
   height: 60px;
   background-color: var(--bg-light);
-  border-bottom: 1px solid var(--border-color);
 }
 
 .header-title {
@@ -116,7 +121,8 @@
 
 .header-title h2 {
   margin: 0;
-  font-size: 1.5rem;
+  font-size: 1.25rem;
+  font-weight: 600;
   color: var(--text-dark);
 }
 
@@ -136,7 +142,7 @@
 
 .header-profile svg {
   font-size: 1.2rem;
-  color: var(--text-light);
+  color: var(--text-dark);
   cursor: pointer;
 }
 
@@ -145,16 +151,17 @@
   align-items: center;
   gap: 0.75rem;
   cursor: pointer;
-  border-left: 1px solid var(--border-color);
+  border-left: 2px solid var(--border-color);
   padding-left: 1.5rem;
 }
 
 .profile-info .avatar {
   width: 44px;
   height: 44px;
+  border: var(--border-color) 1px solid;
   border-radius: 50%;
-  background-color: var(--accent-blue);
-  color: white;
+  background-color: var(--bg-white);
+  color: var(--text-light);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -163,7 +170,7 @@
 
 .profile-info .username {
   color: var(--text-dark);
-  font-weight: 600;
+  font-weight: 500;
 }
 
 /* --- Conteúdo do Dashboard (DashboardPage.tsx) --- */
@@ -233,45 +240,58 @@
 
 .metric-card {
   background: var(--bg-white);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 1.5rem;
+  border-radius: 28px;
+  box-shadow: 0px 16px 24px rgba(0, 0, 0, 0.06), 0px 2px 6px rgba(0, 0, 0, 0.04), 0px 0px 1px rgba(0, 0, 0, 0.04);
+  padding: 1rem 1rem;
   display: flex;
   flex-direction: column;
 }
 
 .card-header {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 1rem;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
 }
 
 .card-icon {
-  width: 40px;
-  height: 40px;
+  width: 65px;
+  height: 65px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+
   color: white;
-  font-size: 1.2rem;
-  font-weight: bold;
+  font-size: 2rem;
+  font-weight: 600;
+
+  margin-bottom: 0.5rem;
 }
 
 .card-header h3 {
-  font-size: 1.2rem;
+  font-size: 1.5rem;
   margin: 0;
   color: var(--text-dark);
+  font-weight: 600;
+  flex: 1;
 }
 
 .card-body {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
   margin-bottom: 1rem;
 }
 
 .card-body p {
   margin: 0 0 0.5rem 0;
-  color: var(--text-light);
+  color: var(--text-dark);
+  font-weight: 500;
   font-size: 0.9rem;
 }
 
@@ -289,7 +309,7 @@
   border-radius: 3px;
 }
 
-.card-body .ratio {
+.card-body span {
   font-size: 0.9rem;
   color: var(--text-dark);
   font-weight: 600;
@@ -297,9 +317,7 @@
 
 .card-footer {
   margin-top: auto;
-  padding-top: 1rem;
-  border-top: 1px solid var(--border-color);
-  color: var(--text-light);
+  color: var(--text-red);
   font-size: 0.9rem;
   text-align: right;
 }
@@ -312,9 +330,10 @@
 /* --- Card do Timeline --- */
 .timeline-card {
   background: var(--bg-white);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 1.5rem;
+  border-radius: 28px;
+  box-shadow: 0px 16px 24px rgba(0, 0, 0, 0.06), 0px 2px 6px rgba(0, 0, 0, 0.04), 0px 0px 1px rgba(0, 0, 0, 0.04);
+
+  padding: 1.25rem 1.5rem;
 }
 
 .timeline-header {
@@ -325,8 +344,10 @@
 }
 
 .timeline-header h3 {
+  color: var(--text-dark);
   margin: 0;
   font-size: 1.2rem;
+  font-weight: 600;
 }
 
 .timeline-controls {
@@ -343,7 +364,6 @@
 
 .timeline-controls .toggle-group {
   display: flex;
-  border: 1px solid var(--border-color);
   border-radius: 6px;
 }
 
@@ -353,11 +373,12 @@
   padding: 0.25rem 0.5rem;
   cursor: pointer;
   color: var(--text-light);
+  font-weight: 500;
 }
 
 .toggle-group button.active {
-  background-color: var(--accent-blue);
-  color: white;
+  color: var(--accent-green);
+  font-weight: 600;
   border-radius: 6px;
 }
 
@@ -381,10 +402,7 @@
 }
 
 .report-card {
-  background: var(--bg-white);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 1.5rem;
+  padding: 0 1.5rem;
 }
 
 .report-header {
@@ -395,8 +413,10 @@
 }
 
 .report-header h3 {
+  color: var(--text-dark);
   margin: 0;
   font-size: 1.2rem;
+  font-weight: 600;
 }
 
 .report-header .toggle-group {

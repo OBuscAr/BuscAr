@@ -24,20 +24,20 @@ const MetricCard: React.FC<MetricCardProps> = ({ icon, iconColor, title, iqarVal
   return (
     <div className="metric-card">
       <div className="card-header">
-        <h3>{title}</h3>
         <div className="card-icon" style={{ backgroundColor: iconColor }}>
           {icon}
         </div>
+        <h3>{title}</h3>
       </div>
       <div className="card-body">
-        <p>IQAr</p>
+        <span>IQAr</span>
+        <span className="ratio">{iqarValue}/{iqarMax}</span>
         <div className="progress-bar">
           <div 
             className="progress-bar-inner" 
             style={{ width: `${progressPercentage}%`, backgroundColor: getProgressBarColor() }}
           ></div>
         </div>
-        <span className="ratio">{iqarValue}/{iqarMax}</span>
       </div>
       <div className="card-footer">
         {time}

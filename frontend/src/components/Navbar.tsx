@@ -25,7 +25,7 @@ const Navbar = () => {
     <aside className="navbar">
       <div className="navbar-logo">
         <img src={BuscArLogo} alt="BuscAr Logo" />
-        <h1>BuscAr</h1>
+        <h1>Busc<b>Ar</b></h1>
       </div>
       <nav className="navbar-nav">
         <NavLink to="/dashboard" className={({ isActive }) => (isActive ? 'active' : '')}>
