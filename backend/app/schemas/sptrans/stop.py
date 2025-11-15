@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field
 
-class Stop(BaseModel):
+
+class SPTransStop(BaseModel):
     id: int = Field(alias="cp")
     name: str = Field(alias="np")
     address: str = Field(alias="ed")

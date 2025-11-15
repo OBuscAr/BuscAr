@@ -1,7 +1,7 @@
 from app.core.database import SessionLocal
 from app.models import LineModel, LineStopModel, StopModel
 from app.repositories import sptrans_client
-from app.schemas import StopSptrans
+from app.schemas import SPTransStop
 from sqlalchemy import select, update
 from tqdm import tqdm as progress_bar
 
@@ -14,9 +14,9 @@ def create_stops() -> None:
     session = SessionLocal()
     line_ids = session.execute(select(LineModel.id)).scalars().all()
 
-    stops_by_line: dict[int, list[StopSptrans]] = {}
+    stops_by_line: dict[int, list[SPTransStop]] = {}
 
-    stops: list[StopSptrans] = []
+    stops: list[SPTransStop] = []
     stop_ids: set[int] = set()
 
     for line_id in progress_bar(line_ids):
