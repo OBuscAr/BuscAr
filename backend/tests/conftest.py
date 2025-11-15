@@ -2,16 +2,11 @@ from typing import Generator
 
 import app.core.database as db_mod
 import pytest
-import requests
 import responses
 from app.core.config import settings
-from app.core.database import Base, engine, get_db
-from app.core.dependencies import get_sptrans_cookies  # Dependência da SPTrans real
+from app.core.database import Base, get_db
 from app.main import app
-from app.models.line import LineDirection
-from app.schemas import Line
 from fastapi.testclient import TestClient
-from requests.cookies import RequestsCookieJar
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
@@ -61,17 +56,8 @@ def override_get_db() -> Generator[Session, None, None]:
         db.close()
 
 
-def override_get_sptrans_cookies() -> RequestsCookieJar:
-    """
-    Overrides 'get_sptrans_cookies' to never call the actual API.
-    """
-    cookie_jar = RequestsCookieJar()
-    cookie_jar.set("fake_session_cookie", "logado-com-sucesso-no-teste")
-    return cookie_jar
-
-
 @pytest.fixture(scope="function")
-def client(db: Session, mocker) -> Generator[TestClient, None, None]:
+def client(db: Session) -> Generator[TestClient, None, None]:
     """
     Fixture that creates the TestClient and overrides dependencies
     and mocks external services.
@@ -79,19 +65,6 @@ def client(db: Session, mocker) -> Generator[TestClient, None, None]:
 
     # Sobrescreve as dependências do FastAPI
     app.dependency_overrides[get_db] = override_get_db
-    app.dependency_overrides[get_sptrans_cookies] = override_get_sptrans_cookies
-
-    # Mock da SPTrans (para os testes de Comando)
-    mocker.patch(
-        "app.repositories.sptrans_client.login", return_value=RequestsCookieJar()
-    )
-
-    mock_line_data = [Line(id=1273, name="8000-10", direction=LineDirection.MAIN)]
-    # -------------------------------------------
-
-    mocker.patch(
-        "app.repositories.sptrans_client.get_lines", return_value=mock_line_data
-    )
 
     # Fornece o cliente para os testes
     yield TestClient(app)
