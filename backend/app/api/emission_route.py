@@ -37,7 +37,8 @@ def calculate_emission_stops(
 
         # Chama o serviço MyClimate
         emission_calculate_kg = myclimate_client.calculate_carbon_emission(
-            distance=distance_ab_km, vehicle_type=VehicleType.BUS
+            distance=distance_ab_km,
+            vehicle_type=VehicleType.BUS,
         )
 
         return EmissionResponse(
