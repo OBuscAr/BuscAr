@@ -1,7 +1,6 @@
-from sqlalchemy.orm import Session
+from app.models import LineDirection, LineModel
 from sqlalchemy import select
-
-from app.models.line import Line, LineDirection
+from sqlalchemy.orm import Session
 
 
 class LineRepository:
@@ -25,4 +24,3 @@ class LineRepository:
                 return None
 
         return db.execute(query).scalars().first()
-
