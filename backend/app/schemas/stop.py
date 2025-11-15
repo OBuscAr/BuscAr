@@ -1,9 +1,14 @@
-from pydantic import BaseModel, Field
-
+from pydantic import BaseModel
+from pydantic import ConfigDict
 
 class Stop(BaseModel):
-    id: int = Field(alias="cp")
-    name: str = Field(alias="np")
-    address: str = Field(alias="ed")
-    latitude: float = Field(alias="py")
-    longitude: float = Field(alias="px")
+    """
+    Schema Pydantic to the model StopModel.
+    """
+    id: int
+    name: str
+    address: str
+    latitude: float
+    longitude: float
+
+    model_config = ConfigDict(from_attributes=True)
