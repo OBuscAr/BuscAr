@@ -1,6 +1,6 @@
 import MetricCard from '../components/MetricCard';
 import TimelineCard from '../components/TimelineCard';
-import { Link } from 'react-router-dom';
+import QuickReportCard from '../components/QuickReportCard';
 import '../Dashboard.css';
 
 // --- Sub-componentes estáticos para o protótipo ---
@@ -24,31 +24,6 @@ const EmissionsGauge = () => (
         </div>
       </div>
     </div>
-  </div>
-);
-
-const QuickReportList = ({ title, items, unit, linkTo }: any) => (
-  <div className="report-card">
-    <div className="report-header">
-      <h3>{title}</h3>
-      <Link to={linkTo}>Ver</Link>
-    </div>
-    <ul className="quick-report-list">
-      {items.map((item: any) => (
-        <li className="quick-report-item" key={item.linha}>
-          <div className="report-item-info">
-            <div className="report-item-dot" style={{ backgroundColor: item.color }}></div>
-            <div className="report-item-details">
-              <div className="linha">{item.linha}</div>
-              <div className="data">{item.data}</div>
-            </div>
-          </div>
-          <span className="report-item-value" style={{ color: item.color }}>
-            {item.value}{unit}
-          </span>
-        </li>
-      ))}
-    </ul>
   </div>
 );
 
@@ -100,17 +75,20 @@ const DashboardPage = () => {
           />
         </div>
         <div className="main-chart-area">
-          <TimelineCard />
+          <TimelineCard
+            date='10 de fevereiro de 2026'
+          />
         </div>
       </div>
       <div className="dashboard-right-navbar">
         <EmissionsGauge />
-        <QuickReportList 
+        <QuickReportCard 
           title="Histórico de emissões" 
-          items={historicoItems} 
+          items={historicoItems}
+          unit=''
           linkTo="/dashboard/historico" 
         />
-        <QuickReportList 
+        <QuickReportCard
           title="Velocidades médias" 
           items={velocidadeItems} 
           unit="km/h" 

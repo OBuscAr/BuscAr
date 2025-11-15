@@ -5,8 +5,6 @@ import { BsCalendarEvent } from 'react-icons/bs';
 
 type TimelineCardProps = {
   date: string;
-  timeFrame: 'Dia' | 'Semana' | 'Mês';
-  // Adicione outras props conforme necessário
 }
 
 const TimelineCard: React.FC<TimelineCardProps> = ({ date }) => {
