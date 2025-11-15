@@ -1,8 +1,13 @@
-from pydantic import BaseModel, Field
-
+from pydantic import BaseModel
+from app.models.line import LineDirection 
+from pydantic import ConfigDict
 
 class Line(BaseModel):
-    id: int = Field(alias="cl")
-    base_name: str = Field(alias="lt")
-    operation_mode: int = Field(alias="tl")
-    direction: int = Field(alias="sl")
+    """
+    Schema Pydantic to the model LineModel.
+    """
+    id: int
+    name: str  
+    direction: LineDirection
+
+    model_config = ConfigDict(from_attributes=True)

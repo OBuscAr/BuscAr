@@ -19,3 +19,13 @@ def get_db():
         yield db
     finally:
         db.close()
+        
+try:
+    # pylint: disable=unused-import
+    import app.models  # só para garantir importação dos módulos de modelo
+except Exception:
+    pass
+
+# Cria todas as tabelas declaradas 
+Base.metadata.create_all(bind=engine)
+
