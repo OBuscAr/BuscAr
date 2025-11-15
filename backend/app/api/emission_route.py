@@ -7,7 +7,10 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from requests.exceptions import HTTPError
 from sqlalchemy.orm import Session
 
-router = APIRouter(prefix="/api/v1", tags=["Emissions"])  # Nova tag para a /docs
+router = APIRouter(
+    prefix="/api/v1",
+    tags=["Emissions"],  # Nova tag para a /docs
+)
 
 
 @router.get("/emission", response_model=EmissionResponse)
@@ -38,7 +41,8 @@ def calculate_emission_stops(
         )
 
         return EmissionResponse(
-            distance_km=distance_ab_km, emission_kg_co2=emission_calculate_kg
+            distance_km=distance_ab_km,
+            emission_kg_co2=emission_calculate_kg,
         )
 
     except NotImplementedError:
