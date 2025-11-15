@@ -1,5 +1,5 @@
 from app.repositories.sptrans_client import get_lines
-from tests.factories.schemas import LineFactory
+from tests.factories.schemas import SPTransLineFactory
 from tests.helpers import SPTransHelper
 
 
@@ -10,7 +10,7 @@ def test_response():
     THEN   the related lines should be returned
     """
     # GIVEN
-    expected_lines = LineFactory.batch(size=2)
+    expected_lines = SPTransLineFactory.batch(size=2)
     pattern = "test"
     endpoint_mock = SPTransHelper.mock_get_lines(
         response=expected_lines, pattern=pattern

@@ -1,6 +1,6 @@
-from app.schemas import Line
+from app.schemas import SPTransLine
 from polyfactory.factories.pydantic_factory import ModelFactory
 
 
-class LineFactory(ModelFactory[Line]):
+class SPTransLineFactory(ModelFactory[SPTransLine]):
     __check_model__ = True
