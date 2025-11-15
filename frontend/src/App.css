@@ -18,6 +18,8 @@
 body {
   margin: 0;
   font-family: Arial, sans-serif;
+  min-width: 320px;
+  min-height: 100vh;
   background-color: #f0f2f5; /* Um fundo claro padrão */
 }
 

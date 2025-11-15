@@ -35,15 +35,16 @@ function App() {
 
         {/* --- Rotas Restritas (Dashboard) --- */}
         <Route element={<ProtectedRoute />}>
-          <Route path="/dashboard" element={<DashboardLayout />}>
-            {/* A rota "index" é a padrão para /dashboard */}
-            <Route index element={<DashboardPage />} /> 
-            
-            {/* Outras páginas dentro do layout do dashboard */}
-            <Route path="comparativos" element={<ComparativosPage />} />
-            <Route path="historico" element={<HistoricoPage />} />
-            <Route path="fotografias" element={<FotografiasPage />} />
-          </Route>
+        </Route>
+        
+        <Route path="/dashboard" element={<DashboardLayout />}>
+          {/* A rota "index" é a padrão para /dashboard */}
+          <Route index element={<DashboardPage />} /> 
+          
+          {/* Outras páginas dentro do layout do dashboard */}
+          <Route path="comparativos" element={<ComparativosPage />} />
+          <Route path="historico" element={<HistoricoPage />} />
+          <Route path="fotografias" element={<FotografiasPage />} />
         </Route>
         
         {/* Rota para qualquer URL não encontrada */}

@@ -27,72 +27,73 @@
   flex-direction: column;
 }
 
-/* --- Barra Lateral (Sidebar.tsx) --- */
-.sidebar {
+/* --- Barra Lateral (Navbar.tsx) --- */
+.navbar {
   flex: 0 0 255px; /* Largura fixa */
   background-color: var(--bg-dark);
   color: var(--text-light);
   display: flex;
   flex-direction: column;
-  padding: 2rem 0;
+  padding: 0;
 }
 
-.sidebar-logo {
+.navbar-logo {
   display: flex;
   align-items: center;
-  padding: 0 2rem 2rem 2rem;
+  padding: 2rem 2.5rem;
   gap: 12px;
+  height: 60px;
 }
 
-.sidebar-logo img {
+.navbar-logo img {
   width: 32px;
   height: 32px;
 }
 
-.sidebar-logo h1 {
+.navbar-logo h1 {
   color: var(--text-white);
   font-size: 1.2rem;
   margin: 0;
   font-weight: 700;
 }
 
-.sidebar-nav {
+.navbar-nav {
   flex: 1;
   list-style: none;
   padding: 0;
   margin: 0;
 }
 
-.sidebar-nav a {
+.navbar-nav a {
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 1rem 2rem;
+  padding: 1rem 1.5rem;
   text-decoration: none;
   color: var(--text-light);
   font-weight: 500;
   border-left: 3px solid transparent;
 }
 
-.sidebar-nav a:hover {
+.navbar-nav a:hover {
   background-color: rgba(255, 255, 255, 0.05);
 }
 
-.sidebar-nav a.active {
+.navbar-nav a.active {
   color: var(--text-white);
   background-color: rgba(255, 255, 255, 0.08);
   border-left: 3px solid var(--accent-green);
 }
 
-.sidebar-nav a.active svg {
+.navbar-nav a.active svg {
   color: var(--accent-green);
 }
 
-.sidebar-nav svg {
+.navbar-nav svg {
   font-size: 1.2rem;
 }
 
-.sidebar-footer {
+.navbar-footer {
   padding: 1rem 2rem 0 2rem;
   border-top: 1px solid #36404F;
 }
@@ -103,8 +104,14 @@
   justify-content: space-between;
   align-items: center;
   padding: 2rem 2.5rem;
+  gap: 1.5rem;
+  height: 60px;
   background-color: var(--bg-light);
   border-bottom: 1px solid var(--border-color);
+}
+
+.header-title {
+  flex: 3;
 }
 
 .header-title h2 {
@@ -123,6 +130,8 @@
   display: flex;
   align-items: center;
   gap: 1.5rem;
+  flex: 1;
+  justify-content: flex-end;
 }
 
 .header-profile svg {
@@ -159,7 +168,9 @@
 
 /* --- Conteúdo do Dashboard (DashboardPage.tsx) --- */
 .dashboard-content {
+  display: flex;
   padding: 2rem 2.5rem;
+  gap: 1.5rem;
 }
 
 .dashboard-controls {
@@ -294,10 +305,8 @@
 }
 
 /* --- Layout Principal do Conteúdo (Grid) --- */
-.dashboard-main-grid {
-  display: grid;
-  grid-template-columns: 2.5fr 1fr; /* 2.5 partes para os gráficos, 1 parte para a sidebar */
-  gap: 1.5rem;
+.dashboard-main {
+  flex: 3;
 }
 
 /* --- Card do Timeline --- */
@@ -363,11 +372,12 @@
   font-size: 0.9rem;
 }
 
-/* --- Sidebar da Direita --- */
-.dashboard-right-sidebar {
+/* --- Navbar da Direita --- */
+.dashboard-right-navbar {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  flex: 1;
 }
 
 .report-card {

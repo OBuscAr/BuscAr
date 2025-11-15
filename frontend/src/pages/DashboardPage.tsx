@@ -1,6 +1,5 @@
-import React from 'react';
 import MetricCard from '../components/MetricCard';
-import { BsSearch, BsPlusLg, BsCalendarEvent } from 'react-icons/bs';
+import { BsCalendarEvent } from 'react-icons/bs';
 import { Link } from 'react-router-dom';
 import '../Dashboard.css';
 
@@ -91,62 +90,52 @@ const DashboardPage = () => {
   ];
 
   return (
-    <>
-      <div className="dashboard-controls">
-        <div className="search-bar">
-          <BsSearch />
-          <input type="text" placeholder="O que você busca?" />
-        </div>
-        <button className="btn-add">
-          <BsPlusLg /> Adicionar dado
-        </button>
-      </div>
-      
-      <div className="metric-cards-container">
-        <MetricCard 
-          icon="P" 
-          iconColor="#6A66FF" 
-          title="Pinheiros" 
-          iqarValue={23} 
-          iqarMax={90} 
-          time="13h56min" 
-        />
-        <MetricCard 
-          icon="CU" 
-          iconColor="#3751FF" 
-          title="Cid. Universitária" 
-          iqarValue={85} 
-          iqarMax={90} 
-          time="6h" 
-        />
-        <MetricCard 
-          icon="MT" 
-          iconColor="#9E37FF" 
-          title="Marg. Tietê" 
-          iqarValue={9} 
-          iqarMax={90} 
-          time="17h45min" 
-        />
-      </div>
+    <>  
 
-      <div className="dashboard-main-grid">
+      <div className="dashboard-main">
+        <div className="metric-cards-container">
+          <MetricCard 
+            icon="P" 
+            iconColor="#6A66FF" 
+            title="Pinheiros" 
+            iqarValue={23} 
+            iqarMax={90} 
+            time="13h56min" 
+          />
+          <MetricCard 
+            icon="CU" 
+            iconColor="#3751FF" 
+            title="Cid. Universitária" 
+            iqarValue={85} 
+            iqarMax={90} 
+            time="6h" 
+          />
+          <MetricCard 
+            icon="MT" 
+            iconColor="#9E37FF" 
+            title="Marg. Tietê" 
+            iqarValue={9} 
+            iqarMax={90} 
+            time="17h45min" 
+          />
+        </div>
         <div className="main-chart-area">
           <TimelineChart />
         </div>
-        <div className="dashboard-right-sidebar">
-          <EmissionsGauge />
-          <QuickReportList 
-            title="Histórico de emissões" 
-            items={historicoItems} 
-            linkTo="/dashboard/historico" 
-          />
-          <QuickReportList 
-            title="Velocidades médias" 
-            items={velocidadeItems} 
-            unit="km/h" 
-            linkTo="/dashboard/comparativos" 
-          />
-        </div>
+      </div>
+      <div className="dashboard-right-navbar">
+        <EmissionsGauge />
+        <QuickReportList 
+          title="Histórico de emissões" 
+          items={historicoItems} 
+          linkTo="/dashboard/historico" 
+        />
+        <QuickReportList 
+          title="Velocidades médias" 
+          items={velocidadeItems} 
+          unit="km/h" 
+          linkTo="/dashboard/comparativos" 
+        />
       </div>
     </>
   );
