@@ -63,7 +63,6 @@
 }
 
 .navbar-nav {
-  flex: 1;
   list-style: none;
   padding: 0;
   margin: 0;
@@ -100,8 +99,14 @@
 }
 
 .navbar-footer {
-  padding: 1rem 2rem 0 2rem;
-  border-top: 1px solid #36404F;
+  margin-top: 1.5rem;
+  padding: 0.75rem 1.5rem;
+}
+
+.navbar-footer a {
+  text-decoration: none;
+  color: var(--text-light);
+  font-weight: 400;
 }
 
 /* --- Header (Header.tsx) --- */
@@ -109,14 +114,14 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.5rem 2.5rem;
-  gap: 1.5rem;
+  padding: 1.5rem 4rem;
+  gap: 4rem;
   height: 60px;
   background-color: var(--bg-light);
 }
 
 .header-title {
-  flex: 3;
+  flex: 2.5;
 }
 
 .header-title h2 {
@@ -135,9 +140,9 @@
 .header-profile {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: 2rem;
   flex: 1;
-  justify-content: flex-end;
+  justify-content: center;
 }
 
 .header-profile svg {
@@ -176,8 +181,8 @@
 /* --- Conteúdo do Dashboard (DashboardPage.tsx) --- */
 .dashboard-content {
   display: flex;
-  padding: 2rem 2.5rem;
-  gap: 1.5rem;
+  padding: 0.5rem 4rem 2rem;
+  gap: 4rem;
 }
 
 .dashboard-controls {
@@ -324,7 +329,7 @@
 
 /* --- Layout Principal do Conteúdo (Grid) --- */
 .dashboard-main {
-  flex: 3;
+  flex: 2.5;
 }
 
 /* --- Card do Timeline --- */
@@ -490,7 +495,6 @@
   justify-content: space-between;
   align-items: center;
   padding: 1rem 0;
-  border-bottom: 1px solid var(--border-color);
 }
 .quick-report-list li:last-child {
   border-bottom: none;
@@ -503,15 +507,17 @@
 }
 
 .report-item-dot {
-  width: 10px;
-  height: 10px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
+  opacity: 0.4;
+  margin: 0 1.5rem;
 }
 
 .report-item-details .linha {
   font-weight: 600;
   color: var(--text-dark);
-  font-size: 0.9rem;
+  font-size: 1rem;
 }
 .report-item-details .data {
   font-size: 0.8rem;

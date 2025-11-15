@@ -43,7 +43,7 @@ const Navbar = () => {
       </nav>
       <div className="navbar-footer">
         <a href="#" onClick={handleSair} style={{ padding: '1rem 0' }}>
-          <BsBoxArrowRight /> Sair
+          Sair
         </a>
       </div>
     </aside>
