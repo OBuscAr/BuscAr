@@ -8,25 +8,75 @@ Sistema web para análise das linhas de ônibus de São Paulo em relação à em
 - Apoiar urbanistas e tomadores de decisão no planejamento sustentável.
 
 ## 👥 Equipe
-- Ana Lívia Rüegger Saldanha  (a definir)
-- Be Zilberman (a definir)
-- Diego Hurtado de Mendoza  (a definir)
-- Giovanna Hirata (a definir)
-- Gustavo Mota Bastos (a definir)
-- Naili Marques (a definir)
+- Ana Lívia Rüegger Saldanha  (backend)
+- Be Zilberman (arquitetura)
+- Diego Hurtado de Mendoza  (backend)
+- Giovanna Hirata (frontend)
+- Gustavo Mota Bastos (frontend)
+- Naili Marques (backend)
 
 ## 📌 Tecnologias
 - **Frontend:** a definir  
-- **Backend:** a definir 
+- **Backend:** Python 3.11
 - **Banco de Dados:** PostgreSQL  
-- **API:** SPTrans Olho Vivo  
+- **API:** SPTrans Olho Vivo + MyClimate API
 - **Gestão do Projeto:** Scrum + ClickUp + GitHub Issues  
 
 ## 📂 Organização do Repositório
-- `/frontend` → códido do ... 
-- `/backend` → código do ...
+- `/frontend` → códido do frontend 
+- `/backend` → código do backend
 - `/docs` → documentação do projeto (mapas de empatia, backlog, relatórios)  
 
 ## 🛠️ Como rodar o projeto (quando implementado)
-```bash
 
+### Backend
+1. Entre na pasta de backend.
+```bash
+    cd backend
+```
+
+2. Instale Python 3.11. Pode utilizar [pyenv](https://github.com/pyenv/pyenv) para escolher a versão 3.11 de Python.
+
+3. Crie um ambiente virtual e ative-o.
+```bash
+    python -m venv .venv
+    source .venv/bin/activate
+```
+
+4. Instale as dependências do repositório.
+```bash
+    make init
+```
+
+5. Instale [PostgreSQL](https://www.postgresql.org/download/).
+
+6. Crie um usuário em Postgres. Exemplo:
+- Username: buscar_user
+- Password: buscar123
+
+```bash
+    sudo -u postgres createuser -P -d buscar_user
+```
+
+7. Crie a base de dados `buscar_db`.
+```bash
+    sudo -u postgres createdb -h localhost -p 5432 -U buscar_user buscar_db
+```
+
+8. Preencha o arquivo `.env`. Os valores que faltarem podem ser solicitados a um membro do grupo. Para a variável `DATABASE_URL`, lembre-se de usar os dados do usuário e o nome do banco de dados que você criou nas duas etapas anteriores.
+
+9. Crie as tabelas no banco de dados.
+```bash
+    make create-database-tables
+```
+
+10. Popule o banco de dados.
+```bash
+    make populate-database
+```
+
+11. Para levantar o servidor backend, você pode usar este comando:
+```bash
+    make run
+```
+ 

@@ -1,14 +1,79 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import MetricCard from '../components/MetricCard';
+import TimelineCard from '../components/TimelineCard';
+import QuickReportCard from '../components/QuickReportCard';
+import EmissionsCard from '../components/EmissionsCard';
+import '../Dashboard.css';
 
-function DashboardPage() {
+// --- Componente Principal da Página ---
+
+const DashboardPage = () => {
+
+  // Dados mockados para as listas
+  const historicoItems = [
+    { linha: '874c-10', data: '21 Julho 2025', value: 'Bom', color: 'var(--accent-blue)' },
+    { linha: '8705-10', data: '21 Julho 2025', value: 'Ruim', color: 'var(--accent-red)' },
+    { linha: '8319-10', data: '21 Julho 2025', value: 'Moderado', color: 'var(--accent-yellow)' },
+  ];
+
+  const velocidadeItems = [
+    { linha: '715M-10', data: '28 Julho 2025', value: '50', unit: 'km/h', color: 'var(--accent-blue)' },
+    { linha: '875C-10', data: '22 Julho 2025', value: '30', unit: 'km/h', color: 'var(--accent-yellow)' },
+    { linha: '8019-10', data: '22 Julho 2025', value: '35', unit: 'km/h', color: 'var(--accent-yellow)' },
+  ];
+
   return (
-    <div style={{ padding: '2rem', textAlign: 'center' }}>
-      <h1>Bem-vindo ao Dashboard!</h1>
-      <p>Você acessou a área restrita.</p>
-      <Link to="/login">Voltar ao Login</Link>
-    </div>
+    <>  
+
+      <div className="dashboard-main">
+        <div className="metric-cards-container">
+          <MetricCard 
+            icon="P" 
+            iconColor="#6A66FF" 
+            title="Pinheiros" 
+            iqarValue={23} 
+            iqarMax={90} 
+            time="13h56min" 
+          />
+          <MetricCard 
+            icon="CU" 
+            iconColor="#3751FF" 
+            title="Cid. Universitária" 
+            iqarValue={85} 
+            iqarMax={90} 
+            time="6h" 
+          />
+          <MetricCard 
+            icon="MT" 
+            iconColor="#9E37FF" 
+            title="Marg. Tietê" 
+            iqarValue={9} 
+            iqarMax={90} 
+            time="17h45min" 
+          />
+        </div>
+        <div className="main-chart-area">
+          <TimelineCard
+            date='10 de fevereiro de 2026'
+          />
+        </div>
+      </div>
+      <div className="dashboard-right-navbar">
+        <EmissionsCard />
+        <QuickReportCard 
+          title="Histórico de emissões" 
+          items={historicoItems}
+          unit=''
+          linkTo="/dashboard/historico" 
+        />
+        <QuickReportCard
+          title="Velocidades médias" 
+          items={velocidadeItems} 
+          unit="km/h" 
+          linkTo="/dashboard/comparativos" 
+        />
+      </div>
+    </>
   );
-}
+};
 
 export default DashboardPage;
