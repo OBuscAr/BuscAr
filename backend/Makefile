@@ -29,7 +29,7 @@ create-stops-from-api:
 	python -m app.commands.create_stops_from_api
 
 test:
-	pytest tests/ --html=tests/htmlcov/report.html --cov app --cov-config=tests/.coveragerc --cov-report html:tests/htmlcov
+	pytest tests/ --html=tests/htmlcov/report.html --cov app --cov-config=.coveragerc --cov-report html:tests/htmlcov
 
 open-test-coverage:
 	open tests/htmlcov/index.html

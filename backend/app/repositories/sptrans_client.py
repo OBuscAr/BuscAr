@@ -1,6 +1,6 @@
 import requests
 from app.core.config import settings
-from app.schemas import Line, Stop
+from app.schemas import SPTransLine, SPTransStop
 from pydantic import TypeAdapter
 from requests.cookies import RequestsCookieJar
 
@@ -20,7 +20,7 @@ LINES_URL = f"{settings.PREFIX_URL}/Linha"
 LINES_LOOK_UP_URL = f"{LINES_URL}/Buscar"
 
 
-def get_lines(credentials: RequestsCookieJar, pattern: str) -> list[Line]:
+def get_lines(credentials: RequestsCookieJar, pattern: str) -> list[SPTransLine]:
     """
     Get all the lines that contains the given `pattern`.
 
@@ -33,14 +33,16 @@ def get_lines(credentials: RequestsCookieJar, pattern: str) -> list[Line]:
         cookies=credentials,
     )
     response.raise_for_status()
-    return TypeAdapter(list[Line]).validate_python(response.json())
+    return TypeAdapter(list[SPTransLine]).validate_python(response.json())
 
 
 STOPS_URL = f"{settings.PREFIX_URL}/Parada"
 STOPS_BY_LINE_URL = f"{STOPS_URL}/BuscarParadasPorLinha"
 
 
-def get_stops_by_line(credentials: RequestsCookieJar, line_id: int) -> list[Stop]:
+def get_stops_by_line(
+    credentials: RequestsCookieJar, line_id: int
+) -> list[SPTransStop]:
     """
     Get all the stops of the given line.
 
@@ -54,4 +56,4 @@ def get_stops_by_line(credentials: RequestsCookieJar, line_id: int) -> list[Stop
         cookies=credentials,
     )
     response.raise_for_status()
-    return TypeAdapter(list[Stop]).validate_python(response.json())
+    return TypeAdapter(list[SPTransStop]).validate_python(response.json())

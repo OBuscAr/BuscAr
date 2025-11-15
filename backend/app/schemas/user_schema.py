@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr, Field
-
+from pydantic import ConfigDict
 
 # --------------- Login ----------------------- #
 class LoginRequest(BaseModel):
@@ -28,5 +28,4 @@ class UserResponse(BaseModel):
    # criado_em: datetime
 
     # Config para o Pydantic entender o modelo SQLAlchemy
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
