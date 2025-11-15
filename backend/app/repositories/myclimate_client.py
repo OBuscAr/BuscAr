@@ -1,6 +1,6 @@
 import requests
 from app.core.config import settings
-from app.schemas import CarbonEmission, VehicleType
+from app.schemas import MyclimateCarbonEmission, VehicleType
 from requests.auth import HTTPBasicAuth
 
 BUS_FUEL_CONSUMPTION = 46.2
@@ -33,4 +33,4 @@ def calculate_carbon_emission(distance: float, vehicle_type: VehicleType) -> flo
         json=payload,
     )
     response.raise_for_status()
-    return CarbonEmission(**response.json()).emission
+    return MyclimateCarbonEmission(**response.json()).emission

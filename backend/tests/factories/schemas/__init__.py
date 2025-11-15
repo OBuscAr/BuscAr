@@ -1,3 +1,5 @@
 # flake8: noqa: F401
-from tests.factories.schemas.carbon_emission import CarbonEmissionFactory
-from tests.factories.schemas.line import SPTransLineFactory
+from tests.factories.schemas.myclimate.carbon_emission import (
+    MyclimateCarbonEmissionFactory,
+)
+from tests.factories.schemas.sptrans.line import SPTransLineFactory

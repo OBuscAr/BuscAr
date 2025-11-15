@@ -1,6 +1,6 @@
 import responses
 from app.repositories.myclimate_client import BUS_FUEL_CONSUMPTION, CARBON_EMISSION_URL
-from app.schemas import CarbonEmission, VehicleType
+from app.schemas import MyclimateCarbonEmission, VehicleType
 from fastapi import status
 from responses import BaseResponse, matchers
 
@@ -12,7 +12,7 @@ class MyclimateHelper:
 
     @staticmethod
     def mock_carbon_emission(
-        distance: float, vehicle_type: VehicleType, response: CarbonEmission
+        distance: float, vehicle_type: VehicleType, response: MyclimateCarbonEmission
     ) -> BaseResponse:
         """
         Mock the carbon emission endpoint.

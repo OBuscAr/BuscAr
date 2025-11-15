@@ -1,7 +1,7 @@
 import pytest
 from app.repositories.myclimate_client import calculate_carbon_emission
 from app.schemas import VehicleType
-from tests.factories.schemas import CarbonEmissionFactory
+from tests.factories.schemas import MyclimateCarbonEmissionFactory
 from tests.helpers import MyclimateHelper
 
 
@@ -13,7 +13,7 @@ def test_response(vehicle_type: VehicleType):
     THEN   the related response should be returned
     """
     # GIVEN
-    expected_emission = CarbonEmissionFactory.build()
+    expected_emission = MyclimateCarbonEmissionFactory.build()
     distance = 5
     endpoint_mock = MyclimateHelper.mock_carbon_emission(
         response=expected_emission,
