@@ -29,7 +29,10 @@ def calculate_emission_stops(
 
     try:
         distance_ab_km = distance_service.calculate_distance_between_stops(
-            db=db, line_id=line_id, stop_a_id=stop_id_a, stop_b_id=stop_id_b
+            db=db,
+            line_id=line_id,
+            stop_a_id=stop_id_a,
+            stop_b_id=stop_id_b,
         )
 
         if distance_ab_km == 0:
