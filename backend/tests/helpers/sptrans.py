@@ -17,7 +17,7 @@ class SPTransHelper:
     @staticmethod
     def mock_login() -> None:
         """
-        Mock the login endpoint of SPTrans.
+        Mock the login endpoint.
         """
         responses.post(
             LOGIN_URL,
@@ -35,7 +35,7 @@ class SPTransHelper:
         response: Sequence[Line], pattern: Optional[str] = None
     ) -> BaseResponse:
         """
-        Mock the get lines endpoint of SPTrans.
+        Mock the get lines endpoint.
         """
         match = []
         if pattern is not None:
