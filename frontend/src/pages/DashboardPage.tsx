@@ -1,31 +1,8 @@
 import MetricCard from '../components/MetricCard';
 import TimelineCard from '../components/TimelineCard';
 import QuickReportCard from '../components/QuickReportCard';
+import EmissionsCard from '../components/EmissionsCard';
 import '../Dashboard.css';
-
-// --- Sub-componentes estáticos para o protótipo ---
-
-const EmissionsGauge = () => (
-  <div className="report-card">
-    <div className="report-header">
-      <h3>Geral</h3>
-      <div className="toggle-group">
-        <button>Dia</button>
-        <button className="active">Semana</button>
-        <button>Mês</button>
-        <button>Ano</button>
-      </div>
-    </div>
-    <div className="emissions-gauge">
-      <div className="gauge-circle">
-        <div className="gauge-inner">
-          <span className="percentage">x %</span>
-          <span className="label">Emissões</span>
-        </div>
-      </div>
-    </div>
-  </div>
-);
 
 // --- Componente Principal da Página ---
 
@@ -81,7 +58,7 @@ const DashboardPage = () => {
         </div>
       </div>
       <div className="dashboard-right-navbar">
-        <EmissionsGauge />
+        <EmissionsCard />
         <QuickReportCard 
           title="Histórico de emissões" 
           items={historicoItems}
