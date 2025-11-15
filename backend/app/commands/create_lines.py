@@ -1,7 +1,7 @@
 from app.core.database import SessionLocal
 from app.models import LineDirection, LineModel
 from app.repositories import sptrans_client
-from app.schemas import Line
+from app.schemas import LineSpTrans
 from sqlalchemy import select, update
 from tqdm import tqdm as progress_bar
 
@@ -16,7 +16,7 @@ def create_lines() -> None:
     with open(FILE_LOCATION, "r") as file:
         file_lines = file.readlines()
 
-    line_data: dict[int, Line] = {}
+    line_data: dict[int, LineSpTrans] = {}
 
     for file_line in progress_bar(file_lines[1:]):  # Skip the first line
         fare, line_name, _ = file_line.split(",", 2)
