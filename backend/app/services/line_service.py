@@ -1,10 +1,11 @@
-from sqlalchemy.orm import Session
 from typing import List, Optional
 
 from app.models.line import LineDirection
-from app.services.distance_service import calculate_distance_between_stops
 from app.repositories.line_repository import LineRepository
 from app.repositories.line_stop_repository import LineStopRepository
+from app.services import distance_service
+from app.services.distance_service import calculate_distance_between_stops
+from sqlalchemy.orm import Session
 
 
 class LineService:
@@ -29,5 +30,4 @@ class LineService:
     def get_nearest_stop(db: Session, line_id: int, lat: float, lon: float):
         stops = LineStopRepository.get_stops_for_line(db, line_id)
 
-        return DistanceService.find_closest_stop(stops, lat, lon)
-
+        return distance_service.find_closest_shape_point(stops, (lat, lon))

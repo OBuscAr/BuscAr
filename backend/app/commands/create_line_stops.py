@@ -3,6 +3,7 @@ from app.models import LineDirection, LineModel, LineStopModel, StopModel
 from sqlalchemy import select
 from tqdm import tqdm as progress_bar
 from sqlalchemy import Float
+from app.services import distance_service 
 
 import csv
 import os
@@ -13,24 +14,6 @@ SHAPES_FILE = os.path.join(GTFS_PATH, "shapes.txt")
 TRIPS_FILE = os.path.join(GTFS_PATH, "trips.txt")
 
 FILE_LOCATION = "app/commands/sptrans_static_data/stop_times.txt"
-
-
-def find_closest_shape_point(shape_points: List[Dict], stop_coords: Tuple[float, float]):
-    """
-    Find the nearest point on the shape of that stop.
-    """
-    stop_lat, stop_lon = stop_coords
-    best = None
-    best_dist = float("inf")
-
-    for p in shape_points:
-        d = (p["lat"] - stop_lat)**2 + (p["lon"] - stop_lon)**2
-        if d < best_dist:
-            best_dist = d
-            best = p
-
-    return best
-    
 
 def load_trips() -> Dict[int, str]:
     mapping = {}
@@ -124,7 +107,7 @@ def create_line_stops() -> None:
             coords = stop_coords.get(stop_id)
 
             if coords and coords[0] is not None:
-                closest = find_closest_shape_point(shape_points, coords)
+                closest = distance_service.find_closest_shape_point(shape_points, coords)
                 if closest and closest["dist"] is not None:
                     dist_km = closest["dist"] / 1000.0
         
