@@ -1,8 +1,7 @@
-from sqlalchemy.orm import Session
-from sqlalchemy import select
-
-from app.models.stop import Stop
+from app.models import StopModel
 from app.models.line_stop import LineStop
+from sqlalchemy import select
+from sqlalchemy.orm import Session
 
 
 class LineStopRepository:
@@ -16,4 +15,3 @@ class LineStopRepository:
             .order_by(LineStop.stop_order)
         )
         return db.execute(query).scalars().all()
-
