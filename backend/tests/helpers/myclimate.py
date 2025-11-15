@@ -1,3 +1,5 @@
+from typing import Optional
+
 import responses
 from app.repositories.myclimate_client import BUS_FUEL_CONSUMPTION, CARBON_EMISSION_URL
 from app.schemas import MyclimateCarbonEmission, VehicleType
@@ -12,7 +14,9 @@ class MyclimateHelper:
 
     @staticmethod
     def mock_carbon_emission(
-        distance: float, vehicle_type: VehicleType, response: MyclimateCarbonEmission
+        distance: Optional[float],
+        vehicle_type: Optional[VehicleType],
+        response: MyclimateCarbonEmission,
     ) -> BaseResponse:
         """
         Mock the carbon emission endpoint.
@@ -27,5 +31,19 @@ class MyclimateHelper:
             CARBON_EMISSION_URL,
             status=status.HTTP_200_OK,
             match=[matchers.json_params_matcher(expected_body)],
-            json=response.model_dump(by_alias=True),
+            json=response.model_dump(by_alias=True, exclude_none=True),
+        )
+
+    @staticmethod
+    def mock_carbon_emission_exception(
+        status_code: int,
+        detail: str,
+    ) -> BaseResponse:
+        """
+        Mock an exception for the carbon emission endpoint.
+        """
+        return responses.post(
+            CARBON_EMISSION_URL,
+            status=status_code,
+            json={"detail": detail},
         )
