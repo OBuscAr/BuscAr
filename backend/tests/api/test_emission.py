@@ -1,95 +1,106 @@
-from fastapi.testclient import TestClient
+from app.schemas import EmissionResponse, MyclimateCarbonEmission, VehicleType
 from fastapi import status
-from app.services import distance_service
+from fastapi.testclient import TestClient
+from pytest_mock import MockerFixture
+from tests.factories.schemas import MyclimateCarbonEmissionFactory
+from tests.helpers import MyclimateHelper
 
-def test_calcular_emissao_sucesso(client: TestClient, mocker):
+ENDPOINT_URL = "/api/v1/emission"
+
+
+def test_calcular_emissao_sucesso(client: TestClient, mocker: MockerFixture):
     """
     GIVEN a test client
     WHEN the endpoint /api/v1/emissao is called with valid coordinates
     AND we "mock" (simulate) the distance and myclimate_client
     THEN the endpoint should return 200 OK and the JSON with the calculated data.
     """
-    
+    # GIVEN
+    distance = 12.5
     mocker.patch(
         "app.services.distance_service.calculate_distance_between_stops",
-        return_value=12.5
-    )
-    
-    mocker.patch(
-        "app.api.emission_route.myclimate_client.calculate_carbon_emission",
-        return_value=50.0
+        return_value=12.5,
     )
 
-    # Coordenadas de teste 
-    url = "/api/v1/emission?line_id=1&stop_id_a=10&stop_id_b=20"
+    emission = 50.0
+    MyclimateHelper.mock_carbon_emission(
+        distance=distance,
+        vehicle_type=VehicleType.BUS,
+        response=MyclimateCarbonEmission(emission=emission),
+    )
+    params = {"line_id": 1, "stop_id_a": 10, "stop_id_b": 20}  # Coordenadas de teste
 
-    response = client.get(url)
+    # WHEN
+    response = client.get(ENDPOINT_URL, params=params)
 
+    # THEN
     assert response.status_code == status.HTTP_200_OK
-    
-    data = response.json()
-    assert data["distance_km"] == 12.5
-    assert data["emission_kg_co2"] == 50.0
+    data = EmissionResponse(**response.json())
+    assert data.distance_km == distance
+    assert data.emission_kg_co2 == emission
 
 
-def test_calcular_emissao_distancia_zero(client: TestClient, mocker):
+def test_calcular_emissao_distancia_zero(client: TestClient, mocker: MockerFixture):
     """
     Tests the edge case where the distance is zero.
-    
+
     GIVEN a test client
     WHEN coordinates A and B are identical
     AND the distance (real) returns 0.0
     THEN the endpoint should return 200 OK with 0 for distance and emission,
     and SHOULD NOT call the MyClimate API.
     """
-    
+
     mocker.patch(
         "app.services.distance_service.calculate_distance_between_stops",
-        return_value=0.0
+        return_value=0.0,
     )
-    
-    mock_myclimate = mocker.patch(
-        "app.api.emission_route.myclimate_client.calculate_carbon_emission"
+    mock_myclimate = MyclimateHelper.mock_carbon_emission(
+        distance=None,
+        vehicle_type=None,
+        response=MyclimateCarbonEmissionFactory.build(),
     )
-    
-    url = "/api/v1/emission?line_id=1&stop_id_a=10&stop_id_b=10"
+    params = {"line_id": 1, "stop_id_a": 10, "stop_id_b": 10}
 
-    response = client.get(url)
+    # WHEN
+    response = client.get(ENDPOINT_URL, params=params)
 
+    # THEN
     assert response.status_code == status.HTTP_200_OK
-    
-    data = response.json()
-    assert data["distance_km"] == 0.0
-    assert data["emission_kg_co2"] == 0.0
-    
+    data = EmissionResponse(**response.json())
+    assert data.distance_km == 0
+    assert data.emission_kg_co2 == 0
+
     # Verifica se a API MyClimate nunca foi chamada (economia de recursos)
-    mock_myclimate.assert_not_called()
+    assert mock_myclimate.call_count == 0
 
 
-def test_calcular_emissao_myclimate_falha(client: TestClient, mocker):
+def test_calcular_emissao_myclimate_falha(client: TestClient, mocker: MockerFixture):
     """
     GIVEN a test client
     WHEN the endpoint is called
     AND the distance works, but MyClimate raises an exception
     THEN the endpoint should catch the exception and return 500.
     """
-    
+    # GIVEN
     mocker.patch(
         "app.services.distance_service.calculate_distance_between_stops",
-        return_value=12.5
-    )
-    
-    mocker.patch(
-        "app.api.emission_route.myclimate_client.calculate_carbon_emission",
-        side_effect=Exception("API MyClimate está fora do ar")
+        return_value=12.5,
     )
 
-    url = "/api/v1/emission?line_id=1&stop_id_a=10&stop_id_b=20"
+    exception_detail = "MyClimate API is unavailable"
+    MyclimateHelper.mock_carbon_emission_exception(
+        status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+        detail=exception_detail,
+    )
+    params = {"line_id": 1, "stop_id_a": 10, "stop_id_b": 20}
 
-    response = client.get(url)
+    # WHEN
+    response = client.get(ENDPOINT_URL, params=params)
 
+    # THEN
     assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
-    assert "API MyClimate está fora do ar" in response.json()["detail"]
+    assert exception_detail in response.json()["detail"]
 
 
 def test_calcular_emissao_input_invalido(client: TestClient):
@@ -100,10 +111,12 @@ def test_calcular_emissao_input_invalido(client: TestClient):
     WHEN the endpoint is called with a missing parameter (e.g., without 'lat_b')
     THEN the endpoint should return 422 Unprocessable Entity.
     """
-    
+    # GIVEN
     # Chama a URL faltando 'lat_b'
-    url = "/api/v1/emission?line_id=1&stop_id_a=10"
+    params = {"line_id": 1, "stop_id_a": 10}
 
-    response = client.get(url)
+    # WHEN
+    response = client.get(ENDPOINT_URL, params=params)
 
+    # THEN
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
