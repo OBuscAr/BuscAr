@@ -32,7 +32,7 @@ class SPTransHelper:
 
     @staticmethod
     def mock_get_lines(
-        lines_response: Sequence[Line], pattern: Optional[str] = None
+        response: Sequence[Line], pattern: Optional[str] = None
     ) -> BaseResponse:
         """
         Mock the get lines endpoint of SPTrans.
@@ -44,5 +44,5 @@ class SPTransHelper:
             LINES_LOOK_UP_URL,
             status=status.HTTP_200_OK,
             match=match,
-            json=[line.model_dump(by_alias=True) for line in lines_response],
+            json=[line.model_dump(by_alias=True) for line in response],
         )

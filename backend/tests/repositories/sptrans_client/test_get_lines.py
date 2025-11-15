@@ -13,7 +13,7 @@ def test_response():
     expected_lines = LineFactory.batch(size=2)
     pattern = "test"
     endpoint_mock = SPTransHelper.mock_get_lines(
-        lines_response=expected_lines, pattern=pattern
+        response=expected_lines, pattern=pattern
     )
 
     # WHEN
