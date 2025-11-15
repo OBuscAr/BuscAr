@@ -12,7 +12,7 @@ class SPTransHelper:
     Helper to mock external calls to SPTrans API.
     """
 
-    CREDENTIALS_COOKIES = {"Credentials": "test"}
+    CREDENTIALS_COOKIES = {"credentials": "test"}
 
     @staticmethod
     def mock_login() -> None:
@@ -22,6 +22,12 @@ class SPTransHelper:
         responses.post(
             LOGIN_URL,
             status=status.HTTP_200_OK,
+            headers={
+                "set-cookie": ";".join(
+                    f"{key}={value}"
+                    for key, value in SPTransHelper.CREDENTIALS_COOKIES.items()
+                )
+            },
         )
 
     @staticmethod
