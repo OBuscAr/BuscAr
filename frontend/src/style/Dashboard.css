@@ -14,23 +14,9 @@
   --border-color: #DFE0EB;
 }
 
-/* --- Layout Principal --- */
-.dashboard-layout {
-  display: flex;
-  min-height: 100vh;
-  width: 100%;
-  background-color: var(--bg-light);
-}
-
-.main-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
 /* --- Barra Lateral (Navbar.tsx) --- */
 .navbar {
-  flex: 0 0 255px; /* Largura fixa */
+  flex: 0 0 275px; /* Largura fixa */
   background-color: var(--bg-white);
   color: var(--text-light);
   display: flex;
@@ -179,12 +165,6 @@
 }
 
 /* --- Conteúdo do Dashboard (DashboardPage.tsx) --- */
-.dashboard-content {
-  display: flex;
-  padding: 0.5rem 4rem 2rem;
-  gap: 4rem;
-}
-
 .dashboard-controls {
   display: flex;
   justify-content: space-between;

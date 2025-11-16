@@ -1,15 +1,15 @@
 import { Outlet } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Header from '../components/Header';
-import '../style/Dashboard.css';
+import '../style/Painel.css';
 
-const DashboardLayout = () => {
+const PainelLayout = () => {
   return (
-    <div className="dashboard-layout">
+    <div className="painel-layout">
       <Navbar />
-      <main className="main-content">
+      <main className="painel-content">
         <Header />
-        <div className="dashboard-content">
+        <div className="main-content">
           <Outlet /> {/* Aqui é onde as páginas (Dashboard, Histórico, etc.) serão renderizadas */}
         </div>
       </main>
@@ -17,4 +17,4 @@ const DashboardLayout = () => {
   );
 };
 
-export default DashboardLayout; 
+export default PainelLayout; 
