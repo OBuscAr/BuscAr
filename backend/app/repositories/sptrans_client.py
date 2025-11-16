@@ -1,6 +1,6 @@
 import requests
 from app.core.config import settings
-from app.schemas import SPTransLine, SPTransStop
+from app.schemas import SPTransLine
 from pydantic import TypeAdapter
 from requests.cookies import RequestsCookieJar
 
@@ -34,26 +34,3 @@ def get_lines(credentials: RequestsCookieJar, pattern: str) -> list[SPTransLine]
     )
     response.raise_for_status()
     return TypeAdapter(list[SPTransLine]).validate_python(response.json())
-
-
-STOPS_URL = f"{settings.PREFIX_URL}/Parada"
-STOPS_BY_LINE_URL = f"{STOPS_URL}/BuscarParadasPorLinha"
-
-
-def get_stops_by_line(
-    credentials: RequestsCookieJar, line_id: int
-) -> list[SPTransStop]:
-    """
-    Get all the stops of the given line.
-
-    Parameters:
-    - `credentials`: Saved cookies from a previous login call.
-    - `line_id`: The id of the line.
-    """
-    response = requests.get(
-        STOPS_BY_LINE_URL,
-        params={"codigoLinha": line_id},
-        cookies=credentials,
-    )
-    response.raise_for_status()
-    return TypeAdapter(list[SPTransStop]).validate_python(response.json())
