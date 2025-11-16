@@ -26,7 +26,7 @@ const Navbar = () => {
         <h1>Busc<b>Ar</b></h1>
       </div>
       <nav className="navbar-nav">
-        <NavLink to="/painel/" end className={({ isActive }) => (isActive ? 'active' : '')}>
+        <NavLink to="/painel" end className={({ isActive }) => (isActive ? 'active' : '')}>
           <BsGrid1X2Fill /> Dashboard
         </NavLink>
         <NavLink to="/painel/comparativos" className={({ isActive }) => (isActive ? 'active' : '')}>
