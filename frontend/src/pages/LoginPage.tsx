@@ -95,7 +95,7 @@ function LoginPage() {
 
       // Redireciona para o dashboard após um breve delay
       setTimeout(() => {
-        navigate('/dashboard'); 
+        navigate('/painel'); 
       }, 1500);
 
     } catch (error) {

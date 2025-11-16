@@ -18,7 +18,7 @@
   display: flex; /* Para layout de duas colunas */
   min-height: 100vh; /* Ocupa a altura total da viewport */
   width: 100vw; /* Ocupa toda a largura da viewport */
-  background-color: #e6ffe6; /* Cor de fundo suave para o lado do formulário */
+  background-color: var(--bg-light); /* Cor de fundo suave para o lado do formulário */
 }
 
 /* Seção do Formulário (lado esquerdo) */
@@ -29,8 +29,6 @@
   justify-content: center;
   align-items: center;
   padding: 2rem;
-  background-color: #fff; /* Fundo branco para o formulário */
-  background-color: #e6ffe6;
   /* box-shadow removido para evitar linha de quebra */
   position: relative;
   z-index: 1; /* Para garantir que fique sobre a curva */
