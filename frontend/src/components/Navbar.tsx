@@ -1,6 +1,6 @@
+import { useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import BuscArLogo from '../assets/bus_leaf_icon.png';
-import '../style/Navbar.css';
 
 import { 
   BsGrid1X2Fill, 
@@ -10,6 +10,10 @@ import {
 } from 'react-icons/bs';
 
 const Navbar = () => {
+    useEffect(() => {
+        import('../style/Navbar.css');
+    }, []);
+      
   const navigate = useNavigate();
 
   const handleSair = () => {

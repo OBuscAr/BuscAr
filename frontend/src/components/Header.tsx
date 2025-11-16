@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react';
 import { BsBellFill } from 'react-icons/bs';
-import '../style/Header.css';
 
 const Header = () => {
+  useEffect(() => {
+      import('../style/Header.css');
+  }, []);
+
   const [userName, setUserName] = useState('Usuário(a)');
 
   useEffect(() => {

@@ -1,9 +1,13 @@
+import { useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Header from '../components/Header';
-import '../style/Painel.css';
 
 const PainelLayout = () => {
+  useEffect(() => {
+    import('../style/Painel.css');
+  }, []);
+
   return (
     <div className="painel-layout">
       <Navbar />
@@ -17,4 +21,4 @@ const PainelLayout = () => {
   );
 };
 
-export default PainelLayout; 
+export default PainelLayout;

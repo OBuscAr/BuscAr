@@ -1,20 +1,3 @@
-/* --- Variáveis de Cor (baseado no protótipo do figma) --- */
-:root {
-  --bg-dark: #2A3342;
-  --bg-light: #F5F5F5;
-  --bg-white: #FFFFFF;
-  --text-dark: #2A3342;
-  --text-light: #757575;
-  --text-white: #FFFFFF;
-  --text-red: #C64F4E;
-  --accent-green: #24BB68;
-  --accent-blue: #3751FF;
-  --accent-red: #F12B2C;
-  --accent-yellow: #FFB100;
-  --border-color: #DFE0EB;
-}
-
-
 /* --- Main --- */
 .dashboard-main {
   flex: 2.5;

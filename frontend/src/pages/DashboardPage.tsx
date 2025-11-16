@@ -1,10 +1,13 @@
+import { useEffect } from 'react';
 import MetricCard from '../components/MetricCard';
 import TimelineCard from '../components/TimelineCard';
 import ReportCard from '../components/ReportCard';
 import EmissionsCard from '../components/EmissionsCard';
-import '../style/Dashboard.css';
 
 const DashboardPage = () => {
+  useEffect(() => {
+    import('../style/Dashboard.css');
+  }, []);
 
   // Dados mockados para as listas
   const historicoItems = [

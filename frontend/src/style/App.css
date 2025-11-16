@@ -1,9 +1,87 @@
-/* Estilos Globais Básicos */
+/* --- Importação de Fontes --- */
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+/* --- Variáveis de Cor (baseado no protótipo do figma) --- */
+:root {
+  --bg-dark: #2A3342;
+  --bg-light: #F5F5F5;
+  --bg-white: #FFFFFF;
+  --text-dark: #2A3342;
+  --text-light: #757575;
+  --text-white: #FFFFFF;
+  --text-red: #C64F4E;
+  --accent-green: #24BB68;
+  --accent-blue: #3751FF;
+  --accent-red: #F12B2C;
+  --accent-yellow: #FFB100;
+  --border-color: #DFE0EB;
+}
+
+:root {
+  font-family: "Open Sans", system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 body {
   margin: 0;
-  font-family: "Open Sans", Arial, sans-serif;
   min-width: 320px;
   min-height: 100vh;
   background-color: #f0f2f5; /* Um fundo claro padrão */
 }
 
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+button:hover {
+  border-color: #646cff;
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
+}

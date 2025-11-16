@@ -1,5 +1,4 @@
-import React from 'react';
-import '../style/TimelineCard.css';
+import React, { useEffect } from 'react';
 import { BsCalendarEvent } from 'react-icons/bs';
 
 
@@ -8,6 +7,9 @@ type TimelineCardProps = {
 }
 
 const TimelineCard: React.FC<TimelineCardProps> = ({ date }) => {
+    useEffect(() => {
+        import('../style/TimelineCard.css');
+    }, []);
 
     return (
         <div className="timeline-card">

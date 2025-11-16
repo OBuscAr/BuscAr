@@ -1,5 +1,4 @@
-import React from 'react';
-import '../style/ReportCard.css';
+import React, {useEffect} from 'react';
 import { Link } from 'react-router-dom';
 
 
@@ -16,6 +15,9 @@ type ReportCardProps = {
 }
 
 const ReportCard: React.FC<ReportCardProps> = ({ title, items, unit, linkTo }) => {
+    useEffect(() => {
+        import('../style/ReportCard.css');
+    }, []);
 
     return (
         <div className="report-card">

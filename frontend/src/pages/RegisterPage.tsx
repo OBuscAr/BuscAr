@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom'; // Importe useNavigate
 // import { mockRegister } from '../services/auth'; // Importe o mock de registro
 import type { RegisterData } from '../services/auth'; // Importe o tipo correto
@@ -7,6 +7,10 @@ import BuscArLogo from '../assets/bus_leaf_icon.png'; // logo
 import axios from 'axios';
 
 function RegisterPage() {
+  useEffect(() => {
+      import('../style/AuthPages.css'); // Estilos para páginas de autenticação
+    }, []);
+
   const [formData, setFormData] = useState<RegisterData & { confirmarSenha: string }>({
     nome: '',
     email: '',
