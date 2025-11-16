@@ -5,13 +5,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api import line_route #importa a rota de linhas
 from app.api import emission_route
 from app.core.config import settings
+from app.api import route_comparison_route
 
 # Inicializa a aplicação
 app = FastAPI(title="BuscAr API")
 
 # origens que podem acessar a API
 origins = [
-    "http://localhost:5173",  # url do frontend react
+    "*",  # url do frontend react
 ]
 
 # adiciona o Middleware de CORS
@@ -35,3 +36,4 @@ app.include_router(login_route.router)  # registra o endpoint /login
 app.include_router(user_route.router)  # registra o endpoint
 app.include_router(line_route.router) # registra o endpoint /lines
 app.include_router(emission_route.router) # registra o endpoint /emission
+app.include_router(route_comparison_route.router) 

@@ -11,9 +11,12 @@ class Settings(BaseSettings):
     MYCLIMATE_USERNAME: str = ""
     MYCLIMATE_PASSWORD: str = ""
     MYCLIMATE_PREFIX_URL: str = ""
-
+    
     # Database
     DATABASE_URL: str = ""
+    
+    # Google
+    GOOGLE_API_KEY: str = ""
 
     model_config = SettingsConfigDict(
         env_file=".env",
