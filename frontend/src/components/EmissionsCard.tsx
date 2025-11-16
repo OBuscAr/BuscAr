@@ -1,10 +1,7 @@
-import React, { useEffect } from 'react';
+import React from 'react';
+import '../style/ReportCard.css';
 
 const EmissionsCard: React.FC = ({}) => {
-    useEffect(() => {
-        import('../style/ReportCard.css');
-    }, []);
-
     return (
         <div className="report-card">
             <div className="report-header">

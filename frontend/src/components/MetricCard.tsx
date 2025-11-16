@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react';
+import React from 'react';
+import '../style/MetricCard.css';
 
 type MetricCardProps = {
   icon: string;
@@ -10,10 +11,7 @@ type MetricCardProps = {
 };
 
 const MetricCard: React.FC<MetricCardProps> = ({ icon, iconColor, title, iqarValue, iqarMax, time }) => {
-  useEffect(() => {
-      import('../style/MetricCard.css');
-  }, []);
-
+  
   const progressPercentage = (iqarValue / iqarMax) * 100;
   
   // Determina a cor da barra com base no protótipo
