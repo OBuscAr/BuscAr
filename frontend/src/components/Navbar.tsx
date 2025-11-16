@@ -27,16 +27,16 @@ const Navbar = () => {
         <h1>Busc<b>Ar</b></h1>
       </div>
       <nav className="navbar-nav">
-        <NavLink to="/dashboard/" end className={({ isActive }) => (isActive ? 'active' : '')}>
+        <NavLink to="/painel/" end className={({ isActive }) => (isActive ? 'active' : '')}>
           <BsGrid1X2Fill /> Dashboard
         </NavLink>
-        <NavLink to="/dashboard/comparativos" className={({ isActive }) => (isActive ? 'active' : '')}>
+        <NavLink to="/painel/comparativos" className={({ isActive }) => (isActive ? 'active' : '')}>
           <BsBarChartFill /> Dados comparativos
         </NavLink>
-        <NavLink to="/dashboard/historico" className={({ isActive }) => (isActive ? 'active' : '')}>
+        <NavLink to="/painel/historico" className={({ isActive }) => (isActive ? 'active' : '')}>
           <BsClockHistory /> Histórico de emissões
         </NavLink>
-        <NavLink to="/dashboard/fotografias" className={({ isActive }) => (isActive ? 'active' : '')}>
+        <NavLink to="/painel/fotografias" className={({ isActive }) => (isActive ? 'active' : '')}>
           <BsCameraFill /> Fotografias da frota
         </NavLink>
       </nav>
