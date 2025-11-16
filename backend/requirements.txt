@@ -24,7 +24,9 @@ Jinja2==3.1.6
 markdown-it-py==4.0.0
 MarkupSafe==3.0.3
 mdurl==0.1.2
+numpy==2.3.4
 packaging==25.0
+pandas==2.3.3
 passlib==1.7.4
 pip-tools==7.5.2
 pluggy==1.6.0
@@ -43,9 +45,11 @@ pytest-env==1.2.0
 pytest-html==4.1.1
 pytest-metadata==3.1.1
 pytest-mock==3.15.1
+python-dateutil==2.9.0.post0
 python-dotenv==1.1.1
 python-jose==3.5.0
 python-multipart==0.0.20
+pytz==2025.2
 PyYAML==6.0.3
 requests==2.32.5
 responses==0.25.8
