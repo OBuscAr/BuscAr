@@ -1,7 +1,6 @@
 from app.core.database import SessionLocal
 from app.models import LineDirection, LineModel
 from app.repositories import sptrans_client
-from app.schemas import SPTransLine
 from sqlalchemy import select, update
 from tqdm import tqdm as progress_bar
 
@@ -16,8 +15,10 @@ def create_lines() -> None:
     with open(FILE_LOCATION, "r") as file:
         file_lines = file.readlines()
 
-    line_data: dict[int, SPTransLine] = {}
-
+    session = SessionLocal()
+    lines_to_create: list[LineModel] = []
+    lines_to_update: list[dict] = []
+    existing_ids = session.execute(select(LineModel.id)).scalars().all()
     for file_line in progress_bar(file_lines[1:]):  # Skip the first line
         fare, line_name, _ = file_line.split(",", 2)
         fare = fare.strip('"')
@@ -26,36 +27,26 @@ def create_lines() -> None:
             lines = sptrans_client.get_lines(credentials=user, pattern=line_name)
             if len(lines) == 0:
                 print(f"A linha {line_name} não tem dados na API do SPTrans")
+                continue
+
             for line in lines:
-                line_data[line.id] = line
+                line_model = LineModel(
+                    id=line.id,
+                    name=f"{line.base_name}-{line.operation_mode}",
+                    direction=LineDirection(line.direction),
+                )
+                if line.id in existing_ids:
+                    lines_to_update.append(line_model.__dict__)
+                else:
+                    lines_to_create.append(line_model)
 
-    session = SessionLocal()
-    existing_ids = session.execute(select(LineModel.id)).scalars().all()
-    non_existing_ids = set(line_data.keys()) - set(existing_ids)
-    print(f"Criando {len(non_existing_ids)} linhas na base de dados...")
-
-    lines_to_create = [
-        LineModel(
-            id=id,
-            name=line_data[id].base_name + "-" + str(line_data[id].operation_mode),
-            direction=LineDirection(line_data[id].direction),
-        )
-        for id in non_existing_ids
-    ]
+    print(f"Criando {len(lines_to_create)} linhas na base de dados...")
 
     if len(lines_to_create) > 0:
         session.add_all(lines_to_create)
         session.commit()
 
-    print(f"Atualizando {len(existing_ids)} linhas na base de dados...")
-    lines_to_update = [
-        LineModel(
-            id=id,
-            name=line_data[id].base_name + "-" + str(line_data[id].operation_mode),
-            direction=LineDirection(line_data[id].direction),
-        ).__dict__
-        for id in existing_ids
-    ]
+    print(f"Atualizando {len(lines_to_update)} linhas na base de dados...")
     if len(lines_to_update) > 0:
         session.execute(update(LineModel), lines_to_update)
         session.commit()
