@@ -1,7 +1,6 @@
 from app.commands.create_stops import create_stops
 from app.core.database import SessionLocal
 from app.models import StopModel
-from sqlalchemy import func, select
 
 
 def test_create_stops():
@@ -16,7 +15,7 @@ def test_create_stops():
 
     # THEN
     session = SessionLocal()
-    assert session.execute(select(func.count("*")).select_from(StopModel)).scalar() > 0
+    assert session.query(StopModel).count() > 0
 
     stop = session.query(StopModel).filter_by(id=370010262).one()
     assert stop.name == "R. Charruas, 5"
