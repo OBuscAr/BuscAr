@@ -1,6 +1,6 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import BuscArLogo from '../assets/bus_leaf_icon.png';
-import '../Dashboard.css';
+import '../style/Dashboard.css';
 
 // Importando ícones
 import { 
@@ -8,7 +8,6 @@ import {
   BsBarChartFill, 
   BsClockHistory, 
   BsCameraFill, 
-  BsBoxArrowRight 
 } from 'react-icons/bs';
 
 const Navbar = () => {
@@ -28,7 +27,7 @@ const Navbar = () => {
         <h1>Busc<b>Ar</b></h1>
       </div>
       <nav className="navbar-nav">
-        <NavLink to="/dashboard" className={({ isActive }) => (isActive ? 'active' : '')}>
+        <NavLink to="/dashboard/" className={({ isActive }) => (isActive ? 'active' : '')}>
           <BsGrid1X2Fill /> Dashboard
         </NavLink>
         <NavLink to="/dashboard/comparativos" className={({ isActive }) => (isActive ? 'active' : '')}>

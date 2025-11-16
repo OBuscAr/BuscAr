@@ -1,5 +1,5 @@
 import React from 'react';
-import '../Dashboard.css';
+import '../style/Dashboard.css';
 
 
 const EmissionsCard: React.FC = ({}) => {

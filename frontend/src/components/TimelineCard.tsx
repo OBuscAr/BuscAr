@@ -1,5 +1,5 @@
 import React from 'react';
-import '../Dashboard.css';
+import '../style/Dashboard.css';
 import { BsCalendarEvent } from 'react-icons/bs';
 
 

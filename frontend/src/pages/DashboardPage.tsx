@@ -2,7 +2,7 @@ import MetricCard from '../components/MetricCard';
 import TimelineCard from '../components/TimelineCard';
 import QuickReportCard from '../components/QuickReportCard';
 import EmissionsCard from '../components/EmissionsCard';
-import '../Dashboard.css';
+import '../style/Dashboard.css';
 
 // --- Componente Principal da Página ---
 

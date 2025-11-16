@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { BsBellFill, BsPersonCircle } from 'react-icons/bs';
-import '../Dashboard.css';
+import '../style/Dashboard.css';
 
 const Header = () => {
   const [userName, setUserName] = useState('Usuário(a)');

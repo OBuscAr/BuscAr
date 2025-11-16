@@ -7,9 +7,9 @@ import DashboardPage from './pages/DashboardPage';   // 2. Importe a Página
 import ProtectedRoute from './components/ProtectedRoute'; // 3. Importe a Rota Protegida
 
 // Importe os estilos do dashboard
-import './Dashboard.css'; 
+import './style/Dashboard.css'; 
 // Mantenha os estilos do App.css também
-import './App.css'; 
+import './style/App.css'; 
 
 // --- Componentes Placeholder (Provisórios) ---
 // (Você pode movê-los para seus próprios arquivos em /pages)
