@@ -4,7 +4,7 @@ import responses
 from app.repositories.sptrans_client import LINES_LOOK_UP_URL, LOGIN_URL
 from app.schemas import Line
 from fastapi import status
-from responses import BaseResponse, matchers
+from responses import BaseResponse
 
 
 class SPTransHelper:
@@ -37,12 +37,12 @@ class SPTransHelper:
         """
         Mock the get lines endpoint.
         """
-        match = []
+        url = LINES_LOOK_UP_URL
         if pattern is not None:
-            match.append(matchers.query_param_matcher({"termosBusca": pattern}))
+            url = f"{url}?termosBusca={pattern}"
+
         return responses.get(
             LINES_LOOK_UP_URL,
             status=status.HTTP_200_OK,
-            match=match,
             json=[line.model_dump(by_alias=True) for line in response],
         )
