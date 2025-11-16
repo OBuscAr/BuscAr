@@ -1,8 +1,11 @@
-import MetricCard from '../components/MetricCard';
-import TimelineCard from '../components/TimelineCard';
-import ReportCard from '../components/ReportCard';
-import EmissionsCard from '../components/EmissionsCard';
+import { lazy, Suspense } from 'react';
+import Loading from '../components/Loading';
 import '../style/Dashboard.css';
+
+const MetricCard = lazy(() => import('../components/MetricCard'));
+const TimelineCard = lazy(() => import('../components/TimelineCard'));
+const ReportCard = lazy(() => import('../components/ReportCard'));
+const EmissionsCard = lazy(() => import('../components/EmissionsCard'));
 
 const DashboardPage = () => {
 
@@ -21,55 +24,57 @@ const DashboardPage = () => {
 
   return (
     <>  
+      <Suspense fallback={<Loading />}>
+        <div className="dashboard-main">
+          <div className="metric-cards-container">
+            <MetricCard 
+              icon="P" 
+              iconColor="#6A66FF" 
+              title="Pinheiros" 
+              iqarValue={23} 
+              iqarMax={90} 
+              time="13h56min" 
+            />
+            <MetricCard 
+              icon="CU" 
+              iconColor="#3751FF" 
+              title="Cid. Universitária" 
+              iqarValue={85} 
+              iqarMax={90} 
+              time="6h" 
+            />
+            <MetricCard 
+              icon="MT" 
+              iconColor="#9E37FF" 
+              title="Marg. Tietê" 
+              iqarValue={9} 
+              iqarMax={90} 
+              time="17h45min" 
+            />
+          </div>
+          <div className="timeline-card-container">
+            <TimelineCard
+              date='10 de fevereiro de 2026'
+            />
+          </div>
+        </div>
 
-      <div className="dashboard-main">
-        <div className="metric-cards-container">
-          <MetricCard 
-            icon="P" 
-            iconColor="#6A66FF" 
-            title="Pinheiros" 
-            iqarValue={23} 
-            iqarMax={90} 
-            time="13h56min" 
-          />
-          <MetricCard 
-            icon="CU" 
-            iconColor="#3751FF" 
-            title="Cid. Universitária" 
-            iqarValue={85} 
-            iqarMax={90} 
-            time="6h" 
-          />
-          <MetricCard 
-            icon="MT" 
-            iconColor="#9E37FF" 
-            title="Marg. Tietê" 
-            iqarValue={9} 
-            iqarMax={90} 
-            time="17h45min" 
-          />
+        <div className="dashboard-sidebar">
+          <EmissionsCard />
+          <ReportCard 
+            title="Histórico de emissões" 
+            items={historicoItems}
+            unit=''
+            linkTo="/dashboard/historico" 
+            />
+          <ReportCard
+            title="Velocidades médias" 
+            items={velocidadeItems} 
+            unit="km/h" 
+            linkTo="/dashboard/comparativos" 
+            />
         </div>
-        <div className="timeline-card-container">
-          <TimelineCard
-            date='10 de fevereiro de 2026'
-          />
-        </div>
-      </div>
-      <div className="dashboard-sidebar">
-        <EmissionsCard />
-        <ReportCard 
-          title="Histórico de emissões" 
-          items={historicoItems}
-          unit=''
-          linkTo="/dashboard/historico" 
-        />
-        <ReportCard
-          title="Velocidades médias" 
-          items={velocidadeItems} 
-          unit="km/h" 
-          linkTo="/dashboard/comparativos" 
-        />
-      </div>
+    </Suspense>
     </>
   );
 };
