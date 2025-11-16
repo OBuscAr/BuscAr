@@ -1,6 +1,7 @@
 import csv
 import os
 
+import pandas as pd
 from app.commands.sptrans_static_data import SPTRANS_DATA_PATH
 from app.core.database import SessionLocal
 from app.models import LineDirection, LineModel, LineStopModel, StopModel
@@ -10,12 +11,11 @@ from tqdm import tqdm as progress_bar
 
 SHAPES_FILE = os.path.join(SPTRANS_DATA_PATH, "shapes.txt")
 TRIPS_FILE = os.path.join(SPTRANS_DATA_PATH, "trips.txt")
-
-FILE_LOCATION = os.path.join(SPTRANS_DATA_PATH, "stop_times.txt")
+STOPS_FILE = os.path.join(SPTRANS_DATA_PATH, "stop_times.txt")
 
 
 def load_trips() -> dict[int, str]:
-    mapping = {}
+    mapping: dict[int, str] = {}
     with open(TRIPS_FILE, newline="", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         for row in reader:
@@ -26,7 +26,7 @@ def load_trips() -> dict[int, str]:
 
 
 def load_shapes() -> dict[str, list[dict]]:
-    shapes = {}
+    shapes: dict[str, list[dict]] = {}
     with open(SHAPES_FILE, newline="", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         for row in reader:
@@ -54,9 +54,11 @@ def create_line_stops() -> None:
     """
     Create line stops from the static SPTrans data.
     """
-    with open(FILE_LOCATION, "r") as file:
-        file_lines = file.readlines()
-
+    df = pd.read_csv(
+        STOPS_FILE,
+        usecols=["trip_id", "stop_id", "stop_sequence"],
+        dtype={"trip_id": str, "stop_id": int, "stop_sequence": int},
+    )
     session = SessionLocal()
 
     line_to_shape_map = load_trips()
@@ -79,10 +81,12 @@ def create_line_stops() -> None:
     line_stops_to_create: list[LineStopModel] = []
     non_existing_lines: set[str] = set()
     non_existing_stops: set[int] = set()
-    for file_line in progress_bar(file_lines[1:]):  # Skip the first line
-        file_line = file_line[:-1]  # ignore endline at the end
-        line_name_direction, _, _, stop_id, stop_order = file_line.split(",")
-        line_name_direction = line_name_direction.strip('"')
+    bar = progress_bar(total=df.shape[0])
+    for _, row in df.iterrows():
+        bar.update(1)
+        line_name_direction: str = row["trip_id"]
+        stop_id: int = row["stop_id"]
+        stop_order: int = row["stop_sequence"]
 
         if line_name_direction not in lines_by_name_direction:
             if line_name_direction not in non_existing_lines:
@@ -91,8 +95,6 @@ def create_line_stops() -> None:
             continue
 
         line_id = lines_by_name_direction[line_name_direction]
-        stop_id = int(stop_id.strip('"'))
-        stop_order = int(stop_order.strip('"'))
 
         if stop_id not in existing_stop_ids:
             if stop_id not in non_existing_stops:
