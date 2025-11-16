@@ -1,9 +1,12 @@
+import os
+
+from app.commands.sptrans_static_data import SPTRANS_DATA_PATH
 from app.core.database import SessionLocal
 from app.models import StopModel
 from sqlalchemy import select, update
 from tqdm import tqdm as progress_bar
 
-FILE_LOCATION = "app/commands/sptrans_static_data/stops.txt"
+FILE_LOCATION = os.path.join(SPTRANS_DATA_PATH, "stops.txt")
 
 
 def create_stops() -> None:

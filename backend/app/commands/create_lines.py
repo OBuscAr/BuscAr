@@ -1,10 +1,13 @@
+import os
+
+from app.commands.sptrans_static_data import SPTRANS_DATA_PATH
 from app.core.database import SessionLocal
 from app.models import LineDirection, LineModel
 from app.repositories import sptrans_client
 from sqlalchemy import select, update
 from tqdm import tqdm as progress_bar
 
-FILE_LOCATION = "app/commands/sptrans_static_data/fare_rules.txt"
+FILE_LOCATION = os.path.join(SPTRANS_DATA_PATH, "fare_rules.txt")
 
 
 def create_lines() -> None:
@@ -53,4 +56,10 @@ def create_lines() -> None:
 
 
 if __name__ == "__main__":
+    create_lines()
+    create_lines()
+    create_lines()
+    create_lines()
+    create_lines()
+    create_lines()
     create_lines()
