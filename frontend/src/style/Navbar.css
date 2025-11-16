@@ -1,0 +1,79 @@
+.navbar {
+  flex: 0 0 275px; /* Largura fixa */
+  background-color: var(--bg-white);
+  color: var(--text-light);
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+
+.navbar-logo {
+  display: flex;
+  align-items: center;
+  padding: 1.5rem 2.5rem;
+  height: 60px;
+}
+
+.navbar-logo img {
+  height: 32px;
+}
+
+.navbar-logo h1 {
+  font-family: "Poppins";
+  color: var(--text-dark);
+  font-size: 1.5rem;
+  margin: 0;
+  font-weight: 500;
+}
+
+.navbar-logo h1 b {
+  font-weight: normal;
+  color: var(--accent-green);
+}
+
+.navbar-nav {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.navbar-nav a {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1.5rem;
+  text-decoration: none;
+  color: var(--text-light);
+  font-weight: 400;
+  border-left: 3px solid transparent;
+}
+
+.navbar-nav a:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.navbar-nav a.active {
+  font-weight: 500;
+  color: var(--accent-green);
+  background-color: rgba(255, 255, 255, 0.08);
+  border-right: 5px solid var(--accent-green);
+}
+
+.navbar-nav a.active svg {
+  color: var(--accent-green);
+}
+
+.navbar-nav svg {
+  font-size: 1.2rem;
+}
+
+.navbar-footer {
+  margin-top: 1.5rem;
+  padding: 0.75rem 1.5rem;
+}
+
+.navbar-footer a {
+  text-decoration: none;
+  color: var(--text-light);
+  font-weight: 400;
+}

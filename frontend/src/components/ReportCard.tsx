@@ -1,9 +1,9 @@
 import React from 'react';
-import '../style/Dashboard.css';
+import '../style/ReportCard.css';
 import { Link } from 'react-router-dom';
 
 
-type QuickReportCardProps = {
+type ReportCardProps = {
   title: string;
   items: Array<{
     linha: string;
@@ -15,7 +15,7 @@ type QuickReportCardProps = {
   linkTo: string;
 }
 
-const QuickReportCard: React.FC<QuickReportCardProps> = ({ title, items, unit, linkTo }) => {
+const ReportCard: React.FC<ReportCardProps> = ({ title, items, unit, linkTo }) => {
 
     return (
         <div className="report-card">
@@ -23,9 +23,9 @@ const QuickReportCard: React.FC<QuickReportCardProps> = ({ title, items, unit, l
                 <h3>{title}</h3>
                 <Link to={linkTo}>Ver</Link>
             </div>
-        <ul className="quick-report-list">
+        <ul className="report-list">
             {items.map((item: any) => (
-                <li className="quick-report-item" key={item.linha}>
+                <li className="report-item" key={item.linha}>
                     <div className="report-item-info">
                         <div className="report-item-dot" style={{ backgroundColor: item.color }}></div>
                         <div className="report-item-details">
@@ -43,4 +43,4 @@ const QuickReportCard: React.FC<QuickReportCardProps> = ({ title, items, unit, l
     );
 }
 
-export default QuickReportCard;
+export default ReportCard;

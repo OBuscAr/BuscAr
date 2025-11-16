@@ -10,7 +10,6 @@ import DashboardPage from './pages/DashboardPage';
 
 import PlaceholderPage from './pages/PlaceholderPage';
 
-// Mantenha os estilos do App.css também
 import './style/App.css'; 
 
 function App() {

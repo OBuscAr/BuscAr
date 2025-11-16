@@ -1,8 +1,7 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import BuscArLogo from '../assets/bus_leaf_icon.png';
-import '../style/Dashboard.css';
+import '../style/Navbar.css';
 
-// Importando ícones
 import { 
   BsGrid1X2Fill, 
   BsBarChartFill, 

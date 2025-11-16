@@ -1,10 +1,8 @@
 import MetricCard from '../components/MetricCard';
 import TimelineCard from '../components/TimelineCard';
-import QuickReportCard from '../components/QuickReportCard';
+import ReportCard from '../components/ReportCard';
 import EmissionsCard from '../components/EmissionsCard';
 import '../style/Dashboard.css';
-
-// --- Componente Principal da Página ---
 
 const DashboardPage = () => {
 
@@ -51,21 +49,21 @@ const DashboardPage = () => {
             time="17h45min" 
           />
         </div>
-        <div className="main-chart-area">
+        <div className="timeline-card-container">
           <TimelineCard
             date='10 de fevereiro de 2026'
           />
         </div>
       </div>
-      <div className="dashboard-right-navbar">
+      <div className="dashboard-sidebar">
         <EmissionsCard />
-        <QuickReportCard 
+        <ReportCard 
           title="Histórico de emissões" 
           items={historicoItems}
           unit=''
           linkTo="/dashboard/historico" 
         />
-        <QuickReportCard
+        <ReportCard
           title="Velocidades médias" 
           items={velocidadeItems} 
           unit="km/h" 

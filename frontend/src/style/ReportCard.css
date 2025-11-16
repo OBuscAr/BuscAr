@@ -1,0 +1,123 @@
+.report-card {
+  padding: 0 1.5rem;
+}
+
+.report-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.report-header h3 {
+  color: var(--text-dark);
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.report-header .toggle-group {
+  font-size: 0.8rem;
+}
+
+.report-header .toggle-group button {
+  padding: 0.1rem 0.4rem;
+}
+
+.report-header a {
+  font-size: 0.9rem;
+  color: var(--accent-blue);
+  text-decoration: none;
+}
+
+.report-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.report-list li:last-child {
+  border-bottom: none;
+}
+
+.report-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 0;
+}
+
+.report-item-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.report-item-dot {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  opacity: 0.4;
+  margin: 0 1.5rem;
+}
+
+.report-item-details .linha {
+  font-weight: 600;
+  color: var(--text-dark);
+  font-size: 1rem;
+}
+.report-item-details .data {
+  font-size: 0.8rem;
+  color: var(--text-light);
+}
+
+.report-item-value {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+
+/* --- Gráfico de Emissões (Donut) --- */
+.emissions-gauge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem 0;
+}
+
+.gauge-circle {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: conic-gradient(
+    var(--accent-red) 0% 30%, 
+    var(--accent-yellow) 30% 70%, 
+    var(--accent-green) 70% 100%
+  );
+  position: relative;
+}
+
+.gauge-inner {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  width: 120px;
+  height: 120px;
+  background: var(--bg-white);
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.gauge-inner .percentage {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.gauge-inner .label {
+  font-size: 0.9rem;
+  color: var(--text-light);
+}

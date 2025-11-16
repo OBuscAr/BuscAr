@@ -1,5 +1,5 @@
 import React from 'react';
-import '../style/Dashboard.css';
+import '../style/TimelineCard.css';
 import { BsCalendarEvent } from 'react-icons/bs';
 
 
@@ -8,7 +8,6 @@ type TimelineCardProps = {
 }
 
 const TimelineCard: React.FC<TimelineCardProps> = ({ date }) => {
-
 
     return (
         <div className="timeline-card">

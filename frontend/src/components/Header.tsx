@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { BsBellFill, BsPersonCircle } from 'react-icons/bs';
-import '../style/Dashboard.css';
+import { BsBellFill } from 'react-icons/bs';
+import '../style/Header.css';
 
 const Header = () => {
   const [userName, setUserName] = useState('Usuário(a)');
@@ -23,9 +23,7 @@ const Header = () => {
         <BsBellFill />
         <div className="profile-info">
           <div className="avatar">
-            {/* <BsPersonCircle />  */}
-            {/* Usando iniciais como no protótipo */}
-            {userName.substring(0, 1)}
+            <span>{userName.substring(0, 1)}</span>
           </div>
           <div className="username">{userName}</div>
         </div>

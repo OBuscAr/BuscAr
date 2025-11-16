@@ -1,5 +1,5 @@
 import React from 'react';
-import '../style/Dashboard.css';
+import '../style/MetricCard.css';
 
 type MetricCardProps = {
   icon: string;
@@ -23,23 +23,23 @@ const MetricCard: React.FC<MetricCardProps> = ({ icon, iconColor, title, iqarVal
 
   return (
     <div className="metric-card">
-      <div className="card-header">
-        <div className="card-icon" style={{ backgroundColor: iconColor }}>
+      <div className="metric-header">
+        <div className="metric-icon" style={{ backgroundColor: iconColor }}>
           {icon}
         </div>
         <h3>{title}</h3>
       </div>
-      <div className="card-body">
+      <div className="metric-body">
         <span>IQAr</span>
         <span className="ratio">{iqarValue}/{iqarMax}</span>
-        <div className="progress-bar">
+        <div className="metric-progress-bar">
           <div 
-            className="progress-bar-inner" 
+            className="metric-progress-bar-inner" 
             style={{ width: `${progressPercentage}%`, backgroundColor: getProgressBarColor() }}
           ></div>
         </div>
       </div>
-      <div className="card-footer">
+      <div className="metric-footer">
         {time}
       </div>
     </div>
