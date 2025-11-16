@@ -22,6 +22,7 @@ def create_lines() -> None:
     lines_to_create: list[LineModel] = []
     lines_to_update: list[dict] = []
     existing_ids = session.execute(select(LineModel.id)).scalars().all()
+    processed_line_ids: set[int] = set()
     for file_line in progress_bar(file_lines[1:]):  # Skip the first line
         fare, line_name, _ = file_line.split(",", 2)
         fare = fare.strip('"')
@@ -33,6 +34,9 @@ def create_lines() -> None:
                 continue
 
             for line in lines:
+                if line.id in processed_line_ids:
+                    continue
+                processed_line_ids.add(line.id)
                 line_model = LineModel(
                     id=line.id,
                     name=f"{line.base_name}-{line.operation_mode}",

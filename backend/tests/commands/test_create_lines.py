@@ -32,6 +32,27 @@ def test_create_line(num_lines_in_api: int):
         assert db_line.direction == LineDirection(line.direction)
 
 
+def test_different_patterns_multiple_lines():
+    """
+    GIVEN  two different patterns that will return the same line in the API
+    WHEN   the `create_lines` is called
+    THEN   the line should be created once
+    """
+    # GIVEN
+    base_name = "8083-10"
+    line = SPTransLineFactory.build(name=base_name)
+    SPTransHelper.mock_get_lines(response=[line], pattern="8083-10")
+    SPTransHelper.mock_get_lines(response=[line], pattern="8083-1")
+    SPTransHelper.mock_get_lines(response=[], pattern=None)
+
+    # WHEN
+    create_lines()
+
+    # THEN
+    session = SessionLocal()
+    assert session.query(LineModel).count() == 1
+
+
 def test_update_line():
     """
     GIVEN  an existing line in database
