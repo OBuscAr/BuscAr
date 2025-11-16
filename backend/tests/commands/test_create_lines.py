@@ -14,13 +14,13 @@ def test_create_line(num_lines_in_api: int):
     THEN   new lines should be created
     """
     # GIVEN
-    base_name = "8083-10"
+    base_name = "1012-21"
     lines = SPTransLineFactory.batch(size=num_lines_in_api, name=base_name)
     SPTransHelper.mock_get_lines(response=lines, pattern=base_name)
     SPTransHelper.mock_get_lines(response=[], pattern=None)
 
     # WHEN
-    create_lines()
+    create_lines(max_rows=100)
 
     # THEN
     session = SessionLocal()
@@ -39,14 +39,14 @@ def test_different_patterns_multiple_lines():
     THEN   the line should be created once
     """
     # GIVEN
-    base_name = "8083-10"
+    base_name = "1012-21"
     line = SPTransLineFactory.build(name=base_name)
-    SPTransHelper.mock_get_lines(response=[line], pattern="8083-10")
-    SPTransHelper.mock_get_lines(response=[line], pattern="8083-1")
+    SPTransHelper.mock_get_lines(response=[line], pattern=base_name)
+    SPTransHelper.mock_get_lines(response=[line], pattern=base_name[:-1])
     SPTransHelper.mock_get_lines(response=[], pattern=None)
 
     # WHEN
-    create_lines()
+    create_lines(max_rows=100)
 
     # THEN
     session = SessionLocal()
@@ -60,7 +60,7 @@ def test_update_line():
     THEN   the existing line should be updated
     """
     # GIVEN
-    line = SPTransLineFactory.build(id=2606, name="8083-10")
+    line = SPTransLineFactory.build(name="1012-21")
     SPTransHelper.mock_get_lines(response=[line], pattern=line.base_name)
     SPTransHelper.mock_get_lines(response=[], pattern=None)
 
@@ -79,7 +79,7 @@ def test_update_line():
     session.commit()
 
     # WHEN
-    create_lines()
+    create_lines(max_rows=100)
 
     # THEN
     session = SessionLocal()
@@ -104,7 +104,7 @@ def test_existing_line_without_api_data():
     session.commit()
 
     # WHEN
-    create_lines()
+    create_lines(max_rows=8)
 
     # THEN
     session = SessionLocal()

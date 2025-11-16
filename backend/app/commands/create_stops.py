@@ -1,4 +1,5 @@
 import os
+from typing import Optional
 
 import pandas as pd
 from app.commands.sptrans_static_data import SPTRANS_DATA_PATH
@@ -10,7 +11,7 @@ from tqdm import tqdm as progress_bar
 FILE_LOCATION = os.path.join(SPTRANS_DATA_PATH, "stops.txt")
 
 
-def create_stops() -> None:
+def create_stops(max_rows: Optional[int] = None) -> None:
     """
     Create stops from the static SPTrans data.
     """
@@ -23,6 +24,7 @@ def create_stops() -> None:
             "stop_lat": float,
             "stop_lon": float,
         },
+        nrows=max_rows,
     ).fillna("")
     session = SessionLocal()
     existing_ids = session.execute(select(StopModel.id)).scalars().all()

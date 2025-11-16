@@ -1,4 +1,5 @@
 import os
+from typing import Optional
 
 import pandas as pd
 from app.commands.sptrans_static_data import SPTRANS_DATA_PATH
@@ -11,7 +12,7 @@ from tqdm import tqdm as progress_bar
 FILE_LOCATION = os.path.join(SPTRANS_DATA_PATH, "fare_rules.txt")
 
 
-def create_lines() -> None:
+def create_lines(max_rows: Optional[int] = None) -> None:
     """
     Create lines from the static SPTrans data.
     """
@@ -20,6 +21,7 @@ def create_lines() -> None:
         FILE_LOCATION,
         usecols=["route_id", "fare_id"],
         dtype={"route_id": str, "fare_id": str},
+        nrows=max_rows,
     ).fillna("")
     df = df[df["fare_id"] == "Ônibus"]
 

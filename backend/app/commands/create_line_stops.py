@@ -1,5 +1,6 @@
 import csv
 import os
+from typing import Optional
 
 import pandas as pd
 from app.commands.sptrans_static_data import SPTRANS_DATA_PATH
@@ -14,22 +15,26 @@ TRIPS_FILE = os.path.join(SPTRANS_DATA_PATH, "trips.txt")
 STOPS_FILE = os.path.join(SPTRANS_DATA_PATH, "stop_times.txt")
 
 
-def load_trips() -> dict[int, str]:
+def load_trips(max_rows: Optional[int] = None) -> dict[int, str]:
     mapping: dict[int, str] = {}
     with open(TRIPS_FILE, newline="", encoding="utf-8") as f:
         reader = csv.DictReader(f)
-        for row in reader:
+        for index, row in enumerate(reader):
+            if max_rows is not None and index > max_rows:
+                break
             route_id = row["route_id"].strip()
             if route_id not in mapping:
                 mapping[route_id] = row["shape_id"]
     return mapping
 
 
-def load_shapes() -> dict[str, list[dict]]:
+def load_shapes(max_rows: Optional[int] = None) -> dict[str, list[dict]]:
     shapes: dict[str, list[dict]] = {}
     with open(SHAPES_FILE, newline="", encoding="utf-8") as f:
         reader = csv.DictReader(f)
-        for row in reader:
+        for index, row in enumerate(reader):
+            if max_rows is not None and index > max_rows:
+                break
             shape_id = row["shape_id"]
             entry = {
                 "lat": float(row["shape_pt_lat"]),
@@ -50,7 +55,7 @@ def load_shapes() -> dict[str, list[dict]]:
     return shapes
 
 
-def create_line_stops() -> None:
+def create_line_stops(max_rows: Optional[int] = None) -> None:
     """
     Create line stops from the static SPTrans data.
     """
@@ -58,11 +63,13 @@ def create_line_stops() -> None:
         STOPS_FILE,
         usecols=["trip_id", "stop_id", "stop_sequence"],
         dtype={"trip_id": str, "stop_id": int, "stop_sequence": int},
+        nrows=max_rows,
     )
+
     session = SessionLocal()
 
-    line_to_shape_map = load_trips()
-    shape_cache = load_shapes()
+    line_to_shape_map = load_trips(max_rows=max_rows)
+    shape_cache = load_shapes(max_rows=max_rows)
 
     stop_rows = session.query(StopModel).all()
     stop_coords = {s.id: (s.latitude, s.longitude) for s in stop_rows}
