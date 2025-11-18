@@ -1,5 +1,12 @@
 from app.core.database import Base, engine
-from app.models import line, line_stop, rota, stop, user  # noqa: F401
+from app.models import (  # noqa: F401
+    daily_line_emission,
+    line,
+    line_stop,
+    rota,
+    stop,
+    user,
+)
 
 
 def create_database_tables() -> None:
