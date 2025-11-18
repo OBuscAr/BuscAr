@@ -1,0 +1,18 @@
+.painel-layout {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  background-color: var(--bg-light);
+}
+
+.painel-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  display: flex;
+  padding: 0.5rem 4rem 2rem;
+  gap: 4rem;
+}

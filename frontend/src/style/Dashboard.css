@@ -1,0 +1,51 @@
+/* --- Main --- */
+.dashboard-main {
+  flex: 2.5;
+}
+
+.metric-cards-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.timeline-card-container {
+  /* Vazio, para documentação */
+  display: block;
+}
+
+
+/* --- Sidebar --- */
+.dashboard-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  flex: 1;
+}
+
+
+/* --- Pequenos componentes --- */
+.date-picker {
+  cursor: pointer;
+}
+
+.toggle-group {
+  display: flex;
+  border-radius: 6px;
+}
+
+.toggle-group button {
+  background: transparent;
+  border: none;
+  padding: 0.25rem 0.5rem;
+  cursor: pointer;
+  color: var(--text-light);
+  font-weight: 500;
+}
+
+.toggle-group button.active {
+  color: var(--accent-green);
+  font-weight: 600;
+  border-radius: 6px;
+}

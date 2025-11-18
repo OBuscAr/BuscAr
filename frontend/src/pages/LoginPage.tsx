@@ -1,12 +1,10 @@
-
-
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom'; // Importe useNavigate para redirecionar após o login
 //import { mockLogin } from '../services/auth'; // Importe o mock de login
 import type { LoginCredentials } from '../services/auth';
 import BuscArLogo from '../assets/bus_leaf_icon.png'; // o logo
 import axios from 'axios';
-
+import '../style/AuthPages.css'; // Estilos para páginas de autenticação
 
 function LoginPage() {
   const [formData, setFormData] = useState<LoginCredentials>({
@@ -97,7 +95,7 @@ function LoginPage() {
 
       // Redireciona para o dashboard após um breve delay
       setTimeout(() => {
-        navigate('/dashboard'); 
+        navigate('/painel'); 
       }, 1500);
 
     } catch (error) {

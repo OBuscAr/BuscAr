@@ -5,6 +5,7 @@ import { Link, useNavigate } from 'react-router-dom'; // Importe useNavigate
 import type { RegisterData } from '../services/auth'; // Importe o tipo correto
 import BuscArLogo from '../assets/bus_leaf_icon.png'; // logo
 import axios from 'axios';
+import '../style/AuthPages.css'; // Estilos para páginas de autenticação
 
 function RegisterPage() {
   const [formData, setFormData] = useState<RegisterData & { confirmarSenha: string }>({
