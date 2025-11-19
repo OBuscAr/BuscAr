@@ -1,19 +1,21 @@
-from app.core.database import get_db
-from app.repositories import myclimate_client
-from app.schemas.carbon_emission import EmissionResponse
-from app.schemas.vehicle_type import VehicleType
-from app.services import distance_service
+from datetime import date
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from requests.exceptions import HTTPError
 from sqlalchemy.orm import Session
 
+from app.core.database import get_db
+from app.repositories import myclimate_client
+from app.schemas import EmissionResponse, LineEmissionResponse, VehicleType
+from app.services import distance_service
+
 router = APIRouter(
-    prefix="/api/v1",
+    prefix="/emissions",
     tags=["Emissions"],  # Nova tag para a /docs
 )
 
 
-@router.get("/emission", response_model=EmissionResponse)
+@router.get("", response_model=EmissionResponse)
 def calculate_emission_stops(
     line_id: int = Query(..., description="ID da Linha (ex: 2607)"),
     stop_id_a: int = Query(..., description="ID da Parada de Origem"),
@@ -59,3 +61,15 @@ def calculate_emission_stops(
         raise HTTPException(
             status_code=500, detail=f"Erro interno no cálculo: {str(e)}"
         )
+
+
+@router.get("/lines")
+def get_emission_lines_ranking(
+    date: date,
+    db: Session = Depends(get_db),
+) -> list[LineEmissionResponse]:
+    """
+    Return the ranking of the lines ordered by decreasing carbon emission filtered
+    by a given `date`.
+    """
+    return []
