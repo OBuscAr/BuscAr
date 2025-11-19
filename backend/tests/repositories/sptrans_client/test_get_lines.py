@@ -1,4 +1,5 @@
 from app.repositories.sptrans_client import get_lines
+
 from tests.factories.schemas import SPTransLineFactory
 from tests.helpers import SPTransHelper
 
@@ -18,7 +19,7 @@ def test_response():
 
     # WHEN
     returned_lines = get_lines(
-        credentials=SPTransHelper.CREDENTIALS_COOKIES,
+        credentials=SPTransHelper.COOKIE_JAR,
         pattern=pattern,
     )
 
