@@ -48,8 +48,8 @@ def update_vehicle_positions(
         line_id = line_vehicles.line_id
         if session.query(LineModel).filter_by(id=line_id).first() is None:
             logger.info(
-                f"A linha {line_id} não existe na base de dados. "
-                "Seus veículos serão ignorados"
+                f"A linha {line_id} com nome {line_vehicles.line_name} não existe "
+                "na base de dados. Seus veículos serão ignorados"
             )
             continue
 
@@ -66,7 +66,8 @@ def update_vehicle_positions(
                 if vehicle.id != other_line_id:
                     logger.warning(
                         f"O ônibus {vehicle.id} apareceu em várias linhas: "
-                        f"{[line_id, other_line_id]}"
+                        f"{[line_id, other_line_id]}. Será ignroado para "
+                        f"a linha {line_id}"
                     )
                     continue
                 else:
