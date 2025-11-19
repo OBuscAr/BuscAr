@@ -3,12 +3,14 @@ import os
 from typing import Optional
 
 import pandas as pd
-from app.commands.sptrans_static_data import SPTRANS_DATA_PATH
-from app.core.database import SessionLocal
-from app.models import LineDirection, LineModel, LineStopModel, StopModel
-from app.services import distance_service
 from sqlalchemy import select
 from tqdm import tqdm as progress_bar
+
+from app.commands.sptrans_static_data import SPTRANS_DATA_PATH
+from app.core.database import SessionLocal
+from app.models import LineModel, LineStopModel, StopModel
+from app.schemas import SPTransLineDirection
+from app.services import distance_service
 
 SHAPES_FILE = os.path.join(SPTRANS_DATA_PATH, "shapes.txt")
 TRIPS_FILE = os.path.join(SPTRANS_DATA_PATH, "trips.txt")
@@ -79,7 +81,7 @@ def create_line_stops(max_rows: Optional[int] = None) -> None:
     )
     existing_lines = session.query(LineModel).all()
     lines_by_name_direction: dict[str, str] = {
-        f"{line.name}-{LineDirection(line.direction).value - 1}": line.id
+        f"{line.name}-{SPTransLineDirection[line.direction].value - 1}": line.id
         for line in existing_lines
     }
 
