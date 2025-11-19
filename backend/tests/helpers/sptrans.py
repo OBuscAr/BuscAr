@@ -1,8 +1,8 @@
 from typing import Optional, Sequence
 
 import responses
-from app.repositories.sptrans_client import LINES_LOOK_UP_URL, LOGIN_URL
-from app.schemas import Line
+from app.repositories.sptrans_client import LINES_LOOK_UP_URL, LOGIN_URL, POSITION_URL
+from app.schemas import Line, SPTransLinesVehiclesResponse
 from fastapi import status
 from responses import BaseResponse
 
@@ -45,4 +45,17 @@ class SPTransHelper:
             LINES_LOOK_UP_URL,
             status=status.HTTP_200_OK,
             json=[line.model_dump(by_alias=True) for line in response],
+        )
+
+    @staticmethod
+    def mock_get_vehicles_positions(
+        response: SPTransLinesVehiclesResponse,
+    ) -> BaseResponse:
+        """
+        Mock the get vehicles positions endpoint.
+        """
+        return responses.get(
+            POSITION_URL,
+            status=status.HTTP_200_OK,
+            json=response.model_dump(by_alias=True, mode="json"),
         )
