@@ -52,7 +52,7 @@ def update_vehicle_positions(
                 latitude=vehicle.latitude,
                 longitude=vehicle.longitude,
                 line_id=line_id,
-                update_at=vehicle.updated_at,
+                updated_at=vehicle.updated_at,
             )
             if vehicle.id in processed_vehicles:
                 other_line_id = processed_vehicles[vehicle.id].line_id
@@ -73,7 +73,7 @@ def update_vehicle_positions(
             if vehicle.id not in database_vehicles:
                 vehicles_to_create.append(vehicle_model)
             else:
-                previous_updated_at = database_vehicles[vehicle.id].update_at
+                previous_updated_at = database_vehicles[vehicle.id].updated_at
                 elapsed_time = previous_updated_at - vehicle.updated_at
 
                 if (
