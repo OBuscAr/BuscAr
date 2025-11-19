@@ -1,4 +1,8 @@
+from typing import Optional
+
 from pydantic import BaseModel
+
+from app.schemas.line import Line
 
 
 class EmissionResponse(BaseModel):
@@ -9,3 +13,12 @@ class EmissionResponse(BaseModel):
 
     distance_km: float
     emission_kg_co2: float
+
+
+class LineEmissionResponse(BaseModel):
+    line: Line
+    emission: float
+
+
+class EmissionStatisticsReponse(BaseModel):
+    total_emission: Optional[float]
