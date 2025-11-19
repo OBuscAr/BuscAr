@@ -1,7 +1,7 @@
 from datetime import date
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from app.schemas.line import Line
 
@@ -22,5 +22,5 @@ class LineEmissionResponse(BaseModel):
 
 
 class EmissionStatisticsReponse(BaseModel):
-    total_emission: Optional[float]
+    total_emission: Optional[float] = Field(description="emission in kg of CO2")
     date: date
