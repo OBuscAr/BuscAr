@@ -1,6 +1,6 @@
 from app.core.database import Base, engine
 from app.models import (  # noqa: F401
-    daily_line_emission,
+    daily_line_statistics,
     line,
     line_stop,
     rota,
