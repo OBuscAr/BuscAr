@@ -1,3 +1,4 @@
+from datetime import date
 from typing import Optional
 
 from pydantic import BaseModel
@@ -22,3 +23,4 @@ class LineEmissionResponse(BaseModel):
 
 class EmissionStatisticsReponse(BaseModel):
     total_emission: Optional[float]
+    date: date
