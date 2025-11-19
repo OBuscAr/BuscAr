@@ -15,7 +15,8 @@ def test_create_vehicles(num_vehicles_to_create: int):
     """
     GIVEN  a line in database and some vehicles to create
     WHEN   the `update_vehicle_positions` is called
-    THEN   new vehicles should be created
+    THEN   new vehicles should be created and the method should return
+           an empty dict
     """
     # GIVEN
     session = SessionLocal()
@@ -27,7 +28,7 @@ def test_create_vehicles(num_vehicles_to_create: int):
     ]
 
     # WHEN
-    update_vehicle_positions(lines_vehicles=line_vehicles)
+    returned_response = update_vehicle_positions(lines_vehicles=line_vehicles)
 
     # THEN
     session = SessionLocal()
@@ -38,6 +39,8 @@ def test_create_vehicles(num_vehicles_to_create: int):
         assert db_line.latitude == vehicle.latitude
         assert db_line.longitude == vehicle.longitude
         assert db_line.updated_at == vehicle.updated_at
+
+    assert returned_response == {}
 
 
 def test_vehicles_without_existing_line():
@@ -63,7 +66,7 @@ def test_duplicate_vehicle_same_line():
     GIVEN  a duplicate vehicle for a single line
     WHEN   the `update_vehicle_positions` is called
     THEN   the first vehicle should be created and the other duplicates should
-           be ignored.
+           be ignored
     """
     # GIVEN
     session = SessionLocal()
