@@ -2,6 +2,7 @@ import pytest
 from app.commands.create_lines import create_lines
 from app.core.database import SessionLocal
 from app.models import LineDirection, LineModel
+
 from tests.factories.schemas import SPTransLineFactory
 from tests.helpers import SPTransHelper
 
@@ -29,7 +30,7 @@ def test_create_line(num_lines_in_api: int):
     for line in lines:
         db_line = session.query(LineModel).filter_by(id=line.id).one()
         assert db_line.name == f"{line.base_name}-{line.operation_mode}"
-        assert db_line.direction == LineDirection(line.direction)
+        assert db_line.direction == line.direction.name
 
 
 def test_different_patterns_multiple_lines():
@@ -71,7 +72,7 @@ def test_update_line():
             name="test",
             direction=(
                 LineDirection.MAIN
-                if LineDirection.MAIN.value != line.direction
+                if LineDirection.MAIN.value != line.direction.name
                 else LineDirection.SECONDARY
             ),
         )
@@ -87,7 +88,7 @@ def test_update_line():
 
     db_line = session.query(LineModel).filter_by(id=line.id).one()
     assert db_line.name == f"{line.base_name}-{line.operation_mode}"
-    assert db_line.direction == LineDirection(line.direction)
+    assert db_line.direction == line.direction.name
 
 
 def test_existing_line_without_api_data():

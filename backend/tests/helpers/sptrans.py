@@ -44,7 +44,7 @@ class SPTransHelper:
         return responses.get(
             LINES_LOOK_UP_URL,
             status=status.HTTP_200_OK,
-            json=[line.model_dump(by_alias=True) for line in response],
+            json=[line.model_dump(by_alias=True, mode="json") for line in response],
         )
 
     @staticmethod
