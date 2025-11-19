@@ -2,10 +2,11 @@ from app.schemas import EmissionResponse, MyclimateCarbonEmission, VehicleType
 from fastapi import status
 from fastapi.testclient import TestClient
 from pytest_mock import MockerFixture
+
 from tests.factories.schemas import MyclimateCarbonEmissionFactory
 from tests.helpers import MyclimateHelper
 
-ENDPOINT_URL = "/api/v1/emission"
+ENDPOINT_URL = "/emissions"
 
 
 def test_calcular_emissao_sucesso(client: TestClient, mocker: MockerFixture):
