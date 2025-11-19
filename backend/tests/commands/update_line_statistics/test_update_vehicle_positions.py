@@ -39,6 +39,7 @@ def test_create_vehicles(num_vehicles_to_create: int):
         assert db_line.latitude == vehicle.latitude
         assert db_line.longitude == vehicle.longitude
         assert db_line.updated_at == vehicle.updated_at
+        assert db_line.line_id == line.id
 
     assert returned_response == {}
 
@@ -89,3 +90,38 @@ def test_duplicate_vehicle_same_line():
     assert db_line.latitude == target_vehicle.latitude
     assert db_line.longitude == target_vehicle.longitude
     assert db_line.updated_at == target_vehicle.updated_at
+
+
+def test_duplicate_vehicle_different_lines():
+    """
+    GIVEN  a duplicate vehicle for a different lines
+    WHEN   the `update_vehicle_positions` is called
+    THEN   the vehicle for the first line should be created and
+           the other duplicates should be ignored
+    """
+    # GIVEN
+    session = SessionLocal()
+    LineFactory.__session__ = session
+    first_line = LineFactory.create_sync()
+    other_lines = LineFactory.create_batch_sync(size=2)
+    target_vehicle = SPTransVehicleFactory.build()
+
+    line_vehicles = [
+        SPTransLineVehiclesResponseFactory.build(
+            line_id=first_line.id, vehicles=[target_vehicle]
+        )
+    ] + [
+        SPTransLineVehiclesResponseFactory.build(
+            line_id=line.id,
+            vehicles=[target_vehicle],
+        )
+        for line in other_lines
+    ]
+
+    # WHEN
+    update_vehicle_positions(lines_vehicles=line_vehicles)
+
+    # THEN
+    assert session.query(VehicleModel).count() == 1
+    db_line = session.query(VehicleModel).filter_by(id=target_vehicle.id).one()
+    assert db_line.line_id == first_line.id
