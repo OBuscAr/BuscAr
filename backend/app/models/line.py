@@ -1,14 +1,14 @@
 from enum import Enum
 
-from app.core.database import Base
-from sqlalchemy import Column
+from sqlalchemy import Column, Integer, String
 from sqlalchemy import Enum as EnumDB
-from sqlalchemy import Integer, String
+
+from app.core.database import Base
 
 
-class LineDirection(Enum):
-    MAIN = 1
-    SECONDARY = 2
+class LineDirection(str, Enum):
+    MAIN = "MAIN"
+    SECONDARY = "SECONDARY"
 
 
 class Line(Base):

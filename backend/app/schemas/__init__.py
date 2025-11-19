@@ -6,7 +6,7 @@ from app.schemas.carbon_emission import (
 )
 from app.schemas.line import Line
 from app.schemas.myclimate.carbon_emission import MyclimateCarbonEmission
-from app.schemas.sptrans.line import SPTransLine
+from app.schemas.sptrans.line import SPTransLine, SPTransLineDirection
 from app.schemas.sptrans.stop import SPTransStop
 from app.schemas.sptrans.vehicle import (
     SPTransLinesVehiclesResponse,
