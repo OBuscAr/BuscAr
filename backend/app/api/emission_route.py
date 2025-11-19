@@ -1,6 +1,7 @@
-from datetime import date
+from datetime import date, timedelta
+from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from requests.exceptions import HTTPError
 from sqlalchemy.orm import Session
 
@@ -77,6 +78,7 @@ def get_emission_lines_ranking(
     Return the ranking of the lines ordered by decreasing carbon emission filtered
     by a given `date`.
     """
+    # TODO: Implement
     return []
 
 
@@ -84,11 +86,30 @@ def get_emission_lines_ranking(
 def get_emission_statistics(
     start_date: date,
     end_date: date,
+    line_id: Optional[int] = None,
     db: Session = Depends(get_db),
-) -> EmissionStatisticsReponse:
+) -> list[EmissionStatisticsReponse]:
     """
-    Return the accumulate emission of all the SPTrans bus system from
-    `start_date` to `end_date`. If there is no date in the range date,
-    null fields will be returned.
+    Return the accumulate emissions of all the SPTrans lines for each date
+    in the range [`start_date`, `end_date`]. If there is no data for some date,
+    null fields will be returned for that entry.
+
+    Optinally, a `line_id` can be given to filter the emission statistics.
+
+    ## Limits
+    - The range date should be within 100 days.
     """
-    return EmissionStatisticsReponse(total_emission=None)
+    # TODO: Implement
+    DAYS_LIMIT = 100
+    days_difference = end_date - start_date
+    if days_difference.days + 1 > DAYS_LIMIT:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail=f"Range date has more than {DAYS_LIMIT} days",
+        )
+    return [
+        EmissionStatisticsReponse(
+            total_emission=None, date=start_date + timedelta(days=d)
+        )
+        for d in range(days_difference.days + 1)
+    ]
