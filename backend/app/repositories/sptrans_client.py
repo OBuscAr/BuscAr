@@ -1,8 +1,9 @@
 import requests
-from app.core.config import settings
-from app.schemas import SPTransLine
 from pydantic import TypeAdapter
 from requests.cookies import RequestsCookieJar
+
+from app.core.config import settings
+from app.schemas import SPTransLine, SPTransLinesVehiclesResponse
 
 LOGIN_URL = f"{settings.PREFIX_URL}/Login/Autenticar"
 
@@ -34,3 +35,20 @@ def get_lines(credentials: RequestsCookieJar, pattern: str) -> list[SPTransLine]
     )
     response.raise_for_status()
     return TypeAdapter(list[SPTransLine]).validate_python(response.json())
+
+
+POSITION_URL = f"{settings.PREFIX_URL}/Posicao"
+
+
+def get_live_vehicle_positions(
+    credentials: RequestsCookieJar,
+) -> SPTransLinesVehiclesResponse:
+    """
+    Get all vehicle positions that are currently moving.
+    """
+    response = requests.get(
+        POSITION_URL,
+        cookies=credentials,
+    )
+    response.raise_for_status()
+    return SPTransLinesVehiclesResponse(**response.json())
