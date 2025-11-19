@@ -2,12 +2,13 @@ import os
 from typing import Optional
 
 import pandas as pd
+from sqlalchemy import select, update
+from tqdm import tqdm as progress_bar
+
 from app.commands.sptrans_static_data import SPTRANS_DATA_PATH
 from app.core.database import SessionLocal
 from app.models import LineDirection, LineModel
 from app.repositories import sptrans_client
-from sqlalchemy import select, update
-from tqdm import tqdm as progress_bar
 
 FILE_LOCATION = os.path.join(SPTRANS_DATA_PATH, "fare_rules.txt")
 
@@ -49,7 +50,7 @@ def create_lines(max_rows: Optional[int] = None) -> None:
             line_model = LineModel(
                 id=line.id,
                 name=line_name,
-                direction=LineDirection(line.direction),
+                direction=LineDirection(line.direction.name),
             )
             if line.id in existing_ids:
                 lines_to_update.append(line_model.__dict__)
