@@ -2,7 +2,6 @@
     "recommendations": [
         "ms-python.black-formatter",
         "ms-python.flake8",
-        "ms-python.isort",
         "ms-python.python",
     ]
 }
