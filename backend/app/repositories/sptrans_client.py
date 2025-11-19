@@ -44,7 +44,7 @@ def get_live_vehicles_positions(
     credentials: RequestsCookieJar,
 ) -> SPTransLinesVehiclesResponse:
     """
-    Get all vehicle positions that are currently moving.
+    Get the positions of all the vehicles that are currently moving.
     """
     response = requests.get(
         POSITION_URL,
