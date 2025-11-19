@@ -40,7 +40,7 @@ def get_lines(credentials: RequestsCookieJar, pattern: str) -> list[SPTransLine]
 POSITION_URL = f"{settings.PREFIX_URL}/Posicao"
 
 
-def get_live_vehicle_positions(
+def get_live_vehicles_positions(
     credentials: RequestsCookieJar,
 ) -> SPTransLinesVehiclesResponse:
     """
