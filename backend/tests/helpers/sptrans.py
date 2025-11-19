@@ -2,8 +2,9 @@ from typing import Optional, Sequence
 
 import responses
 from app.repositories.sptrans_client import LINES_LOOK_UP_URL, LOGIN_URL, POSITION_URL
-from app.schemas import Line, SPTransLinesVehiclesResponse
+from app.schemas import SPTransLine, SPTransLinesVehiclesResponse
 from fastapi import status
+from requests.cookies import cookiejar_from_dict
 from responses import BaseResponse
 
 
@@ -13,6 +14,7 @@ class SPTransHelper:
     """
 
     CREDENTIALS_COOKIES = {"credentials": "test"}
+    COOKIE_JAR = cookiejar_from_dict(CREDENTIALS_COOKIES)
 
     @staticmethod
     def mock_login() -> None:
@@ -32,7 +34,7 @@ class SPTransHelper:
 
     @staticmethod
     def mock_get_lines(
-        response: Sequence[Line], pattern: Optional[str] = None
+        response: Sequence[SPTransLine], pattern: Optional[str] = None
     ) -> BaseResponse:
         """
         Mock the get lines endpoint.
