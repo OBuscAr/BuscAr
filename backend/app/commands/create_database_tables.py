@@ -3,7 +3,6 @@ from app.models import (  # noqa: F401
     daily_line_emission,
     line,
     line_stop,
-    rota,
     stop,
     user,
     vehicle,
