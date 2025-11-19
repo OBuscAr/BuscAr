@@ -6,7 +6,12 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.repositories import myclimate_client
-from app.schemas import EmissionResponse, LineEmissionResponse, VehicleType
+from app.schemas import (
+    EmissionResponse,
+    EmissionStatisticsReponse,
+    LineEmissionResponse,
+    VehicleType,
+)
 from app.services import distance_service
 
 router = APIRouter(
@@ -73,3 +78,17 @@ def get_emission_lines_ranking(
     by a given `date`.
     """
     return []
+
+
+@router.get("/statistics")
+def get_emission_statistics(
+    start_date: date,
+    end_date: date,
+    db: Session = Depends(get_db),
+) -> EmissionStatisticsReponse:
+    """
+    Return the accumulate emission of all the SPTrans bus system from
+    `start_date` to `end_date`. If there is no date in the range date,
+    null fields will be returned.
+    """
+    return EmissionStatisticsReponse(total_emission=None)

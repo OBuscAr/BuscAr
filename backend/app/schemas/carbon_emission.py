@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pydantic import BaseModel
 
 from app.schemas.line import Line
@@ -16,3 +18,7 @@ class EmissionResponse(BaseModel):
 class LineEmissionResponse(BaseModel):
     line: Line
     emission: float
+
+
+class EmissionStatisticsReponse(BaseModel):
+    total_emission: Optional[float]
