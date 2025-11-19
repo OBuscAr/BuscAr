@@ -8,7 +8,7 @@ from sqlalchemy import update
 from tqdm import tqdm as progress_bar
 
 from app.core.database import SessionLocal
-from app.models import DailyLineStatisticsModel, VehicleModel
+from app.models import DailyLineStatisticsModel, LineModel, VehicleModel
 from app.repositories import sptrans_client
 from app.schemas import SPTransLineVehiclesResponse
 
@@ -46,6 +46,13 @@ def update_vehicle_positions(
 
     for line_vehicles in progress_bar(lines_vehicles):
         line_id = line_vehicles.line_id
+        if session.query(LineModel).filter_by(id=line_id).first() is None:
+            logger.info(
+                f"A linha {line_id} não existe na base de dados. "
+                "Seus veículos serão ignorados"
+            )
+            continue
+
         for vehicle in line_vehicles.vehicles:
             vehicle_model = VehicleModel(
                 id=vehicle.id,

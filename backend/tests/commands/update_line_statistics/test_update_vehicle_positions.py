@@ -18,7 +18,9 @@ def test_create_vehicles(num_vehicles_to_create: int):
     THEN   new vehicles should be created
     """
     # GIVEN
-    line = LineFactory.build()
+    session = SessionLocal()
+    LineFactory.__session__ = session
+    line = LineFactory.create_sync()
     vehicles = SPTransVehicleFactory.batch(size=num_vehicles_to_create)
     line_vehicles = [
         SPTransLineVehiclesResponseFactory.build(line_id=line.id, vehicles=vehicles)
@@ -36,3 +38,21 @@ def test_create_vehicles(num_vehicles_to_create: int):
         assert db_line.latitude == vehicle.latitude
         assert db_line.longitude == vehicle.longitude
         assert db_line.updated_at == vehicle.updated_at
+
+
+def test_vehicles_without_existing_line():
+    """
+    GIVEN  some vehicles to create related to a non existing line
+    WHEN   the `update_vehicle_positions` is called
+    THEN   no vehicles should be created
+    """
+    # GIVEN
+    vehicles = SPTransVehicleFactory.batch(size=1)
+    line_vehicles = [SPTransLineVehiclesResponseFactory.build(vehicles=vehicles)]
+
+    # WHEN
+    update_vehicle_positions(lines_vehicles=line_vehicles)
+
+    # THEN
+    session = SessionLocal()
+    assert session.query(VehicleModel).count() == 0
