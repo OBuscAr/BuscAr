@@ -65,9 +65,8 @@ def update_vehicle_positions(
                 other_line_id = processed_vehicles[vehicle.id].line_id
                 if vehicle.id != other_line_id:
                     logger.warning(
-                        f"O ônibus {vehicle.id} apareceu em várias linhas: "
-                        f"{[line_id, other_line_id]}. Será ignroado para "
-                        f"a linha {line_id}"
+                        f"O ônibus {vehicle.id} apareceu para a linha {other_line_id}. "
+                        f"Será ignorado para a linha {line_id}"
                     )
                     continue
                 else:
