@@ -40,11 +40,11 @@ def test_create_vehicles():
     assert session.query(VehicleModel).count() == num_vehicles_to_create
 
     for vehicle in vehicles:
-        db_line = session.query(VehicleModel).filter_by(id=vehicle.id).one()
-        assert db_line.latitude == vehicle.latitude
-        assert db_line.longitude == vehicle.longitude
-        assert db_line.updated_at == vehicle.updated_at
-        assert db_line.line_id == line.id
+        db_vehicle = session.query(VehicleModel).filter_by(id=vehicle.id).one()
+        assert db_vehicle.latitude == vehicle.latitude
+        assert db_vehicle.longitude == vehicle.longitude
+        assert db_vehicle.updated_at == vehicle.updated_at
+        assert db_vehicle.line_id == line.id
 
     assert returned_response == {}
 
@@ -90,10 +90,10 @@ def test_duplicate_vehicle_same_line():
 
     # THEN
     assert session.query(VehicleModel).count() == 1
-    db_line = session.query(VehicleModel).filter_by(id=target_vehicle.id).one()
-    assert db_line.latitude == target_vehicle.latitude
-    assert db_line.longitude == target_vehicle.longitude
-    assert db_line.updated_at == target_vehicle.updated_at
+    db_vehicle = session.query(VehicleModel).filter_by(id=target_vehicle.id).one()
+    assert db_vehicle.latitude == target_vehicle.latitude
+    assert db_vehicle.longitude == target_vehicle.longitude
+    assert db_vehicle.updated_at == target_vehicle.updated_at
 
 
 def test_duplicate_vehicle_different_lines():
@@ -126,8 +126,8 @@ def test_duplicate_vehicle_different_lines():
 
     # THEN
     assert session.query(VehicleModel).count() == 1
-    db_line = session.query(VehicleModel).filter_by(id=target_vehicle.id).one()
-    assert db_line.line_id == first_line.id
+    db_vehicle = session.query(VehicleModel).filter_by(id=target_vehicle.id).one()
+    assert db_vehicle.line_id == first_line.id
 
 
 def test_update_vehicles_and_return_distance():
@@ -205,10 +205,10 @@ def test_update_vehicles_and_return_distance():
     )
 
     for vehicle in first_line_new_vehicles + second_line_new_vehicles:
-        db_line = session.query(VehicleModel).filter_by(id=vehicle.id).one()
-        assert db_line.latitude == vehicle.latitude
-        assert db_line.longitude == vehicle.longitude
-        assert db_line.updated_at == vehicle.updated_at
+        db_vehicle = session.query(VehicleModel).filter_by(id=vehicle.id).one()
+        assert db_vehicle.latitude == vehicle.latitude
+        assert db_vehicle.longitude == vehicle.longitude
+        assert db_vehicle.updated_at == vehicle.updated_at
 
     assert len(returned_response) == 2
 
@@ -259,23 +259,22 @@ def test_maximum_elapsed_time_to_update():
     GIVEN  a vehicle in database to be updated with new vehicles data
            with an `updated_at` that is too far from the old one
     WHEN   the `update_vehicle_positions` is called
-    THEN   the method should return an empty dict
+    THEN   the vehicle should be updated but the method should return an empty dict
     """
     # GIVEN
     line = LineFactory.create_sync()
     vehicle = VehicleFactory.create_sync(line_id=line.id)
 
+    new_vehicle = SPTransVehicleFactory.build(
+        id=vehicle.id,
+        updated_at=vehicle.updated_at
+        + MAXIMUM_ELAPSED_TIME_TO_UPDATE
+        + timedelta(minutes=1),
+    )
     line_vehicles = [
         SPTransLineVehiclesResponseFactory.build(
             line_id=line.id,
-            vehicles=[
-                SPTransVehicleFactory.build(
-                    id=vehicle.id,
-                    updated_at=vehicle.updated_at
-                    + MAXIMUM_ELAPSED_TIME_TO_UPDATE
-                    + timedelta(minutes=1),
-                )
-            ],
+            vehicles=[new_vehicle],
         )
     ]
 
@@ -284,3 +283,46 @@ def test_maximum_elapsed_time_to_update():
 
     # THEN
     assert returned_response == {}
+
+    session = SessionLocal()
+    db_vehicle = session.query(VehicleModel).filter_by(id=vehicle.id).one()
+    assert db_vehicle.latitude == new_vehicle.latitude
+    assert db_vehicle.longitude == new_vehicle.longitude
+    assert db_vehicle.updated_at == new_vehicle.updated_at
+
+
+def test_update_vehicle_different_line():
+    """
+    GIVEN  a vehicle in database to be updated with new vehicles data
+           with a different line
+    WHEN   the `update_vehicle_positions` is called
+    THEN   the vehicle should be updated but the method should return an empty dict
+    """
+    # GIVEN
+    old_line = LineFactory.create_sync()
+    vehicle = VehicleFactory.create_sync(line_id=old_line.id)
+    new_vehicle = SPTransVehicleFactory.build(
+        id=vehicle.id,
+        updated_at=vehicle.updated_at + timedelta(minutes=1),
+    )
+
+    new_line = LineFactory.create_sync()
+    line_vehicles = [
+        SPTransLineVehiclesResponseFactory.build(
+            line_id=new_line.id,
+            vehicles=[new_vehicle],
+        )
+    ]
+
+    # WHEN
+    returned_response = update_vehicle_positions(lines_vehicles=line_vehicles)
+
+    # THEN
+    assert returned_response == {}
+
+    session = SessionLocal()
+    db_vehicle = session.query(VehicleModel).filter_by(id=vehicle.id).one()
+    assert db_vehicle.latitude == new_vehicle.latitude
+    assert db_vehicle.longitude == new_vehicle.longitude
+    assert db_vehicle.updated_at == new_vehicle.updated_at
+    assert db_vehicle.line_id == new_line.id

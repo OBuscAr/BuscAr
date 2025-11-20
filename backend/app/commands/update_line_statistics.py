@@ -85,6 +85,7 @@ def update_vehicle_positions(
                 if (
                     elapsed_time <= MAXIMUM_ELAPSED_TIME_TO_UPDATE
                     and previous_updated_at != vehicle.updated_at
+                    and line_id == database_vehicles[vehicle.id].line_id
                 ):
                     if line_id not in delta_distances:
                         delta_distances[line_id] = 0
