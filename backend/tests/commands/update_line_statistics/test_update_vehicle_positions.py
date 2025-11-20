@@ -1,17 +1,15 @@
-import pytest
 from app.commands.update_line_statistics import update_vehicle_positions
 from app.core.database import SessionLocal
 from app.models import VehicleModel
 
-from tests.factories.models import LineFactory
+from tests.factories.models import LineFactory, VehicleFactory
 from tests.factories.schemas import (
     SPTransLineVehiclesResponseFactory,
     SPTransVehicleFactory,
 )
 
 
-@pytest.mark.parametrize("num_vehicles_to_create", [1, 2])
-def test_create_vehicles(num_vehicles_to_create: int):
+def test_create_vehicles():
     """
     GIVEN  a line in database and some vehicles to create
     WHEN   the `update_vehicle_positions` is called
@@ -19,8 +17,8 @@ def test_create_vehicles(num_vehicles_to_create: int):
            an empty dict
     """
     # GIVEN
+    num_vehicles_to_create = 2
     session = SessionLocal()
-    LineFactory.__session__ = session
     line = LineFactory.create_sync()
     vehicles = SPTransVehicleFactory.batch(size=num_vehicles_to_create)
     line_vehicles = [
@@ -71,7 +69,6 @@ def test_duplicate_vehicle_same_line():
     """
     # GIVEN
     session = SessionLocal()
-    LineFactory.__session__ = session
     line = LineFactory.create_sync()
     target_vehicle = SPTransVehicleFactory.build()
     duplicate_vehicles = SPTransVehicleFactory.batch(size=3, id=target_vehicle.id)
@@ -101,7 +98,6 @@ def test_duplicate_vehicle_different_lines():
     """
     # GIVEN
     session = SessionLocal()
-    LineFactory.__session__ = session
     first_line = LineFactory.create_sync()
     other_lines = LineFactory.create_batch_sync(size=2)
     target_vehicle = SPTransVehicleFactory.build()

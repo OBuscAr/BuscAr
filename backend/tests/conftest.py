@@ -5,6 +5,8 @@ import responses
 from app.core.database import Base, engine
 from app.main import app
 from fastapi.testclient import TestClient
+
+from tests.factories.models import LineFactory, VehicleFactory
 from tests.helpers import SPTransHelper
 
 
@@ -29,6 +31,12 @@ def setup_before_and_after_tests():
     Base.metadata.create_all(bind=engine)
     responses.start()
     SPTransHelper.mock_login()
+    from app.core.database import SessionLocal
+
+    factories = [LineFactory, VehicleFactory]
+    session = SessionLocal()
+    for factory in factories:
+        factory.__session__ = session
 
     yield
 
