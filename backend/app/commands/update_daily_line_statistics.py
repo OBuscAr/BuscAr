@@ -138,7 +138,7 @@ def update_daily_line_statistics() -> None:
     statistics_to_update: list[dict] = []
     for line_id, distance_traveled in lines_statistics.items():
         if line_id in database_statistics:
-            distance_traveled += database_statistics[line_id]
+            distance_traveled += database_statistics[line_id].distance_traveled
         statistics_model = DailyLineStatisticsModel(
             line_id=line_id,
             date=today,

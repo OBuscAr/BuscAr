@@ -104,3 +104,45 @@ def test_create_daily_line_statistics_different_date(mocker: MockerFixture):
     assert math.isclose(
         db_daily_line_statistic.distance_traveled, expected_distance, abs_tol=1e-3
     )
+
+
+def test_update_existing_daily_line_statistics(mocker: MockerFixture):
+    """
+    GIVEN  a daily line statistics in database and new SPTrans data with the same
+           line and date
+    WHEN   the `update_daily_line_statistics` is called
+    THEN   the daily line statistics should be updated
+    """
+    # GIVEN
+    session = SessionLocal()
+    today = datetime.now(tz=SAO_PAULO).date()
+    target_line = LineFactory.create_sync()
+    daily_line_statistic = DailyLineStatisticsFactory.create_sync(
+        line_id=target_line.id, date=today
+    )
+
+    delta_distance = 3
+    mock = mocker.patch(
+        UPDATE_VEHICLE_POSITIONS_NAME,
+        return_value={target_line.id: delta_distance},
+    )
+    expected_distance = daily_line_statistic.distance_traveled + delta_distance
+
+    SPTransHelper.mock_get_vehicles_positions(
+        response=SPTransLinesVehiclesResponseFactory.build()
+    )
+
+    # WHEN
+    update_daily_line_statistics()
+
+    # THEN
+    mock.assert_called()
+    session = SessionLocal()
+    assert session.query(DailyLineStatisticsModel).count() == 1
+
+    db_daily_line_statistic = session.query(DailyLineStatisticsModel).one()
+    assert db_daily_line_statistic.line_id == target_line.id
+    assert db_daily_line_statistic.date == today
+    assert math.isclose(
+        db_daily_line_statistic.distance_traveled, expected_distance, abs_tol=1e-3
+    )
