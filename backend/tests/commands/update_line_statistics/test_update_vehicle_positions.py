@@ -145,7 +145,6 @@ def test_update_vehicles_and_return_distance():
     first_line_new_vehicles = [
         SPTransVehicleFactory.build(
             id=vehicle.id,
-            line_id=first_line.id,
             updated_at=vehicle.updated_at + timedelta(minutes=3),
         )
         for vehicle in first_line_old_vehicles
@@ -167,7 +166,6 @@ def test_update_vehicles_and_return_distance():
     second_line_new_vehicles = [
         SPTransVehicleFactory.build(
             id=vehicle.id,
-            line_id=second_line.id,
             updated_at=vehicle.updated_at + timedelta(minutes=3),
         )
         for vehicle in second_line_old_vehicles
@@ -221,3 +219,33 @@ def test_update_vehicles_and_return_distance():
         second_line_expected_distance,
         abs_tol=1e-3,
     )
+
+
+def test_update_vehicles_with_same_updated_at():
+    """
+    GIVEN  a vehicle in database to be updated with new vehicles data
+           with same `updated_at`
+    WHEN   the `update_vehicle_positions` is called
+    THEN   the method should return an empty dict
+    """
+    # GIVEN
+    line = LineFactory.create_sync()
+    vehicle = VehicleFactory.create_sync(line_id=line.id)
+
+    line_vehicles = [
+        SPTransLineVehiclesResponseFactory.build(
+            line_id=line.id,
+            vehicles=[
+                SPTransVehicleFactory.build(
+                    id=vehicle.id,
+                    updated_at=vehicle.updated_at,
+                )
+            ],
+        )
+    ]
+
+    # WHEN
+    returned_response = update_vehicle_positions(lines_vehicles=line_vehicles)
+
+    # THEN
+    assert returned_response == {}
