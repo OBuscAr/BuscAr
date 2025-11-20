@@ -149,7 +149,7 @@ def update_daily_emissions() -> None:
         if line_id not in database_statistics:
             statistics_to_create.append(statistics_model)
         else:
-            statistics_to_update.append(statistics_model.__dict__)
+            statistics_to_update.append(statistics_model.dict())
 
     logger.info(f"Criando {len(statistics_to_create)} estatísticas na base de dados...")
 
