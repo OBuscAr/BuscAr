@@ -6,6 +6,7 @@ from zoneinfo import ZoneInfo
 
 import schedule
 from geopy import distance
+from requests.cookies import RequestsCookieJar
 from sqlalchemy import update
 from tqdm import tqdm as progress_bar
 
@@ -116,14 +117,13 @@ def update_vehicle_positions(
     return delta_distances
 
 
-def update_daily_line_statistics() -> None:
+def update_daily_line_statistics(credentials: RequestsCookieJar) -> None:
     """
     Update the daily line statistics of the vehicles currently moving.
     """
     start_time = time.perf_counter()
-    user = sptrans_client.login()
     lines_vehicles = sptrans_client.get_live_vehicles_positions(
-        credentials=user
+        credentials=credentials
     ).lines_vehicles
 
     lines_statistics = update_vehicle_positions(lines_vehicles)
@@ -167,14 +167,24 @@ def update_daily_line_statistics() -> None:
         session.commit()
 
     elapsed_time = time.perf_counter() - start_time
-    logger.info(f"Cron ended after {elapsed_time:.2f} seconds")
+    logger.info(f"O cron terminou depois de {elapsed_time:.2f} segundos")
 
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    schedule.every(10).seconds.do(update_daily_line_statistics)
+    MAIN_TAG = "main"
 
-    update_daily_line_statistics()
+    def reschedule_main_job() -> None:
+        logger.info("Reagendando job")
+        schedule.clear(MAIN_TAG)
+        schedule.every(10).seconds.do(
+            update_daily_line_statistics, credentials=sptrans_client.login()
+        ).tag(MAIN_TAG)
+
+    update_daily_line_statistics(credentials=sptrans_client.login())
+    reschedule_main_job()
+    schedule.every(15).minutes.do(reschedule_main_job)
+
     while True:
         schedule.run_pending()
         time.sleep(1)
