@@ -1,3 +1,4 @@
+import inspect
 from typing import Generator
 
 import pytest
@@ -6,7 +7,7 @@ from app.core.database import Base, engine
 from app.main import app
 from fastapi.testclient import TestClient
 
-from tests.factories.models import LineFactory, VehicleFactory
+from tests.factories import models
 from tests.helpers import SPTransHelper
 
 
@@ -33,9 +34,9 @@ def setup_before_and_after_tests():
     SPTransHelper.mock_login()
     from app.core.database import SessionLocal
 
-    factories = [LineFactory, VehicleFactory]
     session = SessionLocal()
-    for factory in factories:
+
+    for _, factory in inspect.getmembers(models, inspect.isclass):
         factory.__session__ = session
 
     yield
