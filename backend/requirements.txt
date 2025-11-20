@@ -28,6 +28,8 @@ MarkupSafe==3.0.3
 mdurl==0.1.2
 numpy==2.3.4
 packaging==25.0
+paginate==0.5.7
+paginate-sqlalchemy==0.3.1
 pandas==2.3.3
 passlib==1.7.4
 pip-tools==7.5.2
