@@ -114,9 +114,9 @@ def update_vehicle_positions(
     return delta_distances
 
 
-def update_daily_emissions() -> None:
+def update_daily_line_statistics() -> None:
     """
-    Update the emissions of the vehicles currently moving.
+    Update the daily line statistics of the vehicles currently moving.
     """
     user = sptrans_client.login()
     lines_vehicles = sptrans_client.get_live_vehicles_positions(
@@ -166,4 +166,4 @@ def update_daily_emissions() -> None:
 
 
 if __name__ == "__main__":
-    update_daily_emissions()
+    update_daily_line_statistics()
