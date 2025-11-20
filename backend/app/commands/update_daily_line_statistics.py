@@ -175,7 +175,7 @@ if __name__ == "__main__":
     MAIN_TAG = "main"
 
     def reschedule_main_job() -> None:
-        logger.info("Reagendando job")
+        logger.info("Reagendando job com novas credenciais de SPTrans")
         schedule.clear(MAIN_TAG)
         schedule.every(10).seconds.do(
             update_daily_line_statistics, credentials=sptrans_client.login()
