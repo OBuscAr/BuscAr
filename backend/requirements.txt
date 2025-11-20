@@ -12,6 +12,8 @@ Faker==38.0.0
 fastapi==0.117.1
 fastapi-cli==0.0.16
 fastapi-cloud-cli==0.3.1
+geographiclib==2.1
+geopy==2.4.1
 greenlet==3.2.4
 h11==0.16.0
 haversine==2.9.0
@@ -57,6 +59,7 @@ rich==14.2.0
 rich-toolkit==0.15.1
 rignore==0.7.6
 rsa==4.9.1
+schedule==1.2.2
 sentry-sdk==2.44.0
 shellingham==1.5.4
 six==1.17.0

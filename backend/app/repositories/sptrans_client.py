@@ -51,4 +51,7 @@ def get_live_vehicles_positions(
         cookies=credentials,
     )
     response.raise_for_status()
-    return SPTransLinesVehiclesResponse(**response.json())
+    json_response = response.json()
+    if json_response is None:
+        return SPTransLinesVehiclesResponse(l=[])
+    return SPTransLinesVehiclesResponse(**json_response)

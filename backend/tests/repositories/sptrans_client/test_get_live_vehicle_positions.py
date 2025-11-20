@@ -18,7 +18,7 @@ def test_response():
 
     # WHEN
     returned_lines_vehicles = get_live_vehicles_positions(
-        credentials=SPTransHelper.CREDENTIALS_COOKIES
+        credentials=SPTransHelper.COOKIE_JAR
     )
 
     # THEN

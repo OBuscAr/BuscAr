@@ -6,8 +6,8 @@ from sqlalchemy.orm import Mapped, mapped_column
 from app.models.base import SerializableBase
 
 
-class DailyLineEmission(SerializableBase):
-    __tablename__ = "daily_line_emission"
+class DailyLineStatistics(SerializableBase):
+    __tablename__ = "daily_line_statistics"
 
     line_id: Mapped[int] = mapped_column(
         ForeignKey("line.id"),
@@ -18,4 +18,4 @@ class DailyLineEmission(SerializableBase):
     date: Mapped[datetime.date] = mapped_column(
         Date, index=True, primary_key=True, nullable=False
     )
-    emission: Mapped[float] = mapped_column(nullable=False)
+    distance_traveled: Mapped[float] = mapped_column(nullable=False)
