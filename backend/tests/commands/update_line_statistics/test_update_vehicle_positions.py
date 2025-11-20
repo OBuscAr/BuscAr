@@ -1,7 +1,10 @@
 import math
 from datetime import timedelta
 
-from app.commands.update_line_statistics import update_vehicle_positions
+from app.commands.update_line_statistics import (
+    MAXIMUM_ELAPSED_TIME_TO_UPDATE,
+    update_vehicle_positions,
+)
 from app.core.database import SessionLocal
 from app.models import VehicleModel
 from geopy import distance
@@ -239,6 +242,38 @@ def test_update_vehicles_with_same_updated_at():
                 SPTransVehicleFactory.build(
                     id=vehicle.id,
                     updated_at=vehicle.updated_at,
+                )
+            ],
+        )
+    ]
+
+    # WHEN
+    returned_response = update_vehicle_positions(lines_vehicles=line_vehicles)
+
+    # THEN
+    assert returned_response == {}
+
+
+def test_maximum_elapsed_time_to_update():
+    """
+    GIVEN  a vehicle in database to be updated with new vehicles data
+           with an `updated_at` that is too far from the old one
+    WHEN   the `update_vehicle_positions` is called
+    THEN   the method should return an empty dict
+    """
+    # GIVEN
+    line = LineFactory.create_sync()
+    vehicle = VehicleFactory.create_sync(line_id=line.id)
+
+    line_vehicles = [
+        SPTransLineVehiclesResponseFactory.build(
+            line_id=line.id,
+            vehicles=[
+                SPTransVehicleFactory.build(
+                    id=vehicle.id,
+                    updated_at=vehicle.updated_at
+                    + MAXIMUM_ELAPSED_TIME_TO_UPDATE
+                    + timedelta(minutes=1),
                 )
             ],
         )

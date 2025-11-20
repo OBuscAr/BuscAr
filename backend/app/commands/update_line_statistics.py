@@ -81,8 +81,7 @@ def update_vehicle_positions(
                 vehicles_to_create.append(vehicle_model)
             else:
                 previous_updated_at = database_vehicles[vehicle.id].updated_at
-                elapsed_time = previous_updated_at - vehicle.updated_at
-
+                elapsed_time = vehicle.updated_at - previous_updated_at
                 if (
                     elapsed_time <= MAXIMUM_ELAPSED_TIME_TO_UPDATE
                     and previous_updated_at != vehicle.updated_at
