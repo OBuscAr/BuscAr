@@ -172,7 +172,7 @@ def update_daily_line_statistics() -> None:
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    schedule.every(2).minutes.do(update_daily_line_statistics)
+    schedule.every(10).seconds.do(update_daily_line_statistics)
 
     update_daily_line_statistics()
     while True:
