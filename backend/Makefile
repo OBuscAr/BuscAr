@@ -7,6 +7,9 @@ create-stops:
 create-line-stops:
 	python -m app.commands.create_line_stops
 
+update-daily-line-statistics:
+	python -m app.commands.update_daily_line_statistics
+
 populate-database:
 	make create-lines
 	make create-stops

@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from typing import Sequence
 from zoneinfo import ZoneInfo
 
+import schedule
 from geopy import distance
 from sqlalchemy import update
 from tqdm import tqdm as progress_bar
@@ -170,4 +171,10 @@ def update_daily_line_statistics() -> None:
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
+    schedule.every(2).minutes.do(update_daily_line_statistics)
+
     update_daily_line_statistics()
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
