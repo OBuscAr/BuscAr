@@ -1,6 +1,10 @@
+import math
+from datetime import timedelta
+
 from app.commands.update_line_statistics import update_vehicle_positions
 from app.core.database import SessionLocal
 from app.models import VehicleModel
+from geopy import distance
 
 from tests.factories.models import LineFactory, VehicleFactory
 from tests.factories.schemas import (
@@ -121,3 +125,99 @@ def test_duplicate_vehicle_different_lines():
     assert session.query(VehicleModel).count() == 1
     db_line = session.query(VehicleModel).filter_by(id=target_vehicle.id).one()
     assert db_line.line_id == first_line.id
+
+
+def test_update_vehicles_and_return_distance():
+    """
+    GIVEN  some vehicles in database to be updated and new vehicles data
+           with near `updated_at` and with the same line as the database data
+    WHEN   the `update_vehicle_positions` is called
+    THEN   the vehicles should be updated and the method should return
+           the difference in distance
+    """
+    # GIVEN
+    session = SessionLocal()
+
+    first_line = LineFactory.create_sync()
+    first_line_old_vehicles = VehicleFactory.create_batch_sync(
+        size=2, line_id=first_line.id
+    )
+    first_line_new_vehicles = [
+        SPTransVehicleFactory.build(
+            id=vehicle.id,
+            line_id=first_line.id,
+            updated_at=vehicle.updated_at + timedelta(minutes=3),
+        )
+        for vehicle in first_line_old_vehicles
+    ]
+
+    first_line_expected_distance = 0
+    for old_vehicle, new_vehicle in zip(
+        first_line_old_vehicles, first_line_new_vehicles, strict=True
+    ):
+        first_line_expected_distance += distance.distance(
+            (old_vehicle.latitude, old_vehicle.longitude),
+            (new_vehicle.latitude, new_vehicle.longitude),
+        ).kilometers
+
+    second_line = LineFactory.create_sync()
+    second_line_old_vehicles = VehicleFactory.create_batch_sync(
+        size=3, line_id=second_line.id
+    )
+    second_line_new_vehicles = [
+        SPTransVehicleFactory.build(
+            id=vehicle.id,
+            line_id=second_line.id,
+            updated_at=vehicle.updated_at + timedelta(minutes=3),
+        )
+        for vehicle in second_line_old_vehicles
+    ]
+
+    second_line_expected_distance = 0
+    for old_vehicle, new_vehicle in zip(
+        second_line_old_vehicles, second_line_new_vehicles, strict=True
+    ):
+        second_line_expected_distance += distance.distance(
+            (old_vehicle.latitude, old_vehicle.longitude),
+            (new_vehicle.latitude, new_vehicle.longitude),
+        ).kilometers
+
+    line_vehicles = [
+        SPTransLineVehiclesResponseFactory.build(
+            line_id=first_line.id,
+            vehicles=first_line_new_vehicles,
+        )
+    ] + [
+        SPTransLineVehiclesResponseFactory.build(
+            line_id=second_line.id,
+            vehicles=second_line_new_vehicles,
+        )
+    ]
+
+    # WHEN
+    returned_response = update_vehicle_positions(lines_vehicles=line_vehicles)
+
+    # THEN
+    session = SessionLocal()
+    assert session.query(VehicleModel).count() == len(first_line_old_vehicles) + len(
+        second_line_old_vehicles
+    )
+
+    for vehicle in first_line_new_vehicles + second_line_new_vehicles:
+        db_line = session.query(VehicleModel).filter_by(id=vehicle.id).one()
+        assert db_line.latitude == vehicle.latitude
+        assert db_line.longitude == vehicle.longitude
+        assert db_line.updated_at == vehicle.updated_at
+
+    assert len(returned_response) == 2
+
+    assert math.isclose(
+        returned_response[first_line.id],
+        first_line_expected_distance,
+        abs_tol=1e-3,
+    )
+    assert math.isclose(
+        returned_response[second_line.id],
+        second_line_expected_distance,
+        abs_tol=1e-3,
+    )

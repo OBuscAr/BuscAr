@@ -98,7 +98,7 @@ def update_vehicle_positions(
                     delta_distances[line_id] += distance.distance(
                         old_position, new_position
                     ).kilometers
-                vehicles_to_update.append(vehicle_model.__dict__)
+                vehicles_to_update.append(vehicle_model.dict())
 
     logger.info(f"Criando {len(vehicles_to_create)} veículos na base de dados...")
 
