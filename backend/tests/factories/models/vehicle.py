@@ -6,5 +6,8 @@ from polyfactory.factories.sqlalchemy_factory import SQLAlchemyFactory
 
 
 class VehicleFactory(SQLAlchemyFactory[VehicleModel]):
+    __check_model__ = False
+    __set_relationships__ = True
+
     latitude = Use(lambda: random.uniform(-90, 90))
     longitude = Use(lambda: random.uniform(-90, 90))

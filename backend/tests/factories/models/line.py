@@ -3,4 +3,5 @@ from polyfactory.factories.sqlalchemy_factory import SQLAlchemyFactory
 
 
 class LineFactory(SQLAlchemyFactory[LineModel]):
-    pass
+    __check_model__ = False
+    __set_relationships__ = True
