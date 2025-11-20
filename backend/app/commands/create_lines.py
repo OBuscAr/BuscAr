@@ -53,7 +53,7 @@ def create_lines(max_rows: Optional[int] = None) -> None:
                 direction=LineDirection(line.direction.name),
             )
             if line.id in existing_ids:
-                lines_to_update.append(line_model.__dict__)
+                lines_to_update.append(line_model.dict())
             else:
                 lines_to_create.append(line_model)
 

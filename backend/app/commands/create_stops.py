@@ -2,11 +2,12 @@ import os
 from typing import Optional
 
 import pandas as pd
+from sqlalchemy import select, update
+from tqdm import tqdm as progress_bar
+
 from app.commands.sptrans_static_data import SPTRANS_DATA_PATH
 from app.core.database import SessionLocal
 from app.models import StopModel
-from sqlalchemy import select, update
-from tqdm import tqdm as progress_bar
 
 FILE_LOCATION = os.path.join(SPTRANS_DATA_PATH, "stops.txt")
 
@@ -43,7 +44,7 @@ def create_stops(max_rows: Optional[int] = None) -> None:
             longitude=row["stop_lon"],
         )
         if stop.id in existing_ids:
-            stops_to_update.append(stop.__dict__)
+            stops_to_update.append(stop.dict())
         else:
             stops_to_create.append(stop)
 
