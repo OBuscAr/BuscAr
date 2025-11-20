@@ -35,7 +35,7 @@ def test_create_daily_line_statistics_different_line(mocker: MockerFixture):
     session = SessionLocal()
     other_line = LineFactory.create_sync()
     today = datetime.now(tz=SAO_PAULO).date()
-    DailyLineStatisticsFactory.create_sync(line_id=other_line.id, date=today)
+    DailyLineStatisticsFactory.create_sync(line=other_line, date=today)
 
     target_line = LineFactory.create_sync()
     expected_distance = 3
@@ -77,7 +77,7 @@ def test_create_daily_line_statistics_different_date(mocker: MockerFixture):
     other_date = datetime.now(tz=SAO_PAULO).date() - timedelta(days=3)
     today = datetime.now(tz=SAO_PAULO).date()
     target_line = LineFactory.create_sync()
-    DailyLineStatisticsFactory.create_sync(line_id=target_line.id, date=other_date)
+    DailyLineStatisticsFactory.create_sync(line=target_line, date=other_date)
 
     expected_distance = 3
     mock = mocker.patch(
@@ -118,7 +118,7 @@ def test_update_existing_daily_line_statistics(mocker: MockerFixture):
     today = datetime.now(tz=SAO_PAULO).date()
     target_line = LineFactory.create_sync()
     daily_line_statistic = DailyLineStatisticsFactory.create_sync(
-        line_id=target_line.id, date=today
+        line=target_line, date=today
     )
 
     delta_distance = 3
