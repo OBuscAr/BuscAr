@@ -117,57 +117,73 @@ def update_vehicle_positions(
     return delta_distances
 
 
-def update_daily_line_statistics(credentials: RequestsCookieJar) -> None:
+def update_daily_line_statistics(
+    credentials: RequestsCookieJar,
+    raise_exception: bool = True,
+) -> None:
     """
     Update the daily line statistics of the vehicles currently moving.
     """
     start_time = time.perf_counter()
-    lines_vehicles = sptrans_client.get_live_vehicles_positions(
-        credentials=credentials
-    ).lines_vehicles
+    try:
+        lines_vehicles = sptrans_client.get_live_vehicles_positions(
+            credentials=credentials
+        ).lines_vehicles
 
-    lines_statistics = update_vehicle_positions(lines_vehicles)
+        lines_statistics = update_vehicle_positions(lines_vehicles)
 
-    session = SessionLocal()
-    today = datetime.now(tz=ZoneInfo("America/Sao_Paulo")).date()
+        session = SessionLocal()
+        today = datetime.now(tz=ZoneInfo("America/Sao_Paulo")).date()
 
-    database_statistics = {
-        line_statistics.line_id: line_statistics
-        for line_statistics in session.query(DailyLineStatisticsModel)
-        .filter_by(date=today)
-        .filter(DailyLineStatisticsModel.line_id.in_(lines_statistics.keys()))
-    }
-    statistics_to_create: list[VehicleModel] = []
-    statistics_to_update: list[dict] = []
-    for line_id, distance_traveled in lines_statistics.items():
-        if line_id in database_statistics:
-            distance_traveled += database_statistics[line_id].distance_traveled
-        statistics_model = DailyLineStatisticsModel(
-            line_id=line_id,
-            date=today,
-            distance_traveled=distance_traveled,
+        database_statistics = {
+            line_statistics.line_id: line_statistics
+            for line_statistics in session.query(DailyLineStatisticsModel)
+            .filter_by(date=today)
+            .filter(DailyLineStatisticsModel.line_id.in_(lines_statistics.keys()))
+        }
+        statistics_to_create: list[VehicleModel] = []
+        statistics_to_update: list[dict] = []
+        for line_id, distance_traveled in lines_statistics.items():
+            if line_id in database_statistics:
+                distance_traveled += database_statistics[line_id].distance_traveled
+            statistics_model = DailyLineStatisticsModel(
+                line_id=line_id,
+                date=today,
+                distance_traveled=distance_traveled,
+            )
+
+            if line_id not in database_statistics:
+                statistics_to_create.append(statistics_model)
+            else:
+                statistics_to_update.append(statistics_model.dict())
+
+        logger.info(
+            f"Criando {len(statistics_to_create)} estatísticas na base de dados..."
         )
 
-        if line_id not in database_statistics:
-            statistics_to_create.append(statistics_model)
+        if len(statistics_to_create) > 0:
+            session.add_all(statistics_to_create)
+            session.commit()
+
+        logger.info(
+            f"Atualizando {len(statistics_to_update)} estatísticas na base de dados..."
+        )
+        if len(statistics_to_update) > 0:
+            session.execute(update(DailyLineStatisticsModel), statistics_to_update)
+            session.commit()
+
+        elapsed_time = time.perf_counter() - start_time
+        logger.info(f"O cron terminou depois de {elapsed_time:.2f} segundos")
+    except Exception as e:
+        if raise_exception:
+            raise e
         else:
-            statistics_to_update.append(statistics_model.dict())
-
-    logger.info(f"Criando {len(statistics_to_create)} estatísticas na base de dados...")
-
-    if len(statistics_to_create) > 0:
-        session.add_all(statistics_to_create)
-        session.commit()
-
-    logger.info(
-        f"Atualizando {len(statistics_to_update)} estatísticas na base de dados..."
-    )
-    if len(statistics_to_update) > 0:
-        session.execute(update(DailyLineStatisticsModel), statistics_to_update)
-        session.commit()
-
-    elapsed_time = time.perf_counter() - start_time
-    logger.info(f"O cron terminou depois de {elapsed_time:.2f} segundos")
+            elapsed_time = time.perf_counter() - start_time
+            logger.exception(
+                f"O cron falhou depois de {elapsed_time:.2f} segundos",
+                exc_info=True,
+                stack_info=True,
+            )
 
 
 if __name__ == "__main__":
@@ -178,12 +194,16 @@ if __name__ == "__main__":
         logger.info("Reagendando job com novas credenciais de SPTrans")
         schedule.clear(MAIN_TAG)
         schedule.every(10).seconds.do(
-            update_daily_line_statistics, credentials=sptrans_client.login()
+            update_daily_line_statistics,
+            credentials=sptrans_client.login(),
+            raise_exception=False,
         ).tag(MAIN_TAG)
 
-    update_daily_line_statistics(credentials=sptrans_client.login())
+    update_daily_line_statistics(
+        credentials=sptrans_client.login(), raise_exception=False
+    )
     reschedule_main_job()
-    schedule.every(15).minutes.do(reschedule_main_job)
+    schedule.every(10).minutes.do(reschedule_main_job)
 
     while True:
         schedule.run_pending()
