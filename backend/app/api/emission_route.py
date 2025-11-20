@@ -10,10 +10,10 @@ from app.repositories import myclimate_client
 from app.schemas import (
     EmissionResponse,
     EmissionStatisticsReponse,
-    LineEmissionResponse,
+    LinesEmissionsResponse,
     VehicleType,
 )
-from app.services import distance_service
+from app.services import distance_service, emission_service
 
 router = APIRouter(
     prefix="/emissions",
@@ -72,14 +72,24 @@ def calculate_emission_stops(
 @router.get("/lines")
 def get_emission_lines_ranking(
     date: date,
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=20, le=100),
     db: Session = Depends(get_db),
-) -> list[LineEmissionResponse]:
+) -> LinesEmissionsResponse:
     """
-    Return the ranking of the lines ordered by decreasing carbon emission filtered
-    by a given `date`.
+    Return the ranking of the lines ordered by decreasing carbon emission.
+
+    Parameters:
+    - `date`: To filter results by this date.
+    - `page_size` and `page`: results will be divided in blocks of `page_size`
+       and the function will return the `page`-th block.
     """
-    # TODO: Implement
-    return []
+    return emission_service.get_emission_lines_ranking(
+        date=date,
+        page=page,
+        page_size=page_size,
+        db=db,
+    )
 
 
 @router.get("/statistics")

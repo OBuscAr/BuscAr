@@ -4,6 +4,7 @@ from typing import Optional
 from pydantic import BaseModel, Field
 
 from app.schemas.line import Line
+from app.schemas.pagination import PaginationResponse
 
 
 class EmissionResponse(BaseModel):
@@ -18,7 +19,12 @@ class EmissionResponse(BaseModel):
 
 class LineEmissionResponse(BaseModel):
     line: Line
-    emission: float
+    emission: float = Field(description="emission in kg of CO2")
+
+
+class LinesEmissionsResponse(BaseModel):
+    lines_emissions: list[LineEmissionResponse]
+    pagination: PaginationResponse
 
 
 class EmissionStatisticsReponse(BaseModel):
