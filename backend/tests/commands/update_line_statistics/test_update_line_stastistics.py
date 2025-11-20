@@ -49,7 +49,7 @@ def test_create_daily_line_statistics_different_line(mocker: MockerFixture):
     )
 
     # WHEN
-    update_daily_line_statistics()
+    update_daily_line_statistics(credentials=SPTransHelper.COOKIE_JAR)
 
     # THEN
     mock.assert_called()
@@ -90,7 +90,7 @@ def test_create_daily_line_statistics_different_date(mocker: MockerFixture):
     )
 
     # WHEN
-    update_daily_line_statistics()
+    update_daily_line_statistics(credentials=SPTransHelper.COOKIE_JAR)
 
     # THEN
     mock.assert_called()
@@ -133,7 +133,7 @@ def test_update_existing_daily_line_statistics(mocker: MockerFixture):
     )
 
     # WHEN
-    update_daily_line_statistics()
+    update_daily_line_statistics(credentials=SPTransHelper.COOKIE_JAR)
 
     # THEN
     mock.assert_called()
