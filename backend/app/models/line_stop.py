@@ -3,10 +3,10 @@ from uuid import uuid4
 from sqlalchemy import UUID, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.core.database import Base
+from app.models.base import SerializableBase
 
 
-class LineStop(Base):
+class LineStop(SerializableBase):
     __tablename__ = "line_stop"
 
     id: Mapped[UUID] = mapped_column(UUID, primary_key=True, index=True, default=uuid4)
