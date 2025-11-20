@@ -1,14 +1,14 @@
 import math
 from datetime import timedelta
 
+from app.commands.update_daily_line_statistics import (
+    MAXIMUM_ELAPSED_TIME_TO_UPDATE,
+    update_vehicle_positions,
+)
 from app.core.database import SessionLocal
 from app.models import VehicleModel
 from geopy import distance
 
-from backend.app.commands.update_daily_line_statistics import (
-    MAXIMUM_ELAPSED_TIME_TO_UPDATE,
-    update_vehicle_positions,
-)
 from tests.factories.models import LineFactory, VehicleFactory
 from tests.factories.schemas import (
     SPTransLineVehiclesResponseFactory,
