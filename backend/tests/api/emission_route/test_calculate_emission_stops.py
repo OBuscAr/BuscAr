@@ -27,7 +27,7 @@ def test_calcular_emissao_sucesso(client: TestClient, mocker: MockerFixture):
     MyclimateHelper.mock_carbon_emission(
         distance=distance,
         vehicle_type=VehicleType.BUS,
-        response=MyclimateCarbonEmission(emission=emission),
+        response=MyclimateCarbonEmission(kg=emission),
     )
     params = {"line_id": 1, "stop_id_a": 10, "stop_id_b": 20}  # Coordenadas de teste
 
