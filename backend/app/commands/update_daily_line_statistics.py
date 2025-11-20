@@ -1,4 +1,5 @@
 import logging
+import time
 from datetime import datetime, timedelta
 from typing import Sequence
 from zoneinfo import ZoneInfo
@@ -118,6 +119,7 @@ def update_daily_line_statistics() -> None:
     """
     Update the daily line statistics of the vehicles currently moving.
     """
+    start_time = time.perf_counter()
     user = sptrans_client.login()
     lines_vehicles = sptrans_client.get_live_vehicles_positions(
         credentials=user
@@ -162,6 +164,9 @@ def update_daily_line_statistics() -> None:
     if len(statistics_to_update) > 0:
         session.execute(update(DailyLineStatisticsModel), statistics_to_update)
         session.commit()
+
+    elapsed_time = time.perf_counter() - start_time
+    logger.info(f"Cron ended after {elapsed_time:.2f} seconds")
 
 
 if __name__ == "__main__":
