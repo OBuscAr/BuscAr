@@ -2,6 +2,7 @@ from datetime import date
 
 import pytest
 from app.core.database import SessionLocal
+from app.schemas import VehicleType
 from app.services.emission_service import get_emission_lines_ranking
 
 from tests.factories.models import DailyLineStatisticsFactory
@@ -60,3 +61,34 @@ def test_pagination(
 
     assert results.pagination.total_count == num_objects
     assert results.pagination.page_count == expected_page_count
+
+
+def test_emission():
+    """
+    GIVEN  a daily line statistics in database and a target date
+    WHEN   the `get_emission_lines_ranking` function is called
+    THEN   the distance should be transformed to carbon emission
+    """
+    # GIVEN
+    session = SessionLocal()
+    target_date = date(year=2025, month=11, day=20)
+    daily_line_statistics = DailyLineStatisticsFactory.create_sync(date=target_date)
+    emission_response = MyclimateCarbonEmissionFactory.build()
+    MyclimateHelper.mock_carbon_emission(
+        distance=daily_line_statistics.distance_traveled,
+        vehicle_type=VehicleType.BUS,
+        response=emission_response,
+    )
+
+    # WHEN
+    results = get_emission_lines_ranking(
+        db=session,
+        date=target_date,
+        page=1,
+        page_size=1,
+    )
+
+    # THEN
+    assert len(results.lines_emissions) == 1
+    [returned_line_emission] = results.lines_emissions
+    assert returned_line_emission.emission == emission_response.emission
