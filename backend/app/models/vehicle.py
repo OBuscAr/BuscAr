@@ -19,4 +19,6 @@ class Vehicle(SerializableBase):
     )
     latitude: Mapped[float] = mapped_column(Double, index=False, nullable=False)
     longitude: Mapped[float] = mapped_column(Double, index=False, nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False
+    )
