@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.exceptions import MyclimateError, ValidationError
+from app.exceptions import MyclimateError, NotFoundError, ValidationError
 from app.schemas import (
     EmissionResponse,
     EmissionStatisticsReponse,
@@ -38,11 +38,15 @@ def calculate_emission_stops(
             stop_id_b=stop_id_b,
             db=db,
         )
-
-    except NotImplementedError:
+    except NotFoundError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e),
+        )
+    except NotImplementedError as e:
         raise HTTPException(
             status_code=status.HTTP_501_NOT_IMPLEMENTED,
-            detail="Tipo de veículo não implementado.",
+            detail=str(e),
         )
     except MyclimateError:
         logger.exception("Myclimate error")
