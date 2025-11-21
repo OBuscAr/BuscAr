@@ -144,7 +144,7 @@ def calculate_emission_stops(
 ) -> EmissionResponse:
     """
     Calculate the carbon emissions between two coordinate stops
-    for a BUS vehicle.
+    for the given `vehicle_type`.
     """
     distance_ab_km = distance_service.calculate_distance_between_stops(
         db=db,

@@ -31,7 +31,7 @@ def calculate_emission_stops(
 ):
     """
     Calculate the carbon emissions between two coordinate stops
-    for a BUS vehicle.
+    for the given `vehicle_type`.
     """
     try:
         return emission_service.calculate_emission_stops(
