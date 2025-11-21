@@ -5,6 +5,8 @@ from fastapi import status
 from fastapi.testclient import TestClient
 
 from tests.factories.models import DailyLineStatisticsFactory
+from tests.factories.schemas import MyclimateCarbonEmissionFactory
+from tests.helpers import MyclimateHelper
 
 ENDPOINT_URL = "/emissions/lines"
 
@@ -18,6 +20,11 @@ def test_successful_response(client: TestClient):
     # GIVEN
     target_date = date(year=2025, month=11, day=20)
     DailyLineStatisticsFactory.create_batch_sync(size=5, date=target_date)
+    MyclimateHelper.mock_carbon_emission(
+        distance=None,
+        vehicle_type=None,
+        response=MyclimateCarbonEmissionFactory.build(),
+    )
     params = {"date": target_date, "page": 2, "page_size": 3}
 
     # WHEN
@@ -25,4 +32,6 @@ def test_successful_response(client: TestClient):
 
     # THEN
     assert response.status_code == status.HTTP_200_OK
-    LinesEmissionsResponse(**response.json())  # validate schema
+
+    lines_emissions = LinesEmissionsResponse(**response.json()).lines_emissions
+    assert len(lines_emissions) > 0
