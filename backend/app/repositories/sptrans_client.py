@@ -5,19 +5,19 @@ from requests.cookies import RequestsCookieJar
 from app.core.config import settings
 from app.schemas import SPTransLine, SPTransLinesVehiclesResponse
 
-LOGIN_URL = f"{settings.PREFIX_URL}/Login/Autenticar"
+LOGIN_URL = f"{settings.SPTRANS_PREFIX_URL}/Login/Autenticar"
 
 
 def login() -> RequestsCookieJar:
     """
     Login to Olho Vivo API and return the cookies to use in other endpoint calls.
     """
-    response = requests.post(LOGIN_URL, params={"token": settings.API_TOKEN})
+    response = requests.post(LOGIN_URL, params={"token": settings.SPTRANS_API_TOKEN})
     response.raise_for_status()
     return response.cookies
 
 
-LINES_URL = f"{settings.PREFIX_URL}/Linha"
+LINES_URL = f"{settings.SPTRANS_PREFIX_URL}/Linha"
 LINES_LOOK_UP_URL = f"{LINES_URL}/Buscar"
 
 
@@ -37,7 +37,7 @@ def get_lines(credentials: RequestsCookieJar, pattern: str) -> list[SPTransLine]
     return TypeAdapter(list[SPTransLine]).validate_python(response.json())
 
 
-POSITION_URL = f"{settings.PREFIX_URL}/Posicao"
+POSITION_URL = f"{settings.SPTRANS_PREFIX_URL}/Posicao"
 
 
 def get_live_vehicles_positions(

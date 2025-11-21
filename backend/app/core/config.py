@@ -3,9 +3,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     # Olho Vivo
-    # TODO: Refactor env names
-    PREFIX_URL: str = ""
-    API_TOKEN: str = ""
+    SPTRANS_PREFIX_URL: str = ""
+    SPTRANS_API_TOKEN: str = ""
 
     # MyClimate
     MYCLIMATE_USERNAME: str = ""
