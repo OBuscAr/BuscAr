@@ -21,7 +21,7 @@ REPOSITORY_FUNCTION = (
 def test_invalid_start_date():
     """
     GIVEN  a `start_date` in the future
-    WHEN   the `get_emission_statistics` function is called
+    WHEN   the `get_line_emission_statistics` function is called
     THEN   a `ValidationError` should be raised
     """
     # GIVEN
@@ -54,7 +54,7 @@ def test_date_range_conversion(
 ):
     """
     GIVEN  a `start_date` and `days_range`
-    WHEN   the `get_emission_statistics` function is called
+    WHEN   the `get_line_emission_statistics` function is called
     THEN   the correct date range is sent to the repository function
     """
     # GIVEN
@@ -82,7 +82,7 @@ def test_date_range_conversion(
 def test_emission():
     """
     GIVEN  a daily line statistics in database
-    WHEN   the `get_emission_statistics` function is called
+    WHEN   the `get_line_emission_statistics` function is called
     THEN   the distance should be transformed to carbon emission
     """
     # GIVEN
