@@ -16,7 +16,7 @@ def calculate_distance_between_stops(
     """
 
     stop_a = LineStopRepository.get_line_stop(db=db, line_id=line_id, stop_id=stop_a_id)
-    stop_b = LineStopRepository.get_line_stop(db=db, line_id=line_id, stop_id=stop_a_id)
+    stop_b = LineStopRepository.get_line_stop(db=db, line_id=line_id, stop_id=stop_b_id)
 
     # distância real em quilômetros
     return abs(stop_b.distance_traveled - stop_a.distance_traveled)
