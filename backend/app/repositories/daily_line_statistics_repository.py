@@ -8,13 +8,19 @@ from app.models import DailyLineStatisticsModel
 
 def get_daily_line_statistics(
     db: Session,
+    line_id: Optional[int] = None,
     minimum_date: Optional[datetime.date] = None,
     maximum_date: Optional[datetime.date] = None,
-    line_id: Optional[int] = None,
-):
+) -> Query[DailyLineStatisticsModel]:
     """
-    Return the daily line statistics of the given `date`, ordered by
-    decreasing `distance_traveled`.
+    Return the daily line statistics.
+
+    Filter parameters (will be ignored if they are None):
+    - `line_id`: Filter by the given line.
+    - `minimum_date`: Filter objects that have date greater than or equal to
+      the given date.
+    - `maximum_date`: Filter objects that have date less than or equal to
+      the given date.
     """
     query = db.query(DailyLineStatisticsModel)
     if minimum_date is not None:
