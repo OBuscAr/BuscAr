@@ -10,6 +10,7 @@ from app.schemas import (
     EmissionResponse,
     EmissionStatisticsReponse,
     LinesEmissionsResponse,
+    VehicleType,
 )
 from app.services import emission_service
 
@@ -25,6 +26,7 @@ def calculate_emission_stops(
     line_id: int = Query(..., description="ID da Linha (ex: 2607)"),
     stop_id_a: int = Query(..., description="ID da Parada de Origem"),
     stop_id_b: int = Query(..., description="ID da Parada de Destino"),
+    vehicle_type: VehicleType = VehicleType.BUS,
     db: Session = Depends(get_db),
 ):
     """
@@ -36,6 +38,7 @@ def calculate_emission_stops(
             line_id=line_id,
             stop_id_a=stop_id_a,
             stop_id_b=stop_id_b,
+            vehicle_type=vehicle_type,
             db=db,
         )
     except NotFoundError as e:

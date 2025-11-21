@@ -132,10 +132,14 @@ def get_emission_statistics(
     ]
 
 
+AVERAGE_PASSENGERS_PER_BUS = 30
+
+
 def calculate_emission_stops(
     line_id: int,
     stop_id_a: int,
     stop_id_b: int,
+    vehicle_type: VehicleType,
     db: Session,
 ) -> EmissionResponse:
     """
@@ -152,8 +156,10 @@ def calculate_emission_stops(
     # Chama o serviço MyClimate
     emission_calculate_kg = myclimate_client.calculate_carbon_emission(
         distance=distance_ab_km,
-        vehicle_type=VehicleType.BUS,
+        vehicle_type=vehicle_type,
     )
+    if vehicle_type == VehicleType.BUS:
+        emission_calculate_kg /= AVERAGE_PASSENGERS_PER_BUS
 
     return EmissionResponse(
         distance_km=distance_ab_km,
