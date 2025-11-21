@@ -40,6 +40,32 @@ class MyclimateHelper:
         )
 
     @staticmethod
+    def mock_carbon_emission_error(
+        distance: Optional[float],
+        vehicle_type: Optional[VehicleType],
+    ) -> BaseResponse:
+        """
+        Mock the carbon emission endpoint with an error response.
+        """
+        expected_body = {"fuel_type": "diesel"}
+        if distance is not None:
+            expected_body |= {"km": distance}
+        if vehicle_type is not None:
+            if vehicle_type == VehicleType.BUS:
+                expected_body |= {"fuel_consumption": BUS_FUEL_CONSUMPTION}
+            elif vehicle_type == VehicleType.CAR:
+                expected_body |= {"car_type": "small"}
+            else:
+                raise NotImplementedError(f"Type {vehicle_type} not implemented")
+
+        return responses.post(
+            CARBON_EMISSION_URL,
+            status=status.HTTP_200_OK,
+            match=[matchers.json_params_matcher(expected_body, strict_match=False)],
+            json={"errors": {"service": "unavailable"}},
+        )
+
+    @staticmethod
     def mock_carbon_emission_exception(
         status_code: int,
         detail: str,

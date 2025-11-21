@@ -1,7 +1,9 @@
 import requests
-from app.core.config import settings
-from app.schemas import MyclimateCarbonEmission, VehicleType
 from requests.auth import HTTPBasicAuth
+
+from app.core.config import settings
+from app.exceptions import MyclimateError
+from app.schemas import MyclimateCarbonEmission, VehicleType
 
 BUS_FUEL_CONSUMPTION = 46.2
 CARBON_EMISSION_URL = f"{settings.MYCLIMATE_PREFIX_URL}/v1/car_calculators.json"
@@ -33,4 +35,9 @@ def calculate_carbon_emission(distance: float, vehicle_type: VehicleType) -> flo
         json=payload,
     )
     response.raise_for_status()
+
+    json_response = response.json()
+    if "errors" in json_response:
+        raise MyclimateError(json_response["errors"])
+
     return MyclimateCarbonEmission(**response.json()).emission
