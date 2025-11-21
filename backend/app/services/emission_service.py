@@ -36,16 +36,21 @@ def get_emission_lines_ranking(
     lines_statistics = TypeAdapter(list[DailyLineStatistics]).validate_python(
         paginated_results.items
     )
+    emissions = myclimate_client.bulk_calculate_carbon_emission(
+        distances=[
+            line_statistics.distance_traveled for line_statistics in lines_statistics
+        ],
+        vehicle_type=VehicleType.BUS,
+    )
     return LinesEmissionsResponse(
         lines_emissions=[
             LineEmissionResponse(
                 line=line_statistics.line,
-                emission=myclimate_client.calculate_carbon_emission(
-                    distance=line_statistics.distance_traveled,
-                    vehicle_type=VehicleType.BUS,
-                ),
+                emission=emission,
             )
-            for line_statistics in lines_statistics
+            for line_statistics, emission in zip(
+                lines_statistics, emissions, strict=True
+            )
         ],
         pagination=PaginationResponse(
             total_count=paginated_results.item_count,
