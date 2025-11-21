@@ -10,12 +10,14 @@ from app.exceptions import ValidationError
 from app.repositories import daily_line_statistics_repository, myclimate_client
 from app.schemas import (
     DailyLineStatistics,
+    EmissionResponse,
     EmissionStatisticsReponse,
     LineEmissionResponse,
     LinesEmissionsResponse,
     PaginationResponse,
     VehicleType,
 )
+from app.services import distance_service
 
 
 def get_emission_lines_ranking(
@@ -128,3 +130,32 @@ def get_emission_statistics(
         )
         for date, distance in raw_distance_statistics
     ]
+
+
+def calculate_emission_stops(
+    line_id: int,
+    stop_id_a: int,
+    stop_id_b: int,
+    db: Session,
+) -> EmissionResponse:
+    """
+    Calculate the carbon emissions between two coordinate stops
+    for a BUS vehicle.
+    """
+    distance_ab_km = distance_service.calculate_distance_between_stops(
+        db=db,
+        line_id=line_id,
+        stop_a_id=stop_id_a,
+        stop_b_id=stop_id_b,
+    )
+
+    # Chama o serviço MyClimate
+    emission_calculate_kg = myclimate_client.calculate_carbon_emission(
+        distance=distance_ab_km,
+        vehicle_type=VehicleType.BUS,
+    )
+
+    return EmissionResponse(
+        distance_km=distance_ab_km,
+        emission_kg_co2=emission_calculate_kg,
+    )

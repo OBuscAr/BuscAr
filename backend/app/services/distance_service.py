@@ -1,7 +1,8 @@
 from typing import Dict, List, Tuple
 
-from app.models.line_stop import LineStop
 from sqlalchemy.orm import Session
+
+from app.repositories.line_stop_repository import LineStopRepository
 
 
 def calculate_distance_between_stops(
@@ -14,20 +15,8 @@ def calculate_distance_between_stops(
     distance = |dist(stopB) - dist(stopA)|
     """
 
-    stop_a = (
-        db.query(LineStop)
-        .filter(LineStop.line_id == line_id, LineStop.stop_id == stop_a_id)
-        .first()
-    )
-
-    stop_b = (
-        db.query(LineStop)
-        .filter(LineStop.line_id == line_id, LineStop.stop_id == stop_b_id)
-        .first()
-    )
-
-    if not stop_a or not stop_b:
-        raise ValueError("Uma das paradas não pertence à linha especificada.")
+    stop_a = LineStopRepository.get_line_stop(db=db, line_id=line_id, stop_id=stop_a_id)
+    stop_b = LineStopRepository.get_line_stop(db=db, line_id=line_id, stop_id=stop_b_id)
 
     # distância real em quilômetros
     return abs(stop_b.distance_traveled - stop_a.distance_traveled)

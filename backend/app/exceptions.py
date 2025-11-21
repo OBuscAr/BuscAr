@@ -4,3 +4,7 @@ class ValidationError(Exception):
 
 class MyclimateError(Exception):
     pass
+
+
+class NotFoundError(Exception):
+    pass
