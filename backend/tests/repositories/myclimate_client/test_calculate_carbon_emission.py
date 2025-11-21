@@ -40,10 +40,7 @@ def test_error():
     THEN   a `MyclimateError` should be raised
     """
     # GIVEN
-    endpoint_mock = MyclimateHelper.mock_carbon_emission_error(
-        distance=None,
-        vehicle_type=None,
-    )
+    endpoint_mock = MyclimateHelper.mock_carbon_emission_error()
 
     # WHEN
     # THEN
