@@ -5,6 +5,7 @@ from app.models import (  # noqa: F401
     line_stop,
     stop,
     user,
+    user_route,
     vehicle,
 )
 
