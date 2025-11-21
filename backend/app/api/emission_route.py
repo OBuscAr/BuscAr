@@ -6,14 +6,12 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.exceptions import MyclimateError, ValidationError
-from app.repositories import myclimate_client
 from app.schemas import (
     EmissionResponse,
     EmissionStatisticsReponse,
     LinesEmissionsResponse,
-    VehicleType,
 )
-from app.services import distance_service, emission_service
+from app.services import emission_service
 
 logger = logging.getLogger(__name__)
 router = APIRouter(
@@ -30,32 +28,15 @@ def calculate_emission_stops(
     db: Session = Depends(get_db),
 ):
     """
-    Calculate the carbon emissions
-    of a BUS between two coordinate points.
+    Calculate the carbon emissions between two coordinate stops
+    for a BUS vehicle.
     """
-    distance_ab_km: float = 0.0
-    emission_calculate_kg: float = 0.0
-
     try:
-        distance_ab_km = distance_service.calculate_distance_between_stops(
-            db=db,
+        return emission_service.calculate_emission_stops(
             line_id=line_id,
-            stop_a_id=stop_id_a,
-            stop_b_id=stop_id_b,
-        )
-
-        if distance_ab_km == 0:
-            return EmissionResponse(distance_km=0, emission_kg_co2=0)
-
-        # Chama o serviço MyClimate
-        emission_calculate_kg = myclimate_client.calculate_carbon_emission(
-            distance=distance_ab_km,
-            vehicle_type=VehicleType.BUS,
-        )
-
-        return EmissionResponse(
-            distance_km=distance_ab_km,
-            emission_kg_co2=emission_calculate_kg,
+            stop_id_a=stop_id_a,
+            stop_id_b=stop_id_b,
+            db=db,
         )
 
     except NotImplementedError:
