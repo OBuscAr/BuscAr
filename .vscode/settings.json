@@ -22,7 +22,5 @@
         "**/.venv": true,
         "**/__pycache__": true
     },
-    "python.analysis.typeCheckingMode": "basic",
-    "ruff.nativeServer": "on",
-    "ruff.organizeImports": true,
+    "python.analysis.typeCheckingMode": "basic"
 }
