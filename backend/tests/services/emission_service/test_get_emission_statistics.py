@@ -3,6 +3,7 @@ from datetime import date, datetime, timedelta
 import pytest
 from app.constants import SAO_PAULO_ZONE
 from app.core.database import SessionLocal
+from app.exceptions import ValidationError
 from app.repositories.daily_line_statistics_repository import get_daily_line_statistics
 from app.schemas import VehicleType
 from app.services.emission_service import get_line_emission_statistics
@@ -21,7 +22,7 @@ def test_invalid_start_date():
     """
     GIVEN  a `start_date` in the future
     WHEN   the `get_emission_statistics` function is called
-    THEN   a `ValueError` should be raised
+    THEN   a `ValidationError` should be raised
     """
     # GIVEN
     session = SessionLocal()
@@ -29,7 +30,7 @@ def test_invalid_start_date():
 
     # WHEN
     # THEN
-    with pytest.raises(ValueError):
+    with pytest.raises(ValidationError):
         get_line_emission_statistics(
             db=session,
             start_date=today + timedelta(days=1),

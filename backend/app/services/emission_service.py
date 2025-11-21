@@ -6,6 +6,7 @@ from pydantic import TypeAdapter
 from sqlalchemy.orm import Session
 
 from app.constants import SAO_PAULO_ZONE
+from app.exceptions import ValidationError
 from app.repositories import daily_line_statistics_repository, myclimate_client
 from app.schemas import (
     DailyLineStatistics,
@@ -69,7 +70,7 @@ def get_line_emission_statistics(
     """
     today = datetime.datetime.now(tz=SAO_PAULO_ZONE).date()
     if start_date > today:
-        raise ValueError("start_date cannot be in the future")
+        raise ValidationError("start_date cannot be in the future")
 
     end_date = start_date + timedelta(days=days_range - 1)
     end_date = min(end_date, today)

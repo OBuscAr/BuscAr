@@ -5,6 +5,7 @@ from requests.exceptions import HTTPError
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.exceptions import ValidationError
 from app.repositories import myclimate_client
 from app.schemas import (
     EmissionResponse,
@@ -123,7 +124,7 @@ def get_line_emission_statistics(
             days_range=days_range,
             line_id=line_id,
         )
-    except ValueError as e:
+    except ValidationError as e:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(e)
         )
