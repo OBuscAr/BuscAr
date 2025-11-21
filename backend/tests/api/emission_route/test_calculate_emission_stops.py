@@ -89,18 +89,15 @@ def test_calcular_emissao_myclimate_falha(client: TestClient, mocker: MockerFixt
         return_value=12.5,
     )
 
-    exception_detail = "MyClimate API is unavailable"
-    MyclimateHelper.mock_carbon_emission_exception(
-        status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-        detail=exception_detail,
-    )
+    exception_detail = "MyClimate error"
+    MyclimateHelper.mock_carbon_emission_error()
     params = {"line_id": 1, "stop_id_a": 10, "stop_id_b": 20}
 
     # WHEN
     response = client.get(ENDPOINT_URL, params=params)
 
     # THEN
-    assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+    assert response.status_code == status.HTTP_503_SERVICE_UNAVAILABLE
     assert exception_detail in response.json()["detail"]
 
 

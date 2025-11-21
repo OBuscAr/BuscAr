@@ -1,11 +1,11 @@
+import logging
 from datetime import date
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from requests.exceptions import HTTPError
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.exceptions import ValidationError
+from app.exceptions import MyclimateError, ValidationError
 from app.repositories import myclimate_client
 from app.schemas import (
     EmissionResponse,
@@ -15,6 +15,7 @@ from app.schemas import (
 )
 from app.services import distance_service, emission_service
 
+logger = logging.getLogger(__name__)
 router = APIRouter(
     prefix="/emissions",
     tags=["Emissions"],  # Nova tag para a /docs
@@ -58,14 +59,14 @@ def calculate_emission_stops(
         )
 
     except NotImplementedError:
-        raise HTTPException(status_code=501, detail="Tipo de veículo não implementado.")
-    except HTTPError as e:
         raise HTTPException(
-            status_code=500, detail=f"Erro interno no cálculo: {e}: {e.response.text}"
+            status_code=status.HTTP_501_NOT_IMPLEMENTED,
+            detail="Tipo de veículo não implementado.",
         )
-    except Exception as e:
+    except MyclimateError:
+        logger.exception("Myclimate error")
         raise HTTPException(
-            status_code=500, detail=f"Erro interno no cálculo: {str(e)}"
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="MyClimate error"
         )
 
 
@@ -84,12 +85,18 @@ def get_emission_lines_ranking(
     - `page_size` and `page`: results will be divided in blocks of `page_size`
        and the function will return the `page`-th block.
     """
-    return emission_service.get_emission_lines_ranking(
-        date=date,
-        page=page,
-        page_size=page_size,
-        db=db,
-    )
+    try:
+        return emission_service.get_emission_lines_ranking(
+            date=date,
+            page=page,
+            page_size=page_size,
+            db=db,
+        )
+    except MyclimateError:
+        logger.exception("Myclimate error")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="MyClimate error"
+        )
 
 
 @router.get("/lines/statistics")
@@ -127,4 +134,9 @@ def get_line_emission_statistics(
     except ValidationError as e:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(e)
+        )
+    except MyclimateError:
+        logger.exception("Myclimate error")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="MyClimate error"
         )

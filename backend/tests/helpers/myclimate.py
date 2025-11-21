@@ -40,6 +40,17 @@ class MyclimateHelper:
         )
 
     @staticmethod
+    def mock_carbon_emission_error() -> BaseResponse:
+        """
+        Mock the carbon emission endpoint with an error response.
+        """
+        return responses.post(
+            CARBON_EMISSION_URL,
+            status=status.HTTP_200_OK,
+            json={"errors": {"service": "unavailable"}},
+        )
+
+    @staticmethod
     def mock_carbon_emission_exception(
         status_code: int,
         detail: str,
