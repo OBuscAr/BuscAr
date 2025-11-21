@@ -1,16 +1,16 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+
 from jose import jwt
 from passlib.context import CryptContext
 
-SECRET_KEY = "segredo-super-seguro"  # depois colocar no .env
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
+from app.core.config import settings
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+
 def check_password(senha, senha_hash):
     return pwd_context.verify(senha, senha_hash)
-    
+
 
 def generate_hash_password(senha: str) -> str:
     """Gera o hash de uma senha em texto plano."""
@@ -19,9 +19,12 @@ def generate_hash_password(senha: str) -> str:
 
 def create_token(dados: dict):
     to_encode = dados.copy()
-    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    expire = datetime.now(tz=timezone.utc) + timedelta(
+        minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
+    )
     to_encode.update({"exp": expire})
-    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+
 
 # Teste do bcrypt
 
