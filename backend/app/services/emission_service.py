@@ -149,9 +149,6 @@ def calculate_emission_stops(
         stop_b_id=stop_id_b,
     )
 
-    if distance_ab_km == 0:
-        return EmissionResponse(distance_km=0, emission_kg_co2=0)
-
     # Chama o serviço MyClimate
     emission_calculate_kg = myclimate_client.calculate_carbon_emission(
         distance=distance_ab_km,
