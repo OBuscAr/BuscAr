@@ -3,7 +3,7 @@ from typing import Generator
 
 import pytest
 import responses
-from app.core.database import Base, SessionLocal, engine, get_db
+from app.core.database import Base, engine
 from app.main import app
 from fastapi.testclient import TestClient
 
@@ -18,13 +18,6 @@ def client() -> Generator[TestClient, None, None]:
     """
     # Fornece o cliente para os testes
 
-    def test_db():
-        session = SessionLocal()
-        # for some reason we still need to create the tables
-        Base.metadata.create_all(bind=engine)
-        return session
-
-    app.dependency_overrides[get_db] = test_db
     yield TestClient(app)
 
     # Limpa os overrides depois do teste
