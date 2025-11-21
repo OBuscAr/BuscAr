@@ -3,6 +3,7 @@ from uuid import uuid4
 
 from sqlalchemy import UUID, DateTime, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.sql import func
 
 from app.models.base import SerializableBase
 from app.models.line import Line
@@ -42,8 +43,6 @@ class UserRoute(SerializableBase):
     distance: Mapped[float] = mapped_column(nullable=False)
     emission: Mapped[float] = mapped_column(nullable=False)
     emission_saving: Mapped[float] = mapped_column(nullable=False)
-    saved_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        nullable=False,
-        index=True,
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, index=True, server_default=func.now()
     )
