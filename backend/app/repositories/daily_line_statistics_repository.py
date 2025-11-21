@@ -40,7 +40,8 @@ def get_daily_statistics(
     maximum_date: Optional[date] = None,
 ) -> RowReturningQuery[tuple[date, float]]:
     """
-    Return the accumulated daily statistics along all the lines.
+    Return the accumulated daily statistics along all the lines grouped and ordered
+    by date.
 
     Filter parameters (will be ignored if they are None):
     - `minimum_date`: Filter objects that have date greater than or equal to
@@ -59,6 +60,7 @@ def get_daily_statistics(
             func.sum(DailyLineStatisticsModel.distance_traveled),
         )
         .group_by(DailyLineStatisticsModel.date)
+        .order_by(DailyLineStatisticsModel.date)
     )
 
     return query

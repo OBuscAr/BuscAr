@@ -38,3 +38,21 @@ def test_sum():
     for current_date, distance_sum in results:
         assert current_date in expected_sums
         assert math.isclose(distance_sum, expected_sums[current_date], abs_tol=1e-3)
+
+
+def test_order():
+    """
+    GIVEN  some daily line statistics in database
+    WHEN   the `get_daily_statistics` function is called
+    THEN   the results should be ordered by date
+    """
+    # GIVEN
+    session = SessionLocal()
+    DailyLineStatisticsFactory.create_batch_sync(size=10)
+
+    # WHEN
+    results = get_daily_statistics(db=session).all()
+
+    # THEN
+    assert len(results) > 1
+    assert all(results[i][0] <= results[i + 1][0] for i in range(len(results) - 1))

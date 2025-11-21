@@ -104,7 +104,8 @@ def get_emission_statistics(
 ) -> list[EmissionStatisticsReponse]:
     """
     Return the accumulated emissions of all the SPTrans lines for each date
-    in the range from `start_date` to `days_range` after that.
+    in the range from `start_date` to `days_range` after that. The results
+    will be ordered by date.
     """
     today = datetime.datetime.now(tz=SAO_PAULO_ZONE).date()
     if start_date > today:
