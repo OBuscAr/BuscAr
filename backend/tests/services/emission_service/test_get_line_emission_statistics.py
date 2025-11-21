@@ -111,3 +111,6 @@ def test_emission():
     assert len(results) == 1
     [returned_line_emission] = results
     assert returned_line_emission.total_emission == emission_response.emission
+    assert (
+        returned_line_emission.total_distance == daily_line_statistics.distance_traveled
+    )
