@@ -1,3 +1,5 @@
+import random
+
 import pytest
 from app.exceptions import MyclimateError
 from app.repositories.myclimate_client import calculate_carbon_emission
@@ -31,6 +33,24 @@ def test_response(vehicle_type: VehicleType):
     # THEN
     assert returned_emission == expected_emission.emission
     assert endpoint_mock.call_count == 1
+
+
+def test_smaller_distances():
+    """
+    GIVEN  a distance less than 1 to be sent to Myclimate API
+    WHEN   the `calculate_carbon_emission` is called
+    THEN   the funciton should return 0 without calling Myclimate
+    """
+    # GIVEN
+    vehicle_type = random.choice(list(VehicleType))
+    endpoint_mock = MyclimateHelper.mock_carbon_emission_error()
+
+    # WHEN
+    returned_emission = calculate_carbon_emission(distance=0, vehicle_type=vehicle_type)
+
+    # THEN
+    assert returned_emission == 0
+    assert endpoint_mock.call_count == 0
 
 
 def test_error():

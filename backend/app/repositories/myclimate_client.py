@@ -18,6 +18,9 @@ def calculate_carbon_emission(distance: float, vehicle_type: VehicleType) -> flo
     - `distance`: Distance in km.
     - `vehicle_type`: Bus or car type.
     """
+    if distance < 1:
+        # Myclimate does not supporte distances less than 1
+        return 0
     payload = {
         "fuel_type": "diesel",
         "km": distance,
