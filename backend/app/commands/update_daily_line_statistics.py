@@ -2,7 +2,6 @@ import logging
 import time
 from datetime import datetime, timedelta
 from typing import Sequence
-from zoneinfo import ZoneInfo
 
 import schedule
 from geopy import distance
@@ -10,6 +9,7 @@ from requests.cookies import RequestsCookieJar
 from sqlalchemy import update
 from tqdm import tqdm as progress_bar
 
+from app.constants import SAO_PAULO_ZONE
 from app.core.database import SessionLocal
 from app.models import DailyLineStatisticsModel, LineModel, VehicleModel
 from app.repositories import sptrans_client
@@ -133,7 +133,7 @@ def update_daily_line_statistics(
         lines_statistics = update_vehicle_positions(lines_vehicles)
 
         session = SessionLocal()
-        today = datetime.now(tz=ZoneInfo("America/Sao_Paulo")).date()
+        today = datetime.now(tz=SAO_PAULO_ZONE).date()
 
         database_statistics = {
             line_statistics.line_id: line_statistics

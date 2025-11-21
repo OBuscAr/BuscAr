@@ -1,11 +1,11 @@
-from datetime import date, timedelta
-from typing import Optional
+from datetime import date
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from requests.exceptions import HTTPError
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.exceptions import ValidationError
 from app.repositories import myclimate_client
 from app.schemas import (
     EmissionResponse,
@@ -92,24 +92,39 @@ def get_emission_lines_ranking(
     )
 
 
-@router.get("/statistics")
+@router.get("/lines/statistics")
 def get_emission_statistics(
     start_date: date,
     days_range: int = Query(le=100, ge=1),
-    line_id: Optional[int] = None,
     db: Session = Depends(get_db),
 ) -> list[EmissionStatisticsReponse]:
     """
     Return the accumulate emissions of all the SPTrans lines for each date
     in the range from `start_date` to `days_range` after that.
-    If there is no data for some date, null fields will be returned for that entry.
-
-    Optinally, a `line_id` can be given to filter the emission statistics.
     """
     # TODO: Implement
-    return [
-        EmissionStatisticsReponse(
-            total_emission=None, date=start_date + timedelta(days=d)
+    return []
+
+
+@router.get("/lines/{line_id}/statistics")
+def get_line_emission_statistics(
+    start_date: date,
+    line_id: int,
+    days_range: int = Query(le=100, ge=1),
+    db: Session = Depends(get_db),
+) -> list[EmissionStatisticsReponse]:
+    """
+    Return the accumulate emissions of the given line for each date
+    in the range from `start_date` to `days_range` after that.
+    """
+    try:
+        return emission_service.get_line_emission_statistics(
+            db=db,
+            start_date=start_date,
+            days_range=days_range,
+            line_id=line_id,
         )
-        for d in range(days_range)
-    ]
+    except ValidationError as e:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(e)
+        )
