@@ -50,6 +50,7 @@ def get_emission_lines_ranking(
                     distance=line_statistics.distance_traveled,
                     vehicle_type=VehicleType.BUS,
                 ),
+                distance=line_statistics.distance_traveled,
             )
             for line_statistics in lines_statistics
         ],
@@ -93,6 +94,7 @@ def get_line_emission_statistics(
                 distance=line_statistics.distance_traveled,
                 vehicle_type=VehicleType.BUS,
             ),
+            total_distance=line_statistics.distance_traveled,
             date=line_statistics.date,
         )
         for line_statistics in daily_lines_statistics
@@ -127,6 +129,7 @@ def get_emission_statistics(
                 distance=distance,
                 vehicle_type=VehicleType.BUS,
             ),
+            total_distance=distance,
         )
         for date, distance in raw_distance_statistics
     ]
