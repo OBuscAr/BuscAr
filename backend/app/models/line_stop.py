@@ -1,9 +1,11 @@
 from uuid import uuid4
 
 from sqlalchemy import UUID, ForeignKey, UniqueConstraint
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import SerializableBase
+from app.models.line import Line
+from app.models.stop import Stop
 
 
 class LineStop(SerializableBase):
@@ -11,7 +13,11 @@ class LineStop(SerializableBase):
 
     id: Mapped[UUID] = mapped_column(UUID, primary_key=True, index=True, default=uuid4)
     line_id: Mapped[int] = mapped_column(ForeignKey("line.id"), index=True)
+    line: Mapped[Line] = relationship(Line)
+
     stop_id: Mapped[int] = mapped_column(ForeignKey("stop.id"), index=True)
+    stop: Mapped[Stop] = relationship(Stop)
+
     stop_order: Mapped[int] = mapped_column(index=True, nullable=False)
     distance_traveled: Mapped[float] = mapped_column(nullable=False)
 
