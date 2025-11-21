@@ -2,7 +2,7 @@ from datetime import date
 
 import pytest
 from app.core.database import SessionLocal
-from app.schemas import VehicleType
+from app.schemas import MyclimateBulkCarbonEmission, VehicleType
 from app.services.emission_service import get_emission_lines_ranking
 
 from tests.factories.models import DailyLineStatisticsFactory
@@ -41,10 +41,12 @@ def test_pagination(
     expected_lines = [stats.line_id for stats in daily_lines_statistics][
         slice(*expected_range)
     ]
-    MyclimateHelper.mock_carbon_emission(
-        distance=None,
+    MyclimateHelper.mock_bulk_carbon_emission(
+        distances=None,
         vehicle_type=None,
-        response=MyclimateCarbonEmissionFactory.build(),
+        response=MyclimateBulkCarbonEmission(
+            trips=MyclimateCarbonEmissionFactory.batch(size=len(expected_lines))
+        ),
     )
 
     # WHEN
@@ -74,10 +76,10 @@ def test_emission():
     target_date = date(year=2025, month=11, day=20)
     daily_line_statistics = DailyLineStatisticsFactory.create_sync(date=target_date)
     emission_response = MyclimateCarbonEmissionFactory.build()
-    MyclimateHelper.mock_carbon_emission(
-        distance=daily_line_statistics.distance_traveled,
+    MyclimateHelper.mock_bulk_carbon_emission(
+        distances=[daily_line_statistics.distance_traveled],
         vehicle_type=VehicleType.BUS,
-        response=emission_response,
+        response=MyclimateBulkCarbonEmission(trips=[emission_response]),
     )
 
     # WHEN

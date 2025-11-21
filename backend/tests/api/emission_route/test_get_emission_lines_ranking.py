@@ -1,6 +1,6 @@
 from datetime import date
 
-from app.schemas import LinesEmissionsResponse
+from app.schemas import LinesEmissionsResponse, MyclimateBulkCarbonEmission
 from fastapi import status
 from fastapi.testclient import TestClient
 
@@ -19,13 +19,16 @@ def test_successful_response(client: TestClient):
     """
     # GIVEN
     target_date = date(year=2025, month=11, day=20)
-    DailyLineStatisticsFactory.create_batch_sync(size=5, date=target_date)
-    MyclimateHelper.mock_carbon_emission(
-        distance=None,
+    n_objects = 5
+    DailyLineStatisticsFactory.create_batch_sync(size=n_objects, date=target_date)
+    MyclimateHelper.mock_bulk_carbon_emission(
+        distances=None,
         vehicle_type=None,
-        response=MyclimateCarbonEmissionFactory.build(),
+        response=MyclimateBulkCarbonEmission(
+            trips=MyclimateCarbonEmissionFactory.batch(size=n_objects)
+        ),
     )
-    params = {"date": target_date, "page": 2, "page_size": 3}
+    params = {"date": target_date, "page": 1, "page_size": n_objects}
 
     # WHEN
     response = client.get(ENDPOINT_URL, params=params)
