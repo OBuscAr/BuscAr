@@ -27,7 +27,7 @@ def update_vehicle_positions(
     Update the vehicle positions and return the difference in distance traveled
     for each line.
     """
-    logger.info(f"Analizando {len(lines_vehicles)} linhas com veículos...")
+    logger.info(f"Analisando {len(lines_vehicles)} linhas com veículos...")
 
     session = SessionLocal()
     vehicles_ids: list[int] = []

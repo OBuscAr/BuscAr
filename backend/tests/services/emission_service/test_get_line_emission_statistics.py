@@ -1,28 +1,27 @@
 from datetime import date, datetime, timedelta
 
 import pytest
-import sqlalchemy
 from app.constants import SAO_PAULO_ZONE
 from app.core.database import SessionLocal
 from app.exceptions import ValidationError
-from app.repositories.daily_line_statistics_repository import get_daily_statistics
+from app.repositories.daily_line_statistics_repository import get_daily_line_statistics
 from app.schemas import VehicleType
-from app.services.emission_service import get_emission_statistics
+from app.services.emission_service import get_line_emission_statistics
 from pytest_mock import MockerFixture
 
-from tests.factories.models import DailyLineStatisticsFactory
+from tests.factories.models import DailyLineStatisticsFactory, LineFactory
 from tests.factories.schemas import MyclimateCarbonEmissionFactory
 from tests.helpers import MyclimateHelper
 
 REPOSITORY_FUNCTION = (
-    f"{get_daily_statistics.__module__}.{get_daily_statistics.__name__}"
+    f"{get_daily_line_statistics.__module__}.{get_daily_line_statistics.__name__}"
 )
 
 
 def test_invalid_start_date():
     """
     GIVEN  a `start_date` in the future
-    WHEN   the `get_emission_statistics` function is called
+    WHEN   the `get_line_emission_statistics` function is called
     THEN   a `ValidationError` should be raised
     """
     # GIVEN
@@ -32,10 +31,11 @@ def test_invalid_start_date():
     # WHEN
     # THEN
     with pytest.raises(ValidationError):
-        get_emission_statistics(
+        get_line_emission_statistics(
             db=session,
             start_date=today + timedelta(days=1),
             days_range=1,
+            line_id=1,
         )
 
 
@@ -54,22 +54,20 @@ def test_date_range_conversion(
 ):
     """
     GIVEN  a `start_date` and `days_range`
-    WHEN   the `get_emission_statistics` function is called
+    WHEN   the `get_line_emission_statistics` function is called
     THEN   the correct date range is sent to the repository function
     """
     # GIVEN
     session = SessionLocal()
-    mocked = mocker.patch(
-        REPOSITORY_FUNCTION,
-        return_value=session.query(sqlalchemy.false()).filter(sqlalchemy.false()),
-        # empty query
-    )
+    mocked = mocker.patch(REPOSITORY_FUNCTION, return_value=[])
+    line_id = 1
 
     # WHEN
-    get_emission_statistics(
+    get_line_emission_statistics(
         db=session,
         start_date=start_date,
         days_range=days_range,
+        line_id=line_id,
     )
 
     # THEN
@@ -77,19 +75,23 @@ def test_date_range_conversion(
         minimum_date=start_date,
         maximum_date=expected_end_date,
         db=session,
+        line_id=line_id,
     )
 
 
 def test_emission():
     """
     GIVEN  a daily line statistics in database
-    WHEN   the `get_emission_statistics` function is called
+    WHEN   the `get_line_emission_statistics` function is called
     THEN   the distance should be transformed to carbon emission
     """
     # GIVEN
     session = SessionLocal()
     target_date = date(year=2025, month=11, day=20)
-    daily_line_statistics = DailyLineStatisticsFactory.create_sync(date=target_date)
+    target_line = LineFactory.create_sync()
+    daily_line_statistics = DailyLineStatisticsFactory.create_sync(
+        date=target_date, line=target_line
+    )
     emission_response = MyclimateCarbonEmissionFactory.build()
     MyclimateHelper.mock_carbon_emission(
         distance=daily_line_statistics.distance_traveled,
@@ -98,10 +100,11 @@ def test_emission():
     )
 
     # WHEN
-    results = get_emission_statistics(
+    results = get_line_emission_statistics(
         db=session,
         start_date=target_date,
         days_range=1,
+        line_id=target_line.id,
     )
 
     # THEN

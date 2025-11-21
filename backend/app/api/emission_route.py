@@ -106,11 +106,25 @@ def get_emission_statistics(
     db: Session = Depends(get_db),
 ) -> list[EmissionStatisticsReponse]:
     """
-    Return the accumulate emissions of all the SPTrans lines for each date
-    in the range from `start_date` to `days_range` after that.
+    Return the accumulated emissions of all the SPTrans lines for each date
+    in the range from `start_date` to `days_range` after that. The results
+    will be ordered by date.
     """
-    # TODO: Implement
-    return []
+    try:
+        return emission_service.get_emission_statistics(
+            db=db,
+            start_date=start_date,
+            days_range=days_range,
+        )
+    except ValidationError as e:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(e)
+        )
+    except MyclimateError:
+        logger.exception("Myclimate error")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="MyClimate error"
+        )
 
 
 @router.get("/lines/{line_id}/statistics")
@@ -121,7 +135,7 @@ def get_line_emission_statistics(
     db: Session = Depends(get_db),
 ) -> list[EmissionStatisticsReponse]:
     """
-    Return the accumulate emissions of the given line for each date
+    Return the accumulated emissions of the given line for each date
     in the range from `start_date` to `days_range` after that.
     """
     try:

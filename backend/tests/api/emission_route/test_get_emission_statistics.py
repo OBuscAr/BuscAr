@@ -10,23 +10,19 @@ from tests.factories.models import DailyLineStatisticsFactory, LineFactory
 from tests.factories.schemas import MyclimateCarbonEmissionFactory
 from tests.helpers import MyclimateHelper
 
-ENDPOINT_URL = "/emissions/lines/{line_id}/statistics"
+ENDPOINT_URL = "/emissions/lines/statistics"
 
 
 def test_successful_response(client: TestClient):
     """
     GIVEN  a valid start date and some daily line statistics in database
-    WHEN   the `/emissions/lines/{line_id/statistics` endpoint is called
+    WHEN   the `/emissions/lines/statistics` endpoint is called
     THEN   a response with status `HTTP_200_OK` should be returned
     """
     # GIVEN
     start_date = date(year=2025, month=7, day=15)
-    line = LineFactory.create_sync()
     for d in range(5):
-        DailyLineStatisticsFactory.create_sync(
-            line=line,
-            date=start_date + timedelta(days=d),
-        )
+        DailyLineStatisticsFactory.create_sync(date=start_date + timedelta(days=d))
     MyclimateHelper.mock_carbon_emission(
         distance=None,
         vehicle_type=None,
@@ -35,7 +31,7 @@ def test_successful_response(client: TestClient):
     params = {"start_date": start_date, "days_range": 10}
 
     # WHEN
-    response = client.get(ENDPOINT_URL.format(line_id=line.id), params=params)
+    response = client.get(ENDPOINT_URL, params=params)
 
     # THEN
     assert response.status_code == status.HTTP_200_OK
@@ -49,7 +45,7 @@ def test_successful_response(client: TestClient):
 def test_invalid_date(client: TestClient):
     """
     GIVEN  an start date in the future
-    WHEN   the `/emissions/lines/{line_id}/statistics` endpoint is called
+    WHEN   the `/emissions/lines/statistics` endpoint is called
     THEN   a response with status `HTTP_422_UNPROCESSABLE_CONTENT` should be returned
     """
     # GIVEN
@@ -68,7 +64,7 @@ def test_invalid_date(client: TestClient):
 def test_myclimate_error(client: TestClient):
     """
     GIVEN  an error of Myclimate API
-    WHEN   the `/emissions/lines/{line_id}/statistics` endpoint is called
+    WHEN   the `/emissions/lines/statistics` endpoint is called
     THEN   a response with status `HTTP_503_SERVICE_UNAVAILABLE` should be returned
     """
     # GIVEN
