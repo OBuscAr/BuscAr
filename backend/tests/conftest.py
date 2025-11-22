@@ -8,7 +8,7 @@ from app.main import app
 from fastapi.testclient import TestClient
 
 from tests.factories import models
-from tests.helpers import SPTransHelper
+from tests.helpers import LoginHelper, SPTransHelper
 
 
 @pytest.fixture(scope="function")
@@ -17,7 +17,7 @@ def client() -> Generator[TestClient, None, None]:
     Fixture that creates the TestClient.
     """
     # Fornece o cliente para os testes
-
+    LoginHelper.mock_current_user()
     yield TestClient(app)
 
     # Limpa os overrides depois do teste

@@ -17,4 +17,5 @@ from app.schemas.sptrans.vehicle import (
     SPTransVehicle,
 )
 from app.schemas.stop import Stop
+from app.schemas.user_schema import LoginResponse
 from app.schemas.vehicle_type import VehicleType
