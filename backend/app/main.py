@@ -7,6 +7,7 @@ from app.api import (
     emission_route,
     line_route,  # importa a rota de linhas
     login_route,  # importa a rota de login
+    route_route,
     user_route,  # importa a rota de cadastro
 )
 
@@ -40,3 +41,4 @@ app.include_router(login_route.router)  # registra o endpoint /login
 app.include_router(user_route.router)  # registra o endpoint
 app.include_router(line_route.router)  # registra o endpoint /lines
 app.include_router(emission_route.router)  # registra o endpoint /emission
+app.include_router(route_route.router)

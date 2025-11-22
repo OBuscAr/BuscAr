@@ -1,8 +1,7 @@
 from datetime import datetime
 
-from sqlalchemy import DateTime
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy.sql import func
+from sqlalchemy_utc import UtcDateTime, utcnow
 
 from app.models.base import SerializableBase
 
@@ -14,4 +13,4 @@ class User(SerializableBase):
     nome: Mapped[str] = mapped_column(nullable=False)
     email: Mapped[str] = mapped_column(unique=True, index=True, nullable=False)
     senha_hash: Mapped[str] = mapped_column(nullable=False)
-    criado_em: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    criado_em: Mapped[datetime] = mapped_column(UtcDateTime, server_default=utcnow())

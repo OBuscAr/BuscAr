@@ -1,8 +1,9 @@
-from app.schemas import EmissionResponse, MyclimateCarbonEmission, VehicleType
+from app.schemas import EmissionResponse, VehicleType
 from fastapi import status
 from fastapi.testclient import TestClient
 from pytest_mock import MockerFixture
 
+from tests.factories.models import LineFactory, LineStopFactory, StopFactory
 from tests.factories.schemas import MyclimateCarbonEmissionFactory
 from tests.helpers import MyclimateHelper
 
@@ -11,35 +12,37 @@ ENDPOINT_URL = "/emissions"
 
 def test_calcular_emissao_sucesso(client: TestClient, mocker: MockerFixture):
     """
-    GIVEN  a test client
+    GIVEN  existing line, stops and line_stops, and a test client
     WHEN   the `/emissions` endpoint is called with valid coordinates
            and we "mock" (simulate) the distance and myclimate_client
     THEN   the endpoint should return 200 OK and the JSON with the calculated data.
     """
     # GIVEN
-    distance = 12.5
-    mocker.patch(
-        "app.services.distance_service.calculate_distance_between_stops",
-        return_value=12.5,
-    )
-
-    emission = 50.0
     MyclimateHelper.mock_carbon_emission(
-        distance=distance,
+        distance=None,
         vehicle_type=VehicleType.BUS,
-        response=MyclimateCarbonEmission(kg=emission),
+        response=MyclimateCarbonEmissionFactory.build(),
     )
-    params = {"line_id": 1, "stop_id_a": 10, "stop_id_b": 20}  # Coordenadas de teste
+    line = LineFactory.create_sync()
+    stop_a = StopFactory.create_sync()
+    stop_b = StopFactory.create_sync()
+    LineStopFactory.create_sync(line=line, stop=stop_a)
+    LineStopFactory.create_sync(line=line, stop=stop_b)
+    params = {
+        "line_id": line.id,
+        "stop_id_a": stop_a.id,
+        "stop_id_b": stop_b.id,
+    }
 
     # WHEN
     response = client.get(ENDPOINT_URL, params=params)
 
     # THEN
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == status.HTTP_200_OK, response.json()
     EmissionResponse(**response.json())
 
 
-def test_line_stop_not_found(client: TestClient, mocker: MockerFixture):
+def test_line_stop_not_found(client: TestClient):
     """
     GIVEN  a line without the given stop
     WHEN   the `/emissions` endpoint is called
