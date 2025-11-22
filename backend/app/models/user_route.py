@@ -1,9 +1,9 @@
 from datetime import datetime
 from uuid import uuid4
 
-from sqlalchemy import UUID, DateTime, ForeignKey
+from sqlalchemy import UUID, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy.sql import func
+from sqlalchemy_utc import UtcDateTime, utcnow
 
 from app.models.base import SerializableBase
 from app.models.line import Line
@@ -44,5 +44,8 @@ class UserRoute(SerializableBase):
     emission: Mapped[float] = mapped_column(nullable=False)
     emission_saving: Mapped[float] = mapped_column(nullable=False)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, index=True, server_default=func.now()
+        UtcDateTime,
+        nullable=False,
+        index=True,
+        server_default=utcnow(),
     )
