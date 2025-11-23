@@ -10,6 +10,8 @@ const PainelLayout = lazy(() => import('./pages/PainelLayout'));
 const DashboardPage = lazy(() => import('./pages/DashboardPage'));
 const ComparativosPage = lazy(() => import('./pages/ComparativosPage'));
 const PlaceholderPage = lazy(() => import('./pages/PlaceholderPage'));
+const EmissionHistoryPage = lazy(() => import('./pages/EmissionHistoryPage'));
+const FleetPhotosPage = lazy(() => import('./pages/FleetPhotosPage'));
 
 import './style/App.css'; 
 
@@ -25,15 +27,16 @@ function App() {
           <Route path="/analise"  element={<PlaceholderPage title="Análise" />} />
           <Route path="/termos"   element={<PlaceholderPage title="Termos"  />} />
 
-          <Route path="/painel"   element={<PainelLayout />}>
-            <Route index               element={<DashboardPage />} /> 
-            <Route path="comparativos" element={<ComparativosPage />} />
-            <Route path="historico"    element={<PlaceholderPage title="Histórico de Emissões" />} />
-            <Route path="fotografias"  element={<PlaceholderPage title="Fotografias da Frota" />} />
-          </Route>
+
           
           {/* --- Rotas Restritas (Painel) --- */}
           <Route element={<ProtectedRoute />}>
+            <Route path="/painel"   element={<PainelLayout />}>
+              <Route index               element={<DashboardPage />} /> 
+              <Route path="comparativos" element={<ComparativosPage />} />
+              <Route path="historico"    element={<EmissionHistoryPage />} />
+              <Route path="fotografias"  element={<FleetPhotosPage />} />
+            </Route>
           </Route>
           
           {/* Rota para qualquer URL não encontrada */}
