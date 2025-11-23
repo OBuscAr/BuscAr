@@ -9,7 +9,7 @@ from tqdm import tqdm as progress_bar
 from app.commands.sptrans_static_data import SPTRANS_DATA_PATH
 from app.core.database import SessionLocal
 from app.models import LineModel, LineStopModel, StopModel
-from app.schemas import SPTransLineDirection
+from app.schemas import SPTransLineDirection, SPTransShape
 from app.services import distance_service
 
 SHAPES_FILE = os.path.join(SPTRANS_DATA_PATH, "shapes.txt")
@@ -30,29 +30,26 @@ def load_trips(max_rows: Optional[int] = None) -> dict[str, str]:
     return mapping
 
 
-def load_shapes(max_rows: Optional[int] = None) -> dict[str, list[dict]]:
-    shapes: dict[str, list[dict]] = {}
+def load_shapes(max_rows: Optional[int] = None) -> dict[str, list[SPTransShape]]:
+    shapes: dict[str, list[SPTransShape]] = {}
     with open(SHAPES_FILE, newline="", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         for index, row in enumerate(reader):
             if max_rows is not None and index > max_rows:
                 break
             shape_id = row["shape_id"]
-            entry = {
-                "lat": float(row["shape_pt_lat"]),
-                "lon": float(row["shape_pt_lon"]),
-                "sequence": int(row["shape_pt_sequence"]),
-                "dist": (
-                    float(row["shape_dist_traveled"])
-                    if row["shape_dist_traveled"]
-                    else None
-                ),
-            }
-            shapes.setdefault(shape_id, []).append(entry)
+            shapes.setdefault(shape_id, []).append(
+                SPTransShape(
+                    latitude=float(row["shape_pt_lat"]),
+                    longitude=float(row["shape_pt_lon"]),
+                    sequence=int(row["shape_pt_sequence"]),
+                    distance=float(row["shape_dist_traveled"]),
+                )
+            )
 
     # ordenar
     for sid in shapes:
-        shapes[sid].sort(key=lambda p: p["sequence"])
+        shapes[sid].sort(key=lambda p: p.sequence)
 
     return shapes
 
@@ -126,8 +123,8 @@ def create_line_stops(max_rows: Optional[int] = None) -> None:
                 closest = distance_service.find_closest_shape_point(
                     shape_points, coords
                 )
-                if closest and closest["dist"] is not None:
-                    dist_km = closest["dist"] / 1000.0
+                if closest is not None:
+                    dist_km = closest.distance / 1000.0
 
         line_stop = LineStopModel(
             line_id=line_id,
