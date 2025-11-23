@@ -15,7 +15,7 @@ def create_user_route(db: Session, user_route: UserRouteModel) -> UserRouteModel
 
 def get_user_routes(db: Session, user_id: int) -> Query[UserRouteModel]:
     """
-    Get the routes of the given user, ordered by decreasing created time.
+    Return the routes of the given user, ordered by decreasing created time.
     """
     return (
         db.query(UserRouteModel)

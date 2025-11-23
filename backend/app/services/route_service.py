@@ -1,3 +1,4 @@
+from pydantic import TypeAdapter
 from sqlalchemy.orm import Session
 
 from app.models import UserRouteModel
@@ -45,3 +46,11 @@ def create_route(
     )
 
     return Route.model_validate(created_user_route)
+
+
+def get_routes(db: Session, user_id: int) -> list[Route]:
+    """
+    Return the routes of the given user, ordered by decreasing created time.
+    """
+    routes = user_route_repository.get_user_routes(db=db, user_id=user_id)
+    return TypeAdapter(list[Route]).validate_python(routes)
