@@ -1,5 +1,6 @@
 import inspect
 from typing import Generator
+from unittest.mock import patch
 
 import pytest
 import responses
@@ -40,8 +41,12 @@ def setup_before_and_after_tests():
     for _, factory in inspect.getmembers(models, inspect.isclass):
         factory.__session__ = session
 
+    mocked = patch("time.sleep", return_value=None)
+    mocked.start()
+
     yield
 
     # After each test
     Base.metadata.drop_all(bind=engine)
     responses.reset()
+    mocked.stop()
