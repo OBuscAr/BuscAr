@@ -1,3 +1,7 @@
+class ForbiddenError(Exception):
+    pass
+
+
 class ValidationError(Exception):
     pass
 
