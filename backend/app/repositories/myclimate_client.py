@@ -48,12 +48,15 @@ def calculate_carbon_emission(distance: float, vehicle_type: VehicleType) -> flo
     else:
         raise NotImplementedError(f"O tipo {vehicle_type} não foi implementado")
 
-    response = requests.post(
-        CARBON_EMISSION_URL,
-        auth=AUTH,
-        json=payload,
-    )
-    response.raise_for_status()
+    try:
+        response = requests.post(
+            CARBON_EMISSION_URL,
+            auth=AUTH,
+            json=payload,
+        )
+        response.raise_for_status()
+    except Exception as e:
+        raise MyclimateError from e
 
     json_response = response.json()
     if "errors" in json_response:
