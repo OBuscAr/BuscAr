@@ -8,6 +8,7 @@ from polyfactory.factories.sqlalchemy_factory import SQLAlchemyFactory
 class UserRouteFactory(SQLAlchemyFactory[UserRouteModel]):
     __check_model__ = False
     __set_relationships__ = True
+    __set_as_default_factory_for_type__ = True
 
     created_at = Use(
         lambda: UserRouteFactory.__faker__.date_time_between(

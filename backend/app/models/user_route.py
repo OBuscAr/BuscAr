@@ -1,7 +1,8 @@
 from datetime import datetime
-from uuid import uuid4
+from uuid import UUID, uuid4
 
-from sqlalchemy import UUID, ForeignKey
+from sqlalchemy import UUID as UUID_SQL
+from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy_utc import UtcDateTime, utcnow
 
@@ -14,7 +15,9 @@ from app.models.user import User
 class UserRoute(SerializableBase):
     __tablename__ = "user_route"
 
-    id: Mapped[UUID] = mapped_column(UUID, primary_key=True, index=True, default=uuid4)
+    id: Mapped[UUID] = mapped_column(
+        UUID_SQL, primary_key=True, index=True, default=uuid4
+    )
 
     user_id: Mapped[int] = mapped_column(
         ForeignKey("users.id"),
