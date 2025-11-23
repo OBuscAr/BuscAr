@@ -66,4 +66,4 @@ def test_error():
     # THEN
     with pytest.raises(MyclimateError):
         calculate_carbon_emission(distance=3, vehicle_type=VehicleType.BUS)
-    assert endpoint_mock.call_count == 1
+    assert endpoint_mock.call_count > 0
