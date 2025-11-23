@@ -20,21 +20,19 @@ AUTH = HTTPBasicAuth(settings.MYCLIMATE_USERNAME, settings.MYCLIMATE_PASSWORD)
 logger = logging.getLogger(__name__)
 
 def _calculate_mock_emission(distance: float, vehicle_type: VehicleType) -> float:
-    """
-    Cálculo mock de emissões para quando a API não está disponível.
-    Baseado em valores aproximados: ~0.6 kg CO2/km para ônibus diesel.
-    """
+    """Cálculo mock para fallback ou falta de credenciais."""
     if distance < 1:
         return 0
-    
     if vehicle_type == VehicleType.BUS:
-        # Aproximadamente 0.6 kg CO2 por km para ônibus diesel
         return distance * 0.6
-    elif vehicle_type == VehicleType.CAR:
-        # Aproximadamente 0.12 kg CO2 por km para carro pequeno
+    if vehicle_type == VehicleType.CAR:
         return distance * 0.12
+<<<<<<< HEAD
     else:
         raise NotImplementedError(f"O tipo {vehicle_type} não foi implementado")
+=======
+    raise NotImplementedError(f"O tipo {vehicle_type} não foi implementado")
+>>>>>>> 34baacc (Add retries to external apis (#58))
 
 @retry(
     reraise=True,
@@ -81,5 +79,4 @@ def calculate_carbon_emission(distance: float, vehicle_type: VehicleType) -> flo
             raise MyclimateError(json_response["errors"])
         return MyclimateCarbonEmission(**json_response).emission
     except (requests.RequestException, MyclimateError, Exception):
-        # Fallback para cálculo mock em caso de erro
         return _calculate_mock_emission(distance, vehicle_type)
