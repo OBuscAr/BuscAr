@@ -46,3 +46,17 @@ def create_route(
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="MyClimate error"
         )
+
+
+@router.get("")
+def get_routes(
+    user: UserModel = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> list[Route]:
+    """
+    Return the routes of the user, ordered by decreasing created time.
+    """
+    return route_service.get_routes(
+        user_id=user.id,
+        db=db,
+    )
