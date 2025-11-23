@@ -17,8 +17,8 @@ TRIPS_FILE = os.path.join(SPTRANS_DATA_PATH, "trips.txt")
 STOPS_FILE = os.path.join(SPTRANS_DATA_PATH, "stop_times.txt")
 
 
-def load_trips(max_rows: Optional[int] = None) -> dict[int, str]:
-    mapping: dict[int, str] = {}
+def load_trips(max_rows: Optional[int] = None) -> dict[str, str]:
+    mapping: dict[str, str] = {}
     with open(TRIPS_FILE, newline="", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         for index, row in enumerate(reader):
@@ -80,7 +80,7 @@ def create_line_stops(max_rows: Optional[int] = None) -> None:
         session.execute(select(LineStopModel.line_id, LineStopModel.stop_id)).all()
     )
     existing_lines = session.query(LineModel).all()
-    lines_by_name_direction: dict[str, str] = {
+    lines_by_name_direction: dict[str, int] = {
         f"{line.name}-{SPTransLineDirection[line.direction].value - 1}": line.id
         for line in existing_lines
     }
