@@ -1,10 +1,11 @@
 import logging
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.exceptions import MyclimateError, NotFoundError
+from app.exceptions import ForbiddenError, MyclimateError, NotFoundError
 from app.models import UserModel
 from app.schemas import Route
 from app.services import route_service
@@ -60,3 +61,27 @@ def get_routes(
         user_id=user.id,
         db=db,
     )
+
+
+@router.delete("/{route_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_route(
+    route_id: UUID,
+    user: UserModel = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> None:
+    """
+    Delete the route of the given id.
+    """
+    try:
+        route_service.delete_route(
+            user_id=user.id,
+            route_id=route_id,
+            db=db,
+        )
+    except NotFoundError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e),
+        )
+    except ForbiddenError as e:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
