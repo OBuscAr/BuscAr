@@ -109,9 +109,11 @@ def create_line_stops() -> None:
     line_stops_to_update: list[dict] = []
     non_existing_lines: set[str] = set()
     non_existing_stops: set[int] = set()
+
     for sptrans_line_stop in progress_bar(sptrans_line_stops):
         trip_id = sptrans_line_stop.trip_id
         stop_id = sptrans_line_stop.stop_id
+        stop_order = sptrans_line_stop.stop_order
         if trip_id not in lines_by_trip_id:
             if trip_id not in non_existing_lines:
                 logger.warning(f"A linha {trip_id} não existe na base de dados")
@@ -139,17 +141,26 @@ def create_line_stops() -> None:
             shape_points = shape_cache[shape_id]
             target_point = stop_points[stop_id]
 
+            if len(shape_points) == 1:
+                logger.warning(
+                    f"A parada {stop_id} com ordem {stop_order} tem somente um ponto "
+                    f"para calcular a distância para a linha {trip_id}"
+                )
+
             closest = distance_service.find_closest_point(shape_points, target_point)
             assert closest is not None
             dist_km = closest.distance / 1000.0
+            shape_cache[shape_id] = [
+                point for point in shape_points if point.sequence >= closest.sequence
+            ]
 
         line_stop = LineStopModel(
             line_id=line.id,
             stop_id=stop_id,
-            stop_order=sptrans_line_stop.stop_order,
+            stop_order=stop_order,
             distance_traveled=dist_km,
         )
-        unique_constraint = (line.id, stop_id, line_stop.stop_order)
+        unique_constraint = (line.id, stop_id, stop_order)
         if unique_constraint not in existing_line_stop_ids:
             line_stops_to_create.append(line_stop)
         else:

@@ -264,3 +264,61 @@ def test_distance(mocker: MockFixture):
     assert session.query(LineStopModel).count() == 1
     line_stop = session.query(LineStopModel).one()
     assert line_stop.distance_traveled == expected_distance
+
+
+def test_distance_duplicate_stops(mocker: MockFixture):
+    """
+    GIVEN  an existing line with two stops appearing in different parts of the line
+    WHEN   the `create_line_stops` is called
+    THEN   two line stops should be created with the correct distance according to
+           its order in the shape
+    """
+    # GIVEN
+    session = SessionLocal()
+    line = LineFactory.create_sync()
+    trip_id = f"{line.name}-{get_code(line.direction)}"
+    extreme_stop = StopFactory.create_sync()
+    mid_stop = StopFactory.create_sync()
+    stops = [extreme_stop, mid_stop, extreme_stop]
+    distances = [1, 2, 3]
+    mocked_line_stops = mocker.patch(
+        LOAD_LINE_STOPS_LOCATION,
+        return_value=[
+            SPTransLineStop(
+                stop_id=stop.id,
+                stop_order=i,
+                trip_id=trip_id,
+            )
+            for i, stop in enumerate(stops)
+        ],
+    )
+
+    shape_id = "test"
+    mocked_trips = mocker.patch(LOAD_TRIPS_LOCATION, return_value={trip_id: shape_id})
+    mocked_shapes = mocker.patch(
+        LOAD_SHAPES_LOCATION,
+        return_value={
+            shape_id: [
+                SPTransShape(
+                    sequence=i,
+                    distance=distance * 1000,
+                    latitude=stop.latitude,
+                    longitude=stop.longitude,
+                )
+                for i, (stop, distance) in enumerate(zip(stops, distances))
+            ]
+        },
+    )
+
+    # WHEN
+    create_line_stops()
+
+    # THEN
+    mocked_shapes.assert_called()
+    mocked_trips.assert_called()
+    mocked_line_stops.assert_called()
+
+    assert session.query(LineStopModel).count() == len(stops)
+    for i, distance in enumerate(distances):
+        line_stop = session.query(LineStopModel).filter_by(stop_order=i).one()
+        assert line_stop.distance_traveled == distance
