@@ -12,6 +12,7 @@ from app.schemas.pagination import PaginationResponse
 from app.schemas.point import Point
 from app.schemas.route import Route
 from app.schemas.sptrans.line import SPTransLine, SPTransLineDirection
+from app.schemas.sptrans.line_stop import SPTransLineStop
 from app.schemas.sptrans.shape import SPTransShape
 from app.schemas.sptrans.stop import SPTransStop
 from app.schemas.sptrans.vehicle import (

@@ -1,6 +1,5 @@
 import csv
 import os
-from typing import Optional
 
 import pandas as pd
 from sqlalchemy import select
@@ -9,7 +8,7 @@ from tqdm import tqdm as progress_bar
 from app.commands.sptrans_static_data import SPTRANS_DATA_PATH
 from app.core.database import SessionLocal
 from app.models import LineModel, LineStopModel, StopModel
-from app.schemas import Point, SPTransLineDirection, SPTransShape
+from app.schemas import Point, SPTransLineDirection, SPTransLineStop, SPTransShape
 from app.services import distance_service
 
 SHAPES_FILE = os.path.join(SPTRANS_DATA_PATH, "shapes.txt")
@@ -21,7 +20,7 @@ def load_trips() -> dict[str, str]:
     mapping: dict[str, str] = {}
     with open(TRIPS_FILE, newline="", encoding="utf-8") as f:
         reader = csv.DictReader(f)
-        for index, row in enumerate(reader):
+        for row in reader:
             route_id = row["route_id"].strip()
             if route_id not in mapping:
                 mapping[route_id] = row["shape_id"]
@@ -32,7 +31,7 @@ def load_shapes() -> dict[str, list[SPTransShape]]:
     shapes: dict[str, list[SPTransShape]] = {}
     with open(SHAPES_FILE, newline="", encoding="utf-8") as f:
         reader = csv.DictReader(f)
-        for index, row in enumerate(reader):
+        for row in reader:
             shape_id = row["shape_id"]
             shapes.setdefault(shape_id, []).append(
                 SPTransShape(
@@ -50,17 +49,30 @@ def load_shapes() -> dict[str, list[SPTransShape]]:
     return shapes
 
 
-def create_line_stops(max_rows: Optional[int] = None) -> None:
+def load_line_stops() -> list[SPTransLineStop]:
     """
-    Create line stops from the static SPTrans data.
+    Load line stops from txt tile and return the list of line stop data.
     """
     df = pd.read_csv(
         STOPS_FILE,
         usecols=["trip_id", "stop_id", "stop_sequence"],
         dtype={"trip_id": str, "stop_id": int, "stop_sequence": int},
-        nrows=max_rows,
     )
+    return [
+        SPTransLineStop(
+            line_name_direction=row["trip_id"],
+            stop_id=row["stop_id"],
+            stop_order=row["stop_sequence"],
+        )
+        for _, row in df.iterrows()
+    ]
 
+
+def create_line_stops() -> None:
+    """
+    Create line stops from the static SPTrans data.
+    """
+    sptrans_line_stops = load_line_stops()
     session = SessionLocal()
 
     line_to_shape_map = load_trips()
@@ -85,13 +97,9 @@ def create_line_stops(max_rows: Optional[int] = None) -> None:
     line_stops_to_create: list[LineStopModel] = []
     non_existing_lines: set[str] = set()
     non_existing_stops: set[int] = set()
-    bar = progress_bar(total=df.shape[0])
-    for _, row in df.iterrows():
-        bar.update(1)
-        line_name_direction: str = row["trip_id"]
-        stop_id: int = row["stop_id"]
-        stop_order: int = row["stop_sequence"]
-
+    for sptrans_line_stop in progress_bar(sptrans_line_stops):
+        line_name_direction = sptrans_line_stop.line_name_direction
+        stop_id = sptrans_line_stop.stop_id
         if line_name_direction not in lines_by_name_direction:
             if line_name_direction not in non_existing_lines:
                 print(f"Linha {line_name_direction} não existe na base de dados")
@@ -122,7 +130,7 @@ def create_line_stops(max_rows: Optional[int] = None) -> None:
         line_stop = LineStopModel(
             line_id=line.id,
             stop_id=stop_id,
-            stop_order=stop_order,
+            stop_order=sptrans_line_stop.stop_order,
             distance_traveled=dist_km,
         )
         if (line.id, stop_id) not in existing_line_stop_ids:
