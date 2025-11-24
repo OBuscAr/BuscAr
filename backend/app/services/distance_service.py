@@ -1,6 +1,8 @@
-from typing import Optional, TypeVar
+from typing import Optional, TypeVar, cast
 
-from geopy import distance
+import numpy
+from geodistpy import geodist
+from numpy.typing import NDArray
 from sqlalchemy.orm import Session
 
 from app.exceptions import NotFoundError
@@ -43,18 +45,15 @@ def find_closest_point(points: list[T], target_point: Point) -> Optional[T]:
     """
     if len(points) == 0:
         return None
-    best = points[0]
-    for p in points:
-        if (
-            distance.distance(
-                (p.latitude, p.longitude),
-                (target_point.latitude, target_point.longitude),
-            ).kilometers
-            < distance.distance(
-                (best.latitude, best.longitude),
-                (target_point.latitude, target_point.longitude),
-            ).kilometers
-        ):
-            best = p
+    elif len(points) == 1:
+        return points[0]
 
-    return best
+    distances = cast(
+        NDArray[numpy.float64],
+        geodist(
+            [point.to_tuple() for point in points],
+            [target_point.to_tuple()] * len(points),
+            metric="km",
+        ),
+    )
+    return points[numpy.argmin(distances)]
