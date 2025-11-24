@@ -67,3 +67,41 @@ def test_create_line_stops(mocker: MockFixture):
     assert first.line_id == second.line_id == line.id
     assert first.stop_order == first_stop_order
     assert second.stop_order == second_stop_order
+
+
+def test_distance_line_without_shape(mocker: MockFixture):
+    """
+    GIVEN  an existing line without a shape
+    WHEN   the `create_line_stops` is called
+    THEN   the lien stop should be created with distance 0
+    """
+    # GIVEN
+    session = SessionLocal()
+    line = LineFactory.create_sync()
+    trip_id = f"{line.name}-{get_code(line.direction)}"
+    stop = StopFactory.create_sync()
+    mocked_shapes = mocker.patch(LOAD_SHAPES_LOCATION, return_value={})
+    mocked_trips = mocker.patch(LOAD_TRIPS_LOCATION, return_value={})
+
+    mocked_line_stops = mocker.patch(
+        LOAD_LINE_STOPS_LOCATION,
+        return_value=[
+            SPTransLineStop(
+                stop_id=stop.id,
+                stop_order=1,
+                trip_id=trip_id,
+            ),
+        ],
+    )
+
+    # WHEN
+    create_line_stops()
+
+    # THEN
+    mocked_shapes.assert_called()
+    mocked_trips.assert_called()
+    mocked_line_stops.assert_called()
+
+    assert session.query(LineStopModel).count() == 1
+    line_stop = session.query(LineStopModel).one()
+    assert line_stop.distance_traveled == 0
