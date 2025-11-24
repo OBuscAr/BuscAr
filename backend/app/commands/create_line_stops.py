@@ -23,9 +23,9 @@ def load_trips() -> dict[str, str]:
     with open(TRIPS_FILE, newline="", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         for row in reader:
-            route_id = row["route_id"].strip()
-            if route_id not in mapping:
-                mapping[route_id] = row["shape_id"]
+            trip_id = row["trip_id"].strip()
+            if trip_id not in mapping:
+                mapping[trip_id] = row["shape_id"]
     return mapping
 
 
@@ -77,7 +77,7 @@ def create_line_stops() -> None:
     sptrans_line_stops = load_line_stops()
     session = SessionLocal()
 
-    line_to_shape_map = load_trips()
+    trip_to_shape_map = load_trips()
     shape_cache = load_shapes()
 
     stop_rows = session.query(StopModel).all()
@@ -119,7 +119,7 @@ def create_line_stops() -> None:
         # ----------- calculates the actual distance ---------------------
         dist_km = 0.0
 
-        shape_id = line_to_shape_map.get(line.name)
+        shape_id = trip_to_shape_map.get(trip_id)
 
         if shape_id and shape_id in shape_cache:
             shape_points = shape_cache[shape_id]
