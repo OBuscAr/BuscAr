@@ -1,10 +1,10 @@
-from typing import Optional, Tuple
+from typing import Optional, TypeVar
 
 from sqlalchemy.orm import Session
 
 from app.exceptions import NotFoundError
 from app.repositories.line_stop_repository import LineStopRepository
-from app.schemas import SPTransShape
+from app.schemas import Point
 
 
 def calculate_distance_between_stops(
@@ -33,18 +33,20 @@ def calculate_distance_between_stops(
     return abs(stop_b.distance_traveled - stop_a.distance_traveled)
 
 
-def find_closest_shape_point(
-    shape_points: list[SPTransShape], stop_coords: Tuple[float, float]
-) -> Optional[SPTransShape]:
+T = TypeVar("T", bound=Point)
+
+
+def find_closest_point(points: list[T], target_point: Point) -> Optional[T]:
     """
-    Find the nearest point on the shape of that stop.
+    Find the nearest point to `target_point` from the list of `points`.
     """
-    stop_lat, stop_lon = stop_coords
     best = None
     best_dist = float("inf")
 
-    for p in shape_points:
-        d = (p.latitude - stop_lat) ** 2 + (p.longitude - stop_lon) ** 2
+    for p in points:
+        d = (p.latitude - target_point.latitude) ** 2 + (
+            p.longitude - target_point.longitude
+        ) ** 2
         if d < best_dist:
             best_dist = d
             best = p
