@@ -138,7 +138,7 @@ def create_line_stops(shapes_interval: int = SHAPES_INTERVAL) -> None:
             continue
 
         # ----------- calculates the actual distance ---------------------
-        dist_km = 0.0
+        distance = 0.0
 
         shape_id = trip_to_shape_map.get(trip_id)
 
@@ -154,7 +154,7 @@ def create_line_stops(shapes_interval: int = SHAPES_INTERVAL) -> None:
                 shape_points[:shapes_interval], target_point
             )
             assert closest is not None
-            dist_km = closest.distance / 1000.0
+            distance = closest.distance / 1000.0
 
             error_distance = geodist(
                 closest.to_tuple(), target_point.to_tuple(), metric="km"
@@ -168,11 +168,14 @@ def create_line_stops(shapes_interval: int = SHAPES_INTERVAL) -> None:
                 point for point in shape_points if point.sequence >= closest.sequence
             ]
 
+            if stop_order == 1:
+                distance = 0
+
         line_stop = LineStopModel(
             line_id=line.id,
             stop_id=stop_id,
             stop_order=stop_order,
-            distance_traveled=dist_km,
+            distance_traveled=distance,
         )
         unique_constraint = (line.id, stop_id, stop_order)
         if unique_constraint not in existing_line_stop_ids:
