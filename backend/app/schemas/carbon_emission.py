@@ -1,5 +1,4 @@
 from datetime import date
-from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -20,6 +19,7 @@ class EmissionResponse(BaseModel):
 class LineEmissionResponse(BaseModel):
     line: Line
     emission: float = Field(description="emission in kg of CO2")
+    distance: float = Field(description="distance in km")
 
 
 class LinesEmissionsResponse(BaseModel):
@@ -28,5 +28,6 @@ class LinesEmissionsResponse(BaseModel):
 
 
 class EmissionStatisticsReponse(BaseModel):
-    total_emission: Optional[float] = Field(description="emission in kg of CO2")
+    total_emission: float = Field(description="emission in kg of CO2")
+    total_distance: float = Field(description="distance in km")
     date: date

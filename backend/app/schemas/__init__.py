@@ -12,7 +12,11 @@ from app.schemas.myclimate.carbon_emission import (
     MyclimateCarbonEmission,
 )
 from app.schemas.pagination import PaginationResponse
+from app.schemas.point import Point
+from app.schemas.route import Route
 from app.schemas.sptrans.line import SPTransLine, SPTransLineDirection
+from app.schemas.sptrans.line_stop import SPTransLineStop
+from app.schemas.sptrans.shape import SPTransShape
 from app.schemas.sptrans.stop import SPTransStop
 from app.schemas.sptrans.vehicle import (
     SPTransLinesVehiclesResponse,
@@ -20,4 +24,5 @@ from app.schemas.sptrans.vehicle import (
     SPTransVehicle,
 )
 from app.schemas.stop import Stop
+from app.schemas.user_schema import LoginResponse
 from app.schemas.vehicle_type import VehicleType

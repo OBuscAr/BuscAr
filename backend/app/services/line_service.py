@@ -1,11 +1,12 @@
-from typing import List, Optional
+from typing import Optional
 
-from app.models.line import LineDirection
+from pydantic import TypeAdapter
+from sqlalchemy.orm import Session
+
 from app.repositories.line_repository import LineRepository
 from app.repositories.line_stop_repository import LineStopRepository
+from app.schemas import Point, Stop
 from app.services import distance_service
-from app.services.distance_service import calculate_distance_between_stops
-from sqlalchemy.orm import Session
 
 
 class LineService:
@@ -27,7 +28,14 @@ class LineService:
         return LineStopRepository.get_stops_for_line(db, line.id)
 
     @staticmethod
-    def get_nearest_stop(db: Session, line_id: int, lat: float, lon: float):
+    def get_nearest_stop(
+        db: Session,
+        line_id: int,
+        lat: float,
+        lon: float,
+    ) -> Optional[Stop]:
         stops = LineStopRepository.get_stops_for_line(db, line_id)
-
-        return distance_service.find_closest_shape_point(stops, (lat, lon))
+        return distance_service.find_closest_point(
+            TypeAdapter(list[Stop]).validate_python(stops),
+            Point(latitude=lat, longitude=lon),
+        )

@@ -7,7 +7,7 @@ from app.commands.update_daily_line_statistics import (
 )
 from app.core.database import SessionLocal
 from app.models import VehicleModel
-from geopy import distance
+from geodistpy import geodist
 
 from tests.factories.models import LineFactory, VehicleFactory
 from tests.factories.schemas import (
@@ -157,10 +157,11 @@ def test_update_vehicles_and_return_distance():
     for old_vehicle, new_vehicle in zip(
         first_line_old_vehicles, first_line_new_vehicles, strict=True
     ):
-        first_line_expected_distance += distance.distance(
+        first_line_expected_distance += geodist(
             (old_vehicle.latitude, old_vehicle.longitude),
             (new_vehicle.latitude, new_vehicle.longitude),
-        ).kilometers
+            metric="km",
+        )
 
     second_line = LineFactory.create_sync()
     second_line_old_vehicles = VehicleFactory.create_batch_sync(
@@ -178,10 +179,11 @@ def test_update_vehicles_and_return_distance():
     for old_vehicle, new_vehicle in zip(
         second_line_old_vehicles, second_line_new_vehicles, strict=True
     ):
-        second_line_expected_distance += distance.distance(
+        second_line_expected_distance += geodist(
             (old_vehicle.latitude, old_vehicle.longitude),
             (new_vehicle.latitude, new_vehicle.longitude),
-        ).kilometers
+            metric="km",
+        )
 
     line_vehicles = [
         SPTransLineVehiclesResponseFactory.build(

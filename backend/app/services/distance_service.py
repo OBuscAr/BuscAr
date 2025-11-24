@@ -1,7 +1,13 @@
-from typing import Dict, List, Tuple
+from typing import Optional, TypeVar, cast
 
-from app.models.line_stop import LineStop
+import numpy
+from geodistpy import geodist
+from numpy.typing import NDArray
 from sqlalchemy.orm import Session
+
+from app.exceptions import NotFoundError
+from app.repositories.line_stop_repository import LineStopRepository
+from app.schemas import Point
 
 
 def calculate_distance_between_stops(
@@ -14,39 +20,40 @@ def calculate_distance_between_stops(
     distance = |dist(stopB) - dist(stopA)|
     """
 
-    stop_a = (
-        db.query(LineStop)
-        .filter(LineStop.line_id == line_id, LineStop.stop_id == stop_a_id)
-        .first()
+    stop_a = LineStopRepository.get_first_line_stop(
+        db=db, line_id=line_id, stop_id=stop_a_id
     )
+    if stop_a is None:
+        raise NotFoundError(f"A parada {stop_a_id} não pertence à linha {line_id}")
 
-    stop_b = (
-        db.query(LineStop)
-        .filter(LineStop.line_id == line_id, LineStop.stop_id == stop_b_id)
-        .first()
+    stop_b = LineStopRepository.get_first_line_stop(
+        db=db, line_id=line_id, stop_id=stop_b_id
     )
-
-    if not stop_a or not stop_b:
-        raise ValueError("Uma das paradas não pertence à linha especificada.")
+    if stop_b is None:
+        raise NotFoundError(f"A parada {stop_a_id} não pertence à linha {line_id}")
 
     # distância real em quilômetros
     return abs(stop_b.distance_traveled - stop_a.distance_traveled)
 
 
-def find_closest_shape_point(
-    shape_points: List[Dict], stop_coords: Tuple[float, float]
-):
-    """
-    Find the nearest point on the shape of that stop.
-    """
-    stop_lat, stop_lon = stop_coords
-    best = None
-    best_dist = float("inf")
+T = TypeVar("T", bound=Point)
 
-    for p in shape_points:
-        d = (p["lat"] - stop_lat) ** 2 + (p["lon"] - stop_lon) ** 2
-        if d < best_dist:
-            best_dist = d
-            best = p
 
-    return best
+def find_closest_point(points: list[T], target_point: Point) -> Optional[T]:
+    """
+    Find the nearest point to `target_point` from the list of `points`.
+    """
+    if len(points) == 0:
+        return None
+    elif len(points) == 1:
+        return points[0]
+
+    distances = cast(
+        NDArray[numpy.float64],
+        geodist(
+            [point.to_tuple() for point in points],
+            [target_point.to_tuple()] * len(points),
+            metric="km",
+        ),
+    )
+    return points[numpy.argmin(distances)]

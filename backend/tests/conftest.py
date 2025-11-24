@@ -1,5 +1,6 @@
 import inspect
 from typing import Generator
+from unittest.mock import patch
 
 import pytest
 import responses
@@ -8,7 +9,7 @@ from app.main import app
 from fastapi.testclient import TestClient
 
 from tests.factories import models
-from tests.helpers import SPTransHelper
+from tests.helpers import LoginHelper, SPTransHelper
 
 
 @pytest.fixture(scope="function")
@@ -17,7 +18,7 @@ def client() -> Generator[TestClient, None, None]:
     Fixture that creates the TestClient.
     """
     # Fornece o cliente para os testes
-
+    LoginHelper.mock_current_user()
     yield TestClient(app)
 
     # Limpa os overrides depois do teste
@@ -40,8 +41,12 @@ def setup_before_and_after_tests():
     for _, factory in inspect.getmembers(models, inspect.isclass):
         factory.__session__ = session
 
+    mocked = patch("time.sleep", return_value=None)
+    mocked.start()
+
     yield
 
     # After each test
     Base.metadata.drop_all(bind=engine)
     responses.reset()
+    mocked.stop()
