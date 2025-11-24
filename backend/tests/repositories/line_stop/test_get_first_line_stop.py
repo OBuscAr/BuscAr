@@ -1,23 +1,37 @@
 from app.core.database import SessionLocal
 from app.repositories.line_stop_repository import LineStopRepository
 
-from tests.factories.models import LineStopFactory
+from tests.factories.models import LineFactory, LineStopFactory, StopFactory
 
 
 def test_existing_line_stop():
     """
-    GIVEN  an existing line stop
+    GIVEN  existing line stops
     WHEN   the `get_first_line_stop` function is called with the correct line and stop
-    THEN   the related line stop should be returned
+    THEN   the line stop with the lowest stop_order should be returned
     """
     # GIVEN
     session = SessionLocal()
-    expected_line_stop = LineStopFactory.create_sync()
+    minimum_stop_order = 5
+
+    line = LineFactory.create_sync()
+    stop = StopFactory.create_sync()
+
+    for i in range(7):
+        LineStopFactory.create_sync(
+            line=line,
+            stop=stop,
+            stop_order=minimum_stop_order + i + 1,
+        )
+
+    expected_line_stop = LineStopFactory.create_sync(
+        line=line, stop=stop, stop_order=minimum_stop_order
+    )
 
     # WHEN
     returned_line_stop = LineStopRepository.get_first_line_stop(
-        line_id=expected_line_stop.line_id,
-        stop_id=expected_line_stop.stop_id,
+        line_id=line.id,
+        stop_id=stop.id,
         db=session,
     )
 
