@@ -1,5 +1,6 @@
 from typing import Optional, TypeVar
 
+from geopy import distance
 from sqlalchemy.orm import Session
 
 from app.exceptions import NotFoundError
@@ -40,15 +41,20 @@ def find_closest_point(points: list[T], target_point: Point) -> Optional[T]:
     """
     Find the nearest point to `target_point` from the list of `points`.
     """
-    best = None
-    best_dist = float("inf")
-
+    if len(points) == 0:
+        return None
+    best = points[0]
     for p in points:
-        d = (p.latitude - target_point.latitude) ** 2 + (
-            p.longitude - target_point.longitude
-        ) ** 2
-        if d < best_dist:
-            best_dist = d
+        if (
+            distance.distance(
+                (p.latitude, p.longitude),
+                (target_point.latitude, target_point.longitude),
+            ).kilometers
+            < distance.distance(
+                (best.latitude, best.longitude),
+                (target_point.latitude, target_point.longitude),
+            ).kilometers
+        ):
             best = p
 
     return best
