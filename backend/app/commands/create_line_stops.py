@@ -4,6 +4,7 @@ import os
 from uuid import UUID
 
 import pandas as pd
+from geodistpy import geodist
 from sqlalchemy import select, update
 from tqdm import tqdm as progress_bar
 
@@ -17,6 +18,9 @@ logger = logging.getLogger(__name__)
 SHAPES_FILE = os.path.join(SPTRANS_DATA_PATH, "shapes.txt")
 TRIPS_FILE = os.path.join(SPTRANS_DATA_PATH, "trips.txt")
 STOPS_FILE = os.path.join(SPTRANS_DATA_PATH, "stop_times.txt")
+
+
+SHAPES_INTERVAL = 50
 
 
 def load_trips() -> dict[str, str]:
@@ -71,9 +75,13 @@ def load_line_stops() -> list[SPTransLineStop]:
     ]
 
 
-def create_line_stops() -> None:
+def create_line_stops(shapes_interval: int = SHAPES_INTERVAL) -> None:
     """
     Create line stops from the static SPTrans data.
+
+    ## Parameters
+    - `shapes_interval`: When searching the nearest point on a shape,
+      consider maximum this number of consecutive elements.
     """
     sptrans_line_stops = load_line_stops()
     session = SessionLocal()
@@ -141,15 +149,20 @@ def create_line_stops() -> None:
             shape_points = shape_cache[shape_id]
             target_point = stop_points[stop_id]
 
-            if len(shape_points) == 1:
-                logger.warning(
-                    f"A parada {stop_id} com ordem {stop_order} tem somente um ponto "
-                    f"para calcular a distância para a linha {trip_id}"
-                )
-
-            closest = distance_service.find_closest_point(shape_points, target_point)
+            closest = distance_service.find_closest_point(
+                shape_points[:shapes_interval], target_point
+            )
             assert closest is not None
             dist_km = closest.distance / 1000.0
+
+            error_distance = geodist(
+                closest.to_tuple(), target_point.to_tuple(), metric="km"
+            )
+            if error_distance > 0.3:
+                logger.warning(
+                    f"A ponto escolhido para representar a parada {stop_id} com ordem "
+                    f"{stop_order} está a uma distância {error_distance} km dela"
+                )
             shape_cache[shape_id] = [
                 point for point in shape_points if point.sequence >= closest.sequence
             ]
