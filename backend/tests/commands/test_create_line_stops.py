@@ -1,10 +1,19 @@
-from app.commands.create_line_stops import create_line_stops, load_shapes, load_trips
+from app.commands.create_line_stops import (
+    create_line_stops,
+    load_line_stops,
+    load_shapes,
+    load_trips,
+)
 from app.core.database import SessionLocal
-from app.models import LineDirection, LineModel, LineStopModel, StopModel
+from app.models import LineDirection, LineStopModel
+from app.schemas import SPTransLineStop
 from pytest_mock import MockFixture
+
+from tests.factories.models import LineFactory, StopFactory
 
 LOAD_SHAPES_LOCATION = f"{load_shapes.__module__}.{load_shapes.__name__}"
 LOAD_TRIPS_LOCATION = f"{load_trips.__module__}.{load_trips.__name__}"
+LOAD_LINE_STOPS_LOCATION = f"{load_line_stops.__module__}.{load_line_stops.__name__}"
 
 
 def test_create_line_stops(mocker: MockFixture):
@@ -15,29 +24,43 @@ def test_create_line_stops(mocker: MockFixture):
     """
     # GIVEN
     session = SessionLocal()
-    line = LineModel(id=2570, name="1012-21", direction=LineDirection.MAIN)
-    stop = StopModel(
-        id=301789,
-        name="Terminal Jardim Britânia",
-        address="",
-        latitude=0,
-        longitude=0,
-    )
-    mocker.patch(LOAD_SHAPES_LOCATION, return_value={})
-    mocker.patch(LOAD_TRIPS_LOCATION, return_value={})
+    line = LineFactory.create_sync()
+    line_direction = "0" if line.direction == LineDirection.MAIN else "1"
+    line_name_direction = f"{line.name}-{line_direction}"
+    stop = StopFactory.create_sync()
+    mocked_shapes = mocker.patch(LOAD_SHAPES_LOCATION, return_value={})
+    mocked_trips = mocker.patch(LOAD_TRIPS_LOCATION, return_value={})
 
-    session.add(line)
-    session.add(stop)
-    session.commit()
+    first_stop_order = 1
+    second_stop_order = 18
+    mocked_line_stops = mocker.patch(
+        LOAD_LINE_STOPS_LOCATION,
+        return_value=[
+            SPTransLineStop(
+                stop_id=stop.id,
+                stop_order=first_stop_order,
+                line_name_direction=line_name_direction,
+            ),
+            SPTransLineStop(
+                stop_id=stop.id,
+                stop_order=second_stop_order,
+                line_name_direction=line_name_direction,
+            ),
+        ],
+    )
 
     # WHEN
-    create_line_stops(max_rows=100)
+    create_line_stops()
 
     # THEN
+    mocked_shapes.assert_called()
+    mocked_trips.assert_called()
+    mocked_line_stops.assert_called()
+
     line_stops = session.query(LineStopModel).order_by("stop_order").all()
     assert len(line_stops) == 2
     first, second = line_stops
     assert first.stop_id == second.stop_id == stop.id
     assert first.line_id == second.line_id == line.id
-    assert first.stop_order == 1
-    assert second.stop_order == 18
+    assert first.stop_order == first_stop_order
+    assert second.stop_order == second_stop_order
