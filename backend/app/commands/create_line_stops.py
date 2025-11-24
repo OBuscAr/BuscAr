@@ -1,4 +1,5 @@
 import csv
+import logging
 import os
 
 import pandas as pd
@@ -11,6 +12,7 @@ from app.models import LineModel, LineStopModel, StopModel
 from app.schemas import Point, SPTransLineDirection, SPTransLineStop, SPTransShape
 from app.services import distance_service
 
+logger = logging.getLogger(__name__)
 SHAPES_FILE = os.path.join(SPTRANS_DATA_PATH, "shapes.txt")
 TRIPS_FILE = os.path.join(SPTRANS_DATA_PATH, "trips.txt")
 STOPS_FILE = os.path.join(SPTRANS_DATA_PATH, "stop_times.txt")
@@ -102,7 +104,7 @@ def create_line_stops() -> None:
         stop_id = sptrans_line_stop.stop_id
         if trip_id not in lines_by_trip_id:
             if trip_id not in non_existing_lines:
-                print(f"Linha {trip_id} não existe na base de dados")
+                logger.warning(f"Linha {trip_id} não existe na base de dados")
                 non_existing_lines.add(trip_id)
             continue
 
@@ -110,7 +112,7 @@ def create_line_stops() -> None:
 
         if stop_id not in existing_stop_ids:
             if stop_id not in non_existing_stops:
-                print(f"Parada {stop_id} não existe na base de dados")
+                logger.warning(f"Parada {stop_id} não existe na base de dados")
                 non_existing_stops.add(stop_id)
             continue
 
@@ -136,7 +138,9 @@ def create_line_stops() -> None:
         if (line.id, stop_id) not in existing_line_stop_ids:
             line_stops_to_create.append(line_stop)
 
-    print(f"Criando {len(line_stops_to_create)} paradas-linha na base de dados...")
+    logger.info(
+        f"Criando {len(line_stops_to_create)} paradas-linha na base de dados..."
+    )
 
     if len(line_stops_to_create) > 0:
         session.add_all(line_stops_to_create)
