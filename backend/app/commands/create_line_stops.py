@@ -4,6 +4,7 @@ import os
 from uuid import UUID
 
 import pandas as pd
+from geodistpy import geodist
 from sqlalchemy import select, update
 from tqdm import tqdm as progress_bar
 
@@ -27,6 +28,8 @@ def load_trips() -> dict[str, str]:
             trip_id = row["trip_id"].strip()
             if trip_id not in mapping:
                 mapping[trip_id] = row["shape_id"]
+            else:
+                logger.warning(f"Trip {trip_id} tem multiples shapes")
     return mapping
 
 
@@ -41,7 +44,7 @@ def load_shapes() -> dict[str, list[SPTransShape]]:
                     latitude=float(row["shape_pt_lat"]),
                     longitude=float(row["shape_pt_lon"]),
                     sequence=int(row["shape_pt_sequence"]),
-                    distance=float(row["shape_dist_traveled"]),
+                    distance=float(row["shape_dist_traveled"]) / 1000,
                 )
             )
 
@@ -71,16 +74,34 @@ def load_line_stops() -> list[SPTransLineStop]:
     ]
 
 
-def create_line_stops() -> None:
+def create_line_stops(
+    shapes_interval: int = 30,
+    distance_tolerance: float = 0.3,
+) -> None:
     """
     Create line stops from the static SPTrans data.
+
+    ## Strategy to find closest point on the SPTrans shape
+    Every line has a shape related to it where SPTrans files have the tracked points
+    of a vehicle when following the route of the line and also the traveled distance
+    until that point. For each stop of the line we would try to find the closest point
+    to our stop in the shape. However, some lines might traverse the same point
+    (or closed to it) in multiple times in a route. To calculate the correct
+    distance we would compare the stop with a consecutive slice of the shape.
+    The base size of this slice is controlled by the parameter `shapes_interval`.
+    Every time we find a closest point for our target stop, the slice would move
+    to the right.
+
+    The parameter `distance_tolerance` will control how much of an error we are
+    willing to accept when finding the closest point. If the error is bigger than
+    the tolerance, the slice size will be temporarily increased by `shapes_interval`,
+    until we find a better point.
     """
     sptrans_line_stops = load_line_stops()
     session = SessionLocal()
 
     trip_to_shape_map = load_trips()
     shape_cache = load_shapes()
-
     stop_rows = session.query(StopModel).all()
     stop_points = {
         s.id: Point(latitude=s.latitude, longitude=s.longitude) for s in stop_rows
@@ -109,9 +130,11 @@ def create_line_stops() -> None:
     line_stops_to_update: list[dict] = []
     non_existing_lines: set[str] = set()
     non_existing_stops: set[int] = set()
+
     for sptrans_line_stop in progress_bar(sptrans_line_stops):
         trip_id = sptrans_line_stop.trip_id
         stop_id = sptrans_line_stop.stop_id
+        stop_order = sptrans_line_stop.stop_order
         if trip_id not in lines_by_trip_id:
             if trip_id not in non_existing_lines:
                 logger.warning(f"A linha {trip_id} não existe na base de dados")
@@ -127,7 +150,7 @@ def create_line_stops() -> None:
             continue
 
         # ----------- calculates the actual distance ---------------------
-        dist_km = 0.0
+        distance = 0.0
 
         shape_id = trip_to_shape_map.get(trip_id)
 
@@ -139,17 +162,45 @@ def create_line_stops() -> None:
             shape_points = shape_cache[shape_id]
             target_point = stop_points[stop_id]
 
-            closest = distance_service.find_closest_point(shape_points, target_point)
-            assert closest is not None
-            dist_km = closest.distance / 1000.0
+            current_interval = shapes_interval
+            closest = None
+            while closest is None:
+                closest = distance_service.find_closest_point(
+                    shape_points[:current_interval], target_point
+                )
+                assert closest is not None
+                error_distance = geodist(
+                    closest.to_tuple(), target_point.to_tuple(), metric="km"
+                )
+                if (
+                    current_interval < len(shape_points)
+                    and error_distance > distance_tolerance
+                ):
+                    # Try again if we could still expand the interval
+                    closest = None
+                    current_interval += shapes_interval
+
+            distance = closest.distance
+            if error_distance > distance_tolerance:
+                logger.warning(
+                    f"O ponto escolhido para representar a parada {stop_id} com ordem "
+                    f"{stop_order} para a linha {line.id} está a "
+                    f"uma distância de {error_distance} km dela"
+                )
+            shape_cache[shape_id] = [
+                point for point in shape_points if point.sequence >= closest.sequence
+            ]
+
+            if stop_order == 1:
+                distance = 0
 
         line_stop = LineStopModel(
             line_id=line.id,
             stop_id=stop_id,
-            stop_order=sptrans_line_stop.stop_order,
-            distance_traveled=dist_km,
+            stop_order=stop_order,
+            distance_traveled=distance,
         )
-        unique_constraint = (line.id, stop_id, line_stop.stop_order)
+        unique_constraint = (line.id, stop_id, stop_order)
         if unique_constraint not in existing_line_stop_ids:
             line_stops_to_create.append(line_stop)
         else:
@@ -174,4 +225,4 @@ def create_line_stops() -> None:
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    create_line_stops()
+    create_line_stops(shapes_interval=30, distance_tolerance=0.35)

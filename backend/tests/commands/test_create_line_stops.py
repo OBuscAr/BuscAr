@@ -228,13 +228,64 @@ def test_distance(mocker: MockFixture):
             shape_id: [
                 SPTransShape(
                     sequence=1,
-                    distance=(expected_distance - 1) * 1000,
+                    distance=expected_distance - 1,
                     latitude=stop.latitude - 1,
                     longitude=stop.longitude - 1,
                 ),
                 SPTransShape(
                     sequence=2,
-                    distance=expected_distance * 1000,
+                    distance=expected_distance,
+                    latitude=stop.latitude,
+                    longitude=stop.longitude,
+                ),
+            ]
+        },
+    )
+
+    mocked_line_stops = mocker.patch(
+        LOAD_LINE_STOPS_LOCATION,
+        return_value=[
+            SPTransLineStop(
+                stop_id=stop.id,
+                stop_order=2,
+                trip_id=trip_id,
+            ),
+        ],
+    )
+
+    # WHEN
+    create_line_stops()
+
+    # THEN
+    mocked_shapes.assert_called()
+    mocked_trips.assert_called()
+    mocked_line_stops.assert_called()
+
+    assert session.query(LineStopModel).count() == 1
+    line_stop = session.query(LineStopModel).one()
+    assert line_stop.distance_traveled == expected_distance
+
+
+def test_distance_first_stop(mocker: MockFixture):
+    """
+    GIVEN  a line stop with stop_order equal to 1
+    WHEN   the `create_line_stops` is called
+    THEN   the line stop should be created with 0 distance traveled
+    """
+    # GIVEN
+    session = SessionLocal()
+    line = LineFactory.create_sync()
+    trip_id = f"{line.name}-{get_code(line.direction)}"
+    stop = StopFactory.create_sync()
+    shape_id = "test"
+    mocked_trips = mocker.patch(LOAD_TRIPS_LOCATION, return_value={trip_id: shape_id})
+    mocked_shapes = mocker.patch(
+        LOAD_SHAPES_LOCATION,
+        return_value={
+            shape_id: [
+                SPTransShape(
+                    sequence=1,
+                    distance=1,
                     latitude=stop.latitude,
                     longitude=stop.longitude,
                 ),
@@ -263,4 +314,188 @@ def test_distance(mocker: MockFixture):
 
     assert session.query(LineStopModel).count() == 1
     line_stop = session.query(LineStopModel).one()
+    assert line_stop.distance_traveled == 0
+
+
+def test_shapes_interval(mocker: MockFixture):
+    """
+    GIVEN  an existing line with a shape
+    WHEN   the `create_line_stops` is called with a `shapes_interval`
+    THEN   the distance should be retrieved analyzing the shapes on the given
+           interval
+    """
+    # GIVEN
+    session = SessionLocal()
+    line = LineFactory.create_sync()
+    trip_id = f"{line.name}-{get_code(line.direction)}"
+    stop = StopFactory.create_sync()
+    mocked_line_stops = mocker.patch(
+        LOAD_LINE_STOPS_LOCATION,
+        return_value=[
+            SPTransLineStop(
+                stop_id=stop.id,
+                stop_order=2,
+                trip_id=trip_id,
+            )
+        ],
+    )
+
+    shapes_interval = 5
+    expected_distance = 6
+    shape_id = "test"
+    mocked_trips = mocker.patch(LOAD_TRIPS_LOCATION, return_value={trip_id: shape_id})
+    mocked_shapes = mocker.patch(
+        LOAD_SHAPES_LOCATION,
+        return_value={
+            shape_id: [
+                SPTransShape(
+                    sequence=i,
+                    distance=expected_distance,
+                    latitude=stop.latitude + 1,
+                    longitude=stop.longitude + 1,
+                )
+                for i in range(shapes_interval)
+            ]
+            + [
+                SPTransShape(
+                    sequence=shapes_interval,
+                    distance=expected_distance + 1,
+                    latitude=stop.latitude,
+                    longitude=stop.longitude,
+                )
+            ]
+        },
+    )
+
+    # WHEN
+    create_line_stops(shapes_interval=shapes_interval, distance_tolerance=1000)
+
+    # THEN
+    mocked_shapes.assert_called()
+    mocked_trips.assert_called()
+    mocked_line_stops.assert_called()
+
+    assert session.query(LineStopModel).count() == 1
+    line_stop = session.query(LineStopModel).one()
     assert line_stop.distance_traveled == expected_distance
+
+
+def test_distance_tolerance(mocker: MockFixture):
+    """
+    GIVEN  an existing line with a shape
+    WHEN   the `create_line_stops` is called with a `distance_tolerance`
+    THEN   the distance should be retrieved increasing the window size until
+           the distance tolerance is achieved
+    """
+    # GIVEN
+    session = SessionLocal()
+    line = LineFactory.create_sync()
+    trip_id = f"{line.name}-{get_code(line.direction)}"
+    stop = StopFactory.create_sync()
+    mocked_line_stops = mocker.patch(
+        LOAD_LINE_STOPS_LOCATION,
+        return_value=[
+            SPTransLineStop(
+                stop_id=stop.id,
+                stop_order=2,
+                trip_id=trip_id,
+            )
+        ],
+    )
+
+    num_distant_objects = 5
+    expected_distance = 6
+    shape_id = "test"
+    mocked_trips = mocker.patch(LOAD_TRIPS_LOCATION, return_value={trip_id: shape_id})
+    mocked_shapes = mocker.patch(
+        LOAD_SHAPES_LOCATION,
+        return_value={
+            shape_id: [
+                SPTransShape(
+                    sequence=i,
+                    distance=expected_distance - 1,
+                    latitude=stop.latitude + 1,
+                    longitude=stop.longitude + 1,
+                )
+                for i in range(num_distant_objects)
+            ]
+            + [
+                SPTransShape(
+                    sequence=num_distant_objects,
+                    distance=expected_distance,
+                    latitude=stop.latitude,
+                    longitude=stop.longitude,
+                )
+            ]
+        },
+    )
+
+    # WHEN
+    create_line_stops(shapes_interval=1, distance_tolerance=1e-6)
+
+    # THEN
+    mocked_shapes.assert_called()
+    mocked_trips.assert_called()
+    mocked_line_stops.assert_called()
+
+    assert session.query(LineStopModel).count() == 1
+    line_stop = session.query(LineStopModel).one()
+    assert line_stop.distance_traveled == expected_distance
+
+
+def test_distance_duplicate_stops(mocker: MockFixture):
+    """
+    GIVEN  an existing line with two stops appearing in different parts of the line
+    WHEN   the `create_line_stops` is called
+    THEN   two line stops should be created with the correct distance according to
+           its order in the shape
+    """
+    # GIVEN
+    session = SessionLocal()
+    line = LineFactory.create_sync()
+    trip_id = f"{line.name}-{get_code(line.direction)}"
+    extreme_stop = StopFactory.create_sync()
+    mid_stop = StopFactory.create_sync()
+    stops = [extreme_stop, mid_stop, extreme_stop]
+    distances = [1, 2, 3]
+    mocked_line_stops = mocker.patch(
+        LOAD_LINE_STOPS_LOCATION,
+        return_value=[
+            SPTransLineStop(
+                stop_id=stop.id,
+                stop_order=i + 2,
+                trip_id=trip_id,
+            )
+            for i, stop in enumerate(stops)
+        ],
+    )
+
+    shape_id = "test"
+    mocked_trips = mocker.patch(LOAD_TRIPS_LOCATION, return_value={trip_id: shape_id})
+    mocked_shapes = mocker.patch(
+        LOAD_SHAPES_LOCATION,
+        return_value={
+            shape_id: [
+                SPTransShape(
+                    sequence=i,
+                    distance=distance,
+                    latitude=stop.latitude,
+                    longitude=stop.longitude,
+                )
+                for i, (stop, distance) in enumerate(zip(stops, distances))
+            ]
+        },
+    )
+
+    # WHEN
+    create_line_stops()
+
+    # THEN
+    mocked_shapes.assert_called()
+    mocked_trips.assert_called()
+    mocked_line_stops.assert_called()
+
+    assert session.query(LineStopModel).count() == len(stops)
+    for i, distance in enumerate(distances):
+        line_stop = session.query(LineStopModel).filter_by(stop_order=i + 2).one()
+        assert line_stop.distance_traveled == distance
