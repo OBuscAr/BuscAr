@@ -12,7 +12,7 @@ from app.schemas import SPTransLineStop
 from pytest import LogCaptureFixture
 from pytest_mock import MockFixture
 
-from tests.factories.models import LineFactory, StopFactory
+from tests.factories.models import LineFactory, LineStopFactory, StopFactory
 
 LOAD_SHAPES_LOCATION = f"{load_shapes.__module__}.{load_shapes.__name__}"
 LOAD_TRIPS_LOCATION = f"{load_trips.__module__}.{load_trips.__name__}"
@@ -70,6 +70,44 @@ def test_create_line_stops(mocker: MockFixture):
     assert first.line_id == second.line_id == line.id
     assert first.stop_order == first_stop_order
     assert second.stop_order == second_stop_order
+
+
+def test_update_line_stops(mocker: MockFixture):
+    """
+    GIVEN  an existing line_stop in database
+    WHEN   the `create_line_stops` is called
+    THEN   the line_stop should be updated
+    """
+    # GIVEN
+    session = SessionLocal()
+    line_stop = LineStopFactory.create_sync(distance_traveled=5)
+    trip_id = f"{line_stop.line.name}-{get_code(line_stop.line.direction)}"
+    mocked_trips = mocker.patch(LOAD_TRIPS_LOCATION, return_value={})
+    mocked_shapes = mocker.patch(LOAD_SHAPES_LOCATION, return_value={})
+
+    mocked_line_stops = mocker.patch(
+        LOAD_LINE_STOPS_LOCATION,
+        return_value=[
+            SPTransLineStop(
+                stop_id=line_stop.stop_id,
+                trip_id=trip_id,
+                stop_order=line_stop.stop_order,
+            ),
+        ],
+    )
+
+    # WHEN
+    create_line_stops()
+
+    # THEN
+    mocked_shapes.assert_called()
+    mocked_trips.assert_called()
+    mocked_line_stops.assert_called()
+
+    assert session.query(LineStopModel).count() == 1
+    db_line_stop = session.query(LineStopModel).one()
+    assert db_line_stop.id == line_stop.id
+    assert db_line_stop.distance_traveled == 0
 
 
 def test_distance_line_without_shape(

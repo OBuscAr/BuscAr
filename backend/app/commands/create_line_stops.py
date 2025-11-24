@@ -1,9 +1,10 @@
 import csv
 import logging
 import os
+from uuid import UUID
 
 import pandas as pd
-from sqlalchemy import select
+from sqlalchemy import select, update
 from tqdm import tqdm as progress_bar
 
 from app.commands.sptrans_static_data import SPTRANS_DATA_PATH
@@ -85,9 +86,12 @@ def create_line_stops() -> None:
         s.id: Point(latitude=s.latitude, longitude=s.longitude) for s in stop_rows
     }
 
-    existing_line_stop_ids = set(
-        session.execute(select(LineStopModel.line_id, LineStopModel.stop_id)).all()
-    )
+    existing_line_stop_ids: dict[tuple[int, int], UUID] = {
+        (line_id, stop_id): line_stop_id
+        for line_stop_id, line_id, stop_id in session.execute(
+            select(LineStopModel.id, LineStopModel.line_id, LineStopModel.stop_id)
+        ).all()
+    }
     existing_lines = session.query(LineModel).all()
     lines_by_trip_id: dict[str, LineModel] = {
         f"{line.name}-{SPTransLineDirection[line.direction].value - 1}": line
@@ -97,6 +101,7 @@ def create_line_stops() -> None:
     existing_stop_ids = set(session.execute(select(StopModel.id)).scalars().all())
 
     line_stops_to_create: list[LineStopModel] = []
+    line_stops_to_update: list[dict] = []
     non_existing_lines: set[str] = set()
     non_existing_stops: set[int] = set()
     for sptrans_line_stop in progress_bar(sptrans_line_stops):
@@ -141,6 +146,9 @@ def create_line_stops() -> None:
         )
         if (line.id, stop_id) not in existing_line_stop_ids:
             line_stops_to_create.append(line_stop)
+        else:
+            line_stop.id = existing_line_stop_ids[(line.id, stop_id)]
+            line_stops_to_update.append(line_stop.dict())
 
     logger.info(
         f"Criando {len(line_stops_to_create)} paradas-linha na base de dados..."
@@ -148,6 +156,13 @@ def create_line_stops() -> None:
 
     if len(line_stops_to_create) > 0:
         session.add_all(line_stops_to_create)
+        session.commit()
+
+    logging.info(
+        f"Atualizando {len(line_stops_to_update)} paradas-linha na base de dados..."
+    )
+    if len(line_stops_to_update) > 0:
+        session.execute(update(LineStopModel), line_stops_to_update)
         session.commit()
 
 
