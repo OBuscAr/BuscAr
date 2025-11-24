@@ -1,18 +1,27 @@
 /* --- Main --- */
 .dashboard-main {
-  flex: 2.5;
+  flex: 1 1 65%;
+  min-width: 0;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .metric-cards-container {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.5rem;
+  grid-template-columns: repeat(3, 170px);
+  gap: 0.75rem;
   margin-bottom: 2rem;
+  width: fit-content;
 }
 
 .timeline-card-container {
-  /* Vazio, para documentação */
-  display: block;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 700px;
 }
 
 
@@ -20,8 +29,10 @@
 .dashboard-sidebar {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-  flex: 1;
+  gap: clamp(1rem, 2vw, 1.5rem);
+  flex: 1 1 35%;
+  min-width: 0;
+  max-width: 100%;
 }
 
 
@@ -52,38 +63,41 @@
 
 /* --- Responsive Design --- */
 @media (max-width: 1200px) {
+  .dashboard-main {
+    flex: 1 1 60%;
+  }
+  
+  .dashboard-sidebar {
+    flex: 1 1 40%;
+  }
+  
   .metric-cards-container {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   }
 }
 
 @media (max-width: 992px) {
   .dashboard-main {
-    flex: 1;
+    flex: 1 1 100%;
   }
 
   .dashboard-sidebar {
-    flex: 1;
+    flex: 1 1 100%;
+  }
+  
+  .metric-cards-container {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   }
 }
 
 @media (max-width: 768px) {
   .metric-cards-container {
     grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-
-  .dashboard-sidebar {
-    gap: 1rem;
   }
 }
 
 @media (max-width: 480px) {
   .metric-cards-container {
-    gap: 0.75rem;
-  }
-
-  .dashboard-sidebar {
-    gap: 0.75rem;
+    grid-template-columns: 1fr;
   }
 }

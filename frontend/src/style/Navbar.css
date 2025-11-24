@@ -1,5 +1,7 @@
 .navbar {
-  flex: 0 0 275px; /* Largura fixa */
+  flex: 0 0 clamp(200px, 20vw, 275px);
+  min-width: 200px;
+  max-width: 275px;
   background-color: var(--bg-white);
   color: var(--text-light);
   display: flex;
@@ -76,4 +78,67 @@
   text-decoration: none;
   color: var(--text-light);
   font-weight: 400;
+}
+
+/* --- Responsive Design --- */
+@media (max-width: 1200px) {
+  .navbar {
+    flex: 0 0 220px;
+    min-width: 180px;
+  }
+  
+  .navbar-logo {
+    padding: 1.5rem 1.5rem;
+  }
+  
+  .navbar-logo h1 {
+    font-size: 1.3rem;
+  }
+  
+  .navbar-nav a {
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 992px) {
+  .navbar {
+    flex: 0 0 200px;
+    min-width: 180px;
+  }
+  
+  .navbar-logo h1 {
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .navbar {
+    flex: 0 0 180px;
+    min-width: 160px;
+  }
+  
+  .navbar-logo {
+    padding: 1rem;
+  }
+  
+  .navbar-logo h1 {
+    font-size: 1.1rem;
+  }
+  
+  .navbar-nav a {
+    gap: 0.75rem;
+    padding: 0.65rem 0.75rem;
+    font-size: 0.85rem;
+  }
+  
+  .navbar-nav svg {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar {
+    display: none;
+  }
 }
