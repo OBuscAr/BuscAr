@@ -54,6 +54,14 @@ def test_no_points():
             Point(latitude=-23.562368, longitude=-46.723045),  # Brasiliana
             3,
         ),
+        (
+            [
+                IdPoint(id=0, latitude=40, longitude=10),
+                IdPoint(id=1, latitude=10, longitude=40),
+            ],
+            Point(latitude=10, longitude=10),
+            1,
+        ),
     ],
 )
 def test_nearest_point(
