@@ -152,4 +152,5 @@ def create_line_stops() -> None:
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
     create_line_stops()
