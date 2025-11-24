@@ -104,7 +104,7 @@ def create_line_stops() -> None:
         stop_id = sptrans_line_stop.stop_id
         if trip_id not in lines_by_trip_id:
             if trip_id not in non_existing_lines:
-                logger.warning(f"Linha {trip_id} não existe na base de dados")
+                logger.warning(f"A linha {trip_id} não existe na base de dados")
                 non_existing_lines.add(trip_id)
             continue
 
@@ -112,7 +112,7 @@ def create_line_stops() -> None:
 
         if stop_id not in existing_stop_ids:
             if stop_id not in non_existing_stops:
-                logger.warning(f"Parada {stop_id} não existe na base de dados")
+                logger.warning(f"A parada {stop_id} não existe na base de dados")
                 non_existing_stops.add(stop_id)
             continue
 
@@ -121,7 +121,11 @@ def create_line_stops() -> None:
 
         shape_id = trip_to_shape_map.get(trip_id)
 
-        if shape_id and shape_id in shape_cache:
+        if shape_id is None:
+            logger.warning(f"A linha {trip_id} não tem shape")
+        elif shape_id not in shape_cache:
+            logger.warning(f"A linha {trip_id} tem uma shape {shape_id} sem dados")
+        else:
             shape_points = shape_cache[shape_id]
             target_point = stop_points[stop_id]
 

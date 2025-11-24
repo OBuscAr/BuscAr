@@ -1,3 +1,5 @@
+import logging
+
 from app.commands.create_line_stops import (
     create_line_stops,
     load_line_stops,
@@ -7,6 +9,7 @@ from app.commands.create_line_stops import (
 from app.core.database import SessionLocal
 from app.models import LineDirection, LineStopModel
 from app.schemas import SPTransLineStop
+from pytest import LogCaptureFixture
 from pytest_mock import MockFixture
 
 from tests.factories.models import LineFactory, StopFactory
@@ -31,8 +34,8 @@ def test_create_line_stops(mocker: MockFixture):
     line = LineFactory.create_sync()
     trip_id = f"{line.name}-{get_code(line.direction)}"
     stop = StopFactory.create_sync()
-    mocked_shapes = mocker.patch(LOAD_SHAPES_LOCATION, return_value={})
     mocked_trips = mocker.patch(LOAD_TRIPS_LOCATION, return_value={})
+    mocked_shapes = mocker.patch(LOAD_SHAPES_LOCATION, return_value={})
 
     first_stop_order = 1
     second_stop_order = 18
@@ -69,19 +72,65 @@ def test_create_line_stops(mocker: MockFixture):
     assert second.stop_order == second_stop_order
 
 
-def test_distance_line_without_shape(mocker: MockFixture):
+def test_distance_line_without_shape(
+    mocker: MockFixture,
+    caplog: LogCaptureFixture,
+):
     """
     GIVEN  an existing line without a shape
     WHEN   the `create_line_stops` is called
-    THEN   the lien stop should be created with distance 0
+    THEN   the line stop should be created with distance 0
     """
     # GIVEN
     session = SessionLocal()
     line = LineFactory.create_sync()
     trip_id = f"{line.name}-{get_code(line.direction)}"
     stop = StopFactory.create_sync()
-    mocked_shapes = mocker.patch(LOAD_SHAPES_LOCATION, return_value={})
     mocked_trips = mocker.patch(LOAD_TRIPS_LOCATION, return_value={})
+    mocked_shapes = mocker.patch(LOAD_SHAPES_LOCATION, return_value={})
+
+    mocked_line_stops = mocker.patch(
+        LOAD_LINE_STOPS_LOCATION,
+        return_value=[
+            SPTransLineStop(
+                stop_id=stop.id,
+                stop_order=1,
+                trip_id=trip_id,
+            ),
+        ],
+    )
+    caplog.clear()
+
+    # WHEN
+    with caplog.at_level(logging.WARNING):
+        create_line_stops()
+
+    # THEN
+    mocked_shapes.assert_called()
+    mocked_trips.assert_called()
+    mocked_line_stops.assert_called()
+
+    assert session.query(LineStopModel).count() == 1
+    line_stop = session.query(LineStopModel).one()
+    assert line_stop.distance_traveled == 0
+
+    assert "não tem shape" in caplog.text
+
+
+def test_distance_shape_without_data(mocker: MockFixture, caplog: LogCaptureFixture):
+    """
+    GIVEN  an existing line with a shape_id without data
+    WHEN   the `create_line_stops` is called
+    THEN   the line stop should be created with distance 0
+    """
+    # GIVEN
+    session = SessionLocal()
+    line = LineFactory.create_sync()
+    trip_id = f"{line.name}-{get_code(line.direction)}"
+    stop = StopFactory.create_sync()
+    shape_id = "test"
+    mocked_trips = mocker.patch(LOAD_TRIPS_LOCATION, return_value={trip_id: shape_id})
+    mocked_shapes = mocker.patch(LOAD_SHAPES_LOCATION, return_value={})
 
     mocked_line_stops = mocker.patch(
         LOAD_LINE_STOPS_LOCATION,
@@ -95,7 +144,8 @@ def test_distance_line_without_shape(mocker: MockFixture):
     )
 
     # WHEN
-    create_line_stops()
+    with caplog.at_level(logging.WARNING):
+        create_line_stops()
 
     # THEN
     mocked_shapes.assert_called()
@@ -105,3 +155,5 @@ def test_distance_line_without_shape(mocker: MockFixture):
     assert session.query(LineStopModel).count() == 1
     line_stop = session.query(LineStopModel).one()
     assert line_stop.distance_traveled == 0
+
+    assert f"shape {shape_id} sem dados" in caplog.text
