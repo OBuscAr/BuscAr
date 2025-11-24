@@ -60,7 +60,7 @@ def load_line_stops() -> list[SPTransLineStop]:
     )
     return [
         SPTransLineStop(
-            line_name_direction=row["trip_id"],
+            trip_id=row["trip_id"],
             stop_id=row["stop_id"],
             stop_order=row["stop_sequence"],
         )
@@ -87,7 +87,7 @@ def create_line_stops() -> None:
         session.execute(select(LineStopModel.line_id, LineStopModel.stop_id)).all()
     )
     existing_lines = session.query(LineModel).all()
-    lines_by_name_direction: dict[str, LineModel] = {
+    lines_by_trip_id: dict[str, LineModel] = {
         f"{line.name}-{SPTransLineDirection[line.direction].value - 1}": line
         for line in existing_lines
     }
@@ -98,15 +98,15 @@ def create_line_stops() -> None:
     non_existing_lines: set[str] = set()
     non_existing_stops: set[int] = set()
     for sptrans_line_stop in progress_bar(sptrans_line_stops):
-        line_name_direction = sptrans_line_stop.line_name_direction
+        trip_id = sptrans_line_stop.trip_id
         stop_id = sptrans_line_stop.stop_id
-        if line_name_direction not in lines_by_name_direction:
-            if line_name_direction not in non_existing_lines:
-                print(f"Linha {line_name_direction} não existe na base de dados")
-                non_existing_lines.add(line_name_direction)
+        if trip_id not in lines_by_trip_id:
+            if trip_id not in non_existing_lines:
+                print(f"Linha {trip_id} não existe na base de dados")
+                non_existing_lines.add(trip_id)
             continue
 
-        line = lines_by_name_direction[line_name_direction]
+        line = lines_by_trip_id[trip_id]
 
         if stop_id not in existing_stop_ids:
             if stop_id not in non_existing_stops:

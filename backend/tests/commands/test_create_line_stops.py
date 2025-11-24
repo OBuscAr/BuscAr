@@ -16,6 +16,10 @@ LOAD_TRIPS_LOCATION = f"{load_trips.__module__}.{load_trips.__name__}"
 LOAD_LINE_STOPS_LOCATION = f"{load_line_stops.__module__}.{load_line_stops.__name__}"
 
 
+def get_code(line_direction: LineDirection) -> str:
+    return "0" if line_direction == LineDirection.MAIN else "1"
+
+
 def test_create_line_stops(mocker: MockFixture):
     """
     GIVEN  an existing line and an existing stop in database
@@ -25,8 +29,7 @@ def test_create_line_stops(mocker: MockFixture):
     # GIVEN
     session = SessionLocal()
     line = LineFactory.create_sync()
-    line_direction = "0" if line.direction == LineDirection.MAIN else "1"
-    line_name_direction = f"{line.name}-{line_direction}"
+    trip_id = f"{line.name}-{get_code(line.direction)}"
     stop = StopFactory.create_sync()
     mocked_shapes = mocker.patch(LOAD_SHAPES_LOCATION, return_value={})
     mocked_trips = mocker.patch(LOAD_TRIPS_LOCATION, return_value={})
@@ -39,12 +42,12 @@ def test_create_line_stops(mocker: MockFixture):
             SPTransLineStop(
                 stop_id=stop.id,
                 stop_order=first_stop_order,
-                line_name_direction=line_name_direction,
+                trip_id=trip_id,
             ),
             SPTransLineStop(
                 stop_id=stop.id,
                 stop_order=second_stop_order,
-                line_name_direction=line_name_direction,
+                trip_id=trip_id,
             ),
         ],
     )
