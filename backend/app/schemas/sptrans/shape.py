@@ -1,8 +1,6 @@
-from pydantic import BaseModel
+from app.schemas.point import Point
 
 
-class SPTransShape(BaseModel):
-    latitude: float
-    longitude: float
+class SPTransShape(Point):
     sequence: int
     distance: float

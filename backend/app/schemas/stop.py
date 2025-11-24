@@ -1,10 +1,13 @@
-from pydantic import BaseModel
 from pydantic import ConfigDict
 
-class Stop(BaseModel):
+from app.schemas.point import Point
+
+
+class Stop(Point):
     """
     Schema Pydantic to the model StopModel.
     """
+
     id: int
     name: str
     address: str
