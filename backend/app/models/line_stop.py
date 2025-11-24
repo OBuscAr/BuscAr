@@ -1,6 +1,7 @@
-from uuid import uuid4
+from uuid import UUID, uuid4
 
-from sqlalchemy import UUID, ForeignKey, UniqueConstraint
+from sqlalchemy import UUID as UUID_SQL
+from sqlalchemy import ForeignKey, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import SerializableBase
@@ -11,7 +12,12 @@ from app.models.stop import Stop
 class LineStop(SerializableBase):
     __tablename__ = "line_stop"
 
-    id: Mapped[UUID] = mapped_column(UUID, primary_key=True, index=True, default=uuid4)
+    id: Mapped[UUID] = mapped_column(
+        UUID_SQL,
+        primary_key=True,
+        index=True,
+        default=uuid4,
+    )
     line_id: Mapped[int] = mapped_column(ForeignKey("line.id"), index=True)
     line: Mapped[Line] = relationship(Line)
 
