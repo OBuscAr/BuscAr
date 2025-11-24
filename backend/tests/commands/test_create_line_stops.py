@@ -228,13 +228,13 @@ def test_distance(mocker: MockFixture):
             shape_id: [
                 SPTransShape(
                     sequence=1,
-                    distance=(expected_distance - 1) * 1000,
+                    distance=(expected_distance - 1),
                     latitude=stop.latitude - 1,
                     longitude=stop.longitude - 1,
                 ),
                 SPTransShape(
                     sequence=2,
-                    distance=expected_distance * 1000,
+                    distance=expected_distance,
                     latitude=stop.latitude,
                     longitude=stop.longitude,
                 ),
@@ -285,7 +285,7 @@ def test_distance_first_stop(mocker: MockFixture):
             shape_id: [
                 SPTransShape(
                     sequence=1,
-                    distance=1000,
+                    distance=1,
                     latitude=stop.latitude,
                     longitude=stop.longitude,
                 ),
@@ -350,7 +350,7 @@ def test_distance_shapes_interval(mocker: MockFixture):
             shape_id: [
                 SPTransShape(
                     sequence=i,
-                    distance=expected_distance * 1000,
+                    distance=expected_distance,
                     latitude=stop.latitude + 1,
                     longitude=stop.longitude + 1,
                 )
@@ -359,7 +359,7 @@ def test_distance_shapes_interval(mocker: MockFixture):
             + [
                 SPTransShape(
                     sequence=shapes_interval,
-                    distance=(expected_distance + 1) * 1000,
+                    distance=(expected_distance + 1),
                     latitude=stop.latitude,
                     longitude=stop.longitude,
                 )
@@ -415,7 +415,7 @@ def test_distance_duplicate_stops(mocker: MockFixture):
             shape_id: [
                 SPTransShape(
                     sequence=i,
-                    distance=distance * 1000,
+                    distance=distance,
                     latitude=stop.latitude,
                     longitude=stop.longitude,
                 )

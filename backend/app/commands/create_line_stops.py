@@ -47,7 +47,7 @@ def load_shapes() -> dict[str, list[SPTransShape]]:
                     latitude=float(row["shape_pt_lat"]),
                     longitude=float(row["shape_pt_lon"]),
                     sequence=int(row["shape_pt_sequence"]),
-                    distance=float(row["shape_dist_traveled"]),
+                    distance=float(row["shape_dist_traveled"]) / 1000,
                 )
             )
 
@@ -154,7 +154,7 @@ def create_line_stops(shapes_interval: int = SHAPES_INTERVAL) -> None:
                 shape_points[:shapes_interval], target_point
             )
             assert closest is not None
-            distance = closest.distance / 1000.0
+            distance = closest.distance
 
             error_distance = geodist(
                 closest.to_tuple(), target_point.to_tuple(), metric="km"
