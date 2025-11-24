@@ -20,9 +20,6 @@ TRIPS_FILE = os.path.join(SPTRANS_DATA_PATH, "trips.txt")
 STOPS_FILE = os.path.join(SPTRANS_DATA_PATH, "stop_times.txt")
 
 
-SHAPES_INTERVAL = 50
-
-
 def load_trips() -> dict[str, str]:
     mapping: dict[str, str] = {}
     with open(TRIPS_FILE, newline="", encoding="utf-8") as f:
@@ -77,13 +74,28 @@ def load_line_stops() -> list[SPTransLineStop]:
     ]
 
 
-def create_line_stops(shapes_interval: int = SHAPES_INTERVAL) -> None:
+def create_line_stops(
+    shapes_interval: int = 30,
+    distance_tolerance: float = 0.3,
+) -> None:
     """
     Create line stops from the static SPTrans data.
 
-    ## Parameters
-    - `shapes_interval`: When searching the nearest point on a shape,
-      consider maximum this number of consecutive elements.
+    ## Strategy to find closest point on the SPTrans shape
+    Every line has a shape related to it where SPTrans files have the tracked points
+    of a vehicle when following the route of the line and also the traveled distance
+    until that point. For each stop of the line we would try to find the closest point
+    to our stop in the shape. However, some lines might traverse the same point
+    (or closed to it) in multiple times in a route. To calculate the correct
+    distance we would compare the stop with a consecutive slice of the shape.
+    The base size of this slice is controlled by the parameter `shapes_interval`.
+    Every time we find a closest point for our target stop, the slice would move
+    to the right.
+
+    The parameter `distance_tolerance` will control how much of an error we are
+    willing to accept when finding the closest point. If the error is bigger than
+    the tolerance, the slice size will be temporarily increased by `shapes_interval`,
+    until we find a better point.
     """
     sptrans_line_stops = load_line_stops()
     session = SessionLocal()
@@ -150,16 +162,26 @@ def create_line_stops(shapes_interval: int = SHAPES_INTERVAL) -> None:
             shape_points = shape_cache[shape_id]
             target_point = stop_points[stop_id]
 
-            closest = distance_service.find_closest_point(
-                shape_points[:shapes_interval], target_point
-            )
-            assert closest is not None
-            distance = closest.distance
+            current_interval = shapes_interval
+            closest = None
+            while closest is None:
+                closest = distance_service.find_closest_point(
+                    shape_points[:current_interval], target_point
+                )
+                assert closest is not None
+                error_distance = geodist(
+                    closest.to_tuple(), target_point.to_tuple(), metric="km"
+                )
+                if (
+                    current_interval < len(shape_points)
+                    and error_distance > distance_tolerance
+                ):
+                    # Try again if we could still expand the interval
+                    closest = None
+                    current_interval += shapes_interval
 
-            error_distance = geodist(
-                closest.to_tuple(), target_point.to_tuple(), metric="km"
-            )
-            if error_distance > 0.3:
+            distance = closest.distance
+            if error_distance > distance_tolerance:
                 logger.warning(
                     f"O ponto escolhido para representar a parada {stop_id} com ordem "
                     f"{stop_order} para a linha {line.id} está a "
@@ -203,4 +225,4 @@ def create_line_stops(shapes_interval: int = SHAPES_INTERVAL) -> None:
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    create_line_stops()
+    create_line_stops(shapes_interval=30, distance_tolerance=0.35)
