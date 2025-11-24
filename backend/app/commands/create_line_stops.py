@@ -162,7 +162,8 @@ def create_line_stops(shapes_interval: int = SHAPES_INTERVAL) -> None:
             if error_distance > 0.3:
                 logger.warning(
                     f"A ponto escolhido para representar a parada {stop_id} com ordem "
-                    f"{stop_order} está a uma distância {error_distance} km dela"
+                    f"{stop_order} para a linha {line.id} está a "
+                    f"uma distância de {error_distance} km dela"
                 )
             shape_cache[shape_id] = [
                 point for point in shape_points if point.sequence >= closest.sequence
