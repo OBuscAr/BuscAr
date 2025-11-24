@@ -107,14 +107,13 @@ def create_line_stops(
         s.id: Point(latitude=s.latitude, longitude=s.longitude) for s in stop_rows
     }
 
-    existing_line_stop_ids: dict[tuple[int, int, int], UUID] = {
-        (line_id, stop_id, stop_order): line_stop_id
-        for line_stop_id, line_id, stop_order, stop_id in session.execute(
+    existing_line_stop_ids: dict[tuple[int, int], UUID] = {
+        (line_id, stop_order): line_stop_id
+        for line_stop_id, line_id, stop_order in session.execute(
             select(
                 LineStopModel.id,
                 LineStopModel.line_id,
                 LineStopModel.stop_order,
-                LineStopModel.stop_id,
             )
         ).all()
     }
@@ -200,7 +199,7 @@ def create_line_stops(
             stop_order=stop_order,
             distance_traveled=distance,
         )
-        unique_constraint = (line.id, stop_id, stop_order)
+        unique_constraint = (line.id, stop_order)
         if unique_constraint not in existing_line_stop_ids:
             line_stops_to_create.append(line_stop)
         else:
@@ -215,7 +214,7 @@ def create_line_stops(
         session.add_all(line_stops_to_create)
         session.commit()
 
-    logging.info(
+    logger.info(
         f"Atualizando {len(line_stops_to_update)} paradas-linha na base de dados..."
     )
     if len(line_stops_to_update) > 0:
