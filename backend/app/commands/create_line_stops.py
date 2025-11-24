@@ -17,26 +17,22 @@ TRIPS_FILE = os.path.join(SPTRANS_DATA_PATH, "trips.txt")
 STOPS_FILE = os.path.join(SPTRANS_DATA_PATH, "stop_times.txt")
 
 
-def load_trips(max_rows: Optional[int] = None) -> dict[str, str]:
+def load_trips() -> dict[str, str]:
     mapping: dict[str, str] = {}
     with open(TRIPS_FILE, newline="", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         for index, row in enumerate(reader):
-            if max_rows is not None and index > max_rows:
-                break
             route_id = row["route_id"].strip()
             if route_id not in mapping:
                 mapping[route_id] = row["shape_id"]
     return mapping
 
 
-def load_shapes(max_rows: Optional[int] = None) -> dict[str, list[SPTransShape]]:
+def load_shapes() -> dict[str, list[SPTransShape]]:
     shapes: dict[str, list[SPTransShape]] = {}
     with open(SHAPES_FILE, newline="", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         for index, row in enumerate(reader):
-            if max_rows is not None and index > max_rows:
-                break
             shape_id = row["shape_id"]
             shapes.setdefault(shape_id, []).append(
                 SPTransShape(
@@ -67,8 +63,8 @@ def create_line_stops(max_rows: Optional[int] = None) -> None:
 
     session = SessionLocal()
 
-    line_to_shape_map = load_trips(max_rows=max_rows)
-    shape_cache = load_shapes(max_rows=max_rows)
+    line_to_shape_map = load_trips()
+    shape_cache = load_shapes()
 
     stop_rows = session.query(StopModel).all()
     stop_points = {
