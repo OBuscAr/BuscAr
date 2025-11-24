@@ -115,12 +115,9 @@ def create_line_stops(max_rows: Optional[int] = None) -> None:
             shape_points = shape_cache[shape_id]
             target_point = stop_points[stop_id]
 
-            if target_point is not None:
-                closest = distance_service.find_closest_point(
-                    shape_points, target_point
-                )
-                if closest is not None:
-                    dist_km = closest.distance / 1000.0
+            closest = distance_service.find_closest_point(shape_points, target_point)
+            assert closest is not None
+            dist_km = closest.distance / 1000.0
 
         line_stop = LineStopModel(
             line_id=line.id,
