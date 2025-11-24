@@ -31,6 +31,8 @@ def load_trips() -> dict[str, str]:
             trip_id = row["trip_id"].strip()
             if trip_id not in mapping:
                 mapping[trip_id] = row["shape_id"]
+            else:
+                logger.warning(f"Trip {trip_id} tem multiples shapes")
     return mapping
 
 
@@ -88,7 +90,6 @@ def create_line_stops(shapes_interval: int = SHAPES_INTERVAL) -> None:
 
     trip_to_shape_map = load_trips()
     shape_cache = load_shapes()
-
     stop_rows = session.query(StopModel).all()
     stop_points = {
         s.id: Point(latitude=s.latitude, longitude=s.longitude) for s in stop_rows
