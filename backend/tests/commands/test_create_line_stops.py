@@ -80,8 +80,14 @@ def test_update_line_stops(mocker: MockFixture):
     """
     # GIVEN
     session = SessionLocal()
-    line_stop = LineStopFactory.create_sync(distance_traveled=5)
-    trip_id = f"{line_stop.line.name}-{get_code(line_stop.line.direction)}"
+    target_line_stop = LineStopFactory.create_sync(distance_traveled=5, stop_order=1)
+    other_line_stop = LineStopFactory.create_sync(
+        line=target_line_stop.line, stop=target_line_stop.stop, stop_order=2
+    )
+    other_line_stop_distance = other_line_stop.distance_traveled
+    trip_id = (
+        f"{target_line_stop.line.name}-{get_code(target_line_stop.line.direction)}"
+    )
     mocked_trips = mocker.patch(LOAD_TRIPS_LOCATION, return_value={})
     mocked_shapes = mocker.patch(LOAD_SHAPES_LOCATION, return_value={})
 
@@ -89,9 +95,9 @@ def test_update_line_stops(mocker: MockFixture):
         LOAD_LINE_STOPS_LOCATION,
         return_value=[
             SPTransLineStop(
-                stop_id=line_stop.stop_id,
+                stop_id=target_line_stop.stop_id,
                 trip_id=trip_id,
-                stop_order=line_stop.stop_order,
+                stop_order=target_line_stop.stop_order,
             ),
         ],
     )
@@ -104,10 +110,15 @@ def test_update_line_stops(mocker: MockFixture):
     mocked_trips.assert_called()
     mocked_line_stops.assert_called()
 
-    assert session.query(LineStopModel).count() == 1
-    db_line_stop = session.query(LineStopModel).one()
-    assert db_line_stop.id == line_stop.id
-    assert db_line_stop.distance_traveled == 0
+    assert session.query(LineStopModel).count() == 2
+    db_target_line_stop = (
+        session.query(LineStopModel).filter_by(id=target_line_stop.id).one()
+    )
+    db_other_line_stop = (
+        session.query(LineStopModel).filter_by(id=other_line_stop.id).one()
+    )
+    assert db_target_line_stop.distance_traveled == 0
+    assert db_other_line_stop.distance_traveled == other_line_stop_distance
 
 
 def test_distance_line_without_shape(

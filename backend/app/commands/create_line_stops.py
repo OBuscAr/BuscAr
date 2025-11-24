@@ -86,10 +86,15 @@ def create_line_stops() -> None:
         s.id: Point(latitude=s.latitude, longitude=s.longitude) for s in stop_rows
     }
 
-    existing_line_stop_ids: dict[tuple[int, int], UUID] = {
-        (line_id, stop_id): line_stop_id
-        for line_stop_id, line_id, stop_id in session.execute(
-            select(LineStopModel.id, LineStopModel.line_id, LineStopModel.stop_id)
+    existing_line_stop_ids: dict[tuple[int, int, int], UUID] = {
+        (line_id, stop_id, stop_order): line_stop_id
+        for line_stop_id, line_id, stop_order, stop_id in session.execute(
+            select(
+                LineStopModel.id,
+                LineStopModel.line_id,
+                LineStopModel.stop_order,
+                LineStopModel.stop_id,
+            )
         ).all()
     }
     existing_lines = session.query(LineModel).all()
@@ -144,10 +149,11 @@ def create_line_stops() -> None:
             stop_order=sptrans_line_stop.stop_order,
             distance_traveled=dist_km,
         )
-        if (line.id, stop_id) not in existing_line_stop_ids:
+        unique_constraint = (line.id, stop_id, line_stop.stop_order)
+        if unique_constraint not in existing_line_stop_ids:
             line_stops_to_create.append(line_stop)
         else:
-            line_stop.id = existing_line_stop_ids[(line.id, stop_id)]
+            line_stop.id = existing_line_stop_ids[unique_constraint]
             line_stops_to_update.append(line_stop.dict())
 
     logger.info(
