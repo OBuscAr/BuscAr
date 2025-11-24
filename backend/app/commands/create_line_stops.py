@@ -214,7 +214,7 @@ def create_line_stops(
         session.add_all(line_stops_to_create)
         session.commit()
 
-    logging.info(
+    logger.info(
         f"Atualizando {len(line_stops_to_update)} paradas-linha na base de dados..."
     )
     if len(line_stops_to_update) > 0:
