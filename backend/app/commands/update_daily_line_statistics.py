@@ -1,10 +1,10 @@
 import logging
 import time
 from datetime import datetime, timedelta
-from typing import Sequence
+from typing import Sequence, cast
 
 import schedule
-from geopy import distance
+from geodistpy import geodist
 from requests.cookies import RequestsCookieJar
 from sqlalchemy import update
 from tqdm import tqdm as progress_bar
@@ -98,9 +98,14 @@ def update_vehicle_positions(
                         database_vehicles[vehicle.id].longitude,
                     )
                     new_position = (vehicle.latitude, vehicle.longitude)
-                    delta_distances[line_id] += distance.distance(
-                        old_position, new_position
-                    ).kilometers
+                    delta_distances[line_id] += cast(
+                        float,
+                        geodist(
+                            old_position,
+                            new_position,
+                            metric="km",
+                        ),
+                    )
                 vehicles_to_update.append(vehicle_model.dict())
 
     logger.info(f"Criando {len(vehicles_to_create)} veículos na base de dados...")
