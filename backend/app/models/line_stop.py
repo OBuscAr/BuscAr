@@ -27,4 +27,4 @@ class LineStop(SerializableBase):
     stop_order: Mapped[int] = mapped_column(index=True, nullable=False)
     distance_traveled: Mapped[float] = mapped_column(nullable=False)
 
-    __table_args__ = (UniqueConstraint("line_id", "stop_id", "stop_order"),)
+    __table_args__ = (UniqueConstraint("line_id", "stop_order"),)
