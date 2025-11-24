@@ -8,7 +8,7 @@ from app.commands.create_line_stops import (
 )
 from app.core.database import SessionLocal
 from app.models import LineDirection, LineStopModel
-from app.schemas import SPTransLineStop
+from app.schemas import SPTransLineStop, SPTransShape
 from pytest import LogCaptureFixture
 from pytest_mock import MockFixture
 
@@ -195,3 +195,61 @@ def test_distance_shape_without_data(mocker: MockFixture, caplog: LogCaptureFixt
     assert line_stop.distance_traveled == 0
 
     assert f"shape {shape_id} sem dados" in caplog.text
+
+
+def test_distance(mocker: MockFixture):
+    """
+    GIVEN  an existing line with a shape
+    WHEN   the `create_line_stops` is called
+    THEN   the line stop should be created with the near stop distance
+    """
+    # GIVEN
+    session = SessionLocal()
+    line = LineFactory.create_sync()
+    trip_id = f"{line.name}-{get_code(line.direction)}"
+    stop = StopFactory.create_sync()
+    shape_id = "test"
+    expected_distance = 8
+    mocked_trips = mocker.patch(LOAD_TRIPS_LOCATION, return_value={trip_id: shape_id})
+    mocked_shapes = mocker.patch(
+        LOAD_SHAPES_LOCATION,
+        return_value={
+            shape_id: [
+                SPTransShape(
+                    sequence=1,
+                    distance=(expected_distance - 1) * 1000,
+                    latitude=stop.latitude - 1,
+                    longitude=stop.longitude - 1,
+                ),
+                SPTransShape(
+                    sequence=2,
+                    distance=expected_distance * 1000,
+                    latitude=stop.latitude,
+                    longitude=stop.longitude,
+                ),
+            ]
+        },
+    )
+
+    mocked_line_stops = mocker.patch(
+        LOAD_LINE_STOPS_LOCATION,
+        return_value=[
+            SPTransLineStop(
+                stop_id=stop.id,
+                stop_order=1,
+                trip_id=trip_id,
+            ),
+        ],
+    )
+
+    # WHEN
+    create_line_stops()
+
+    # THEN
+    mocked_shapes.assert_called()
+    mocked_trips.assert_called()
+    mocked_line_stops.assert_called()
+
+    assert session.query(LineStopModel).count() == 1
+    line_stop = session.query(LineStopModel).one()
+    assert line_stop.distance_traveled == expected_distance
