@@ -30,7 +30,7 @@ class LineStopRepository:
         Get the line_stop for the given line and stop. In case of multiple
         options, return the one with lowest `stop_order`.
 
-        - If `minimum_stop_order<` is not null, only consider the results that
+        - If `minimum_stop_order` is not null, only consider the results that
           have stop order greater than or equal to the given value.
         """
         query = db.query(LineStop).filter_by(line_id=line_id, stop_id=stop_id)
