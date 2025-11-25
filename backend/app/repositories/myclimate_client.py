@@ -76,11 +76,9 @@ def calculate_carbon_emission(distance: float, vehicle_type: VehicleType) -> flo
             timeout=5,
         )
         response.raise_for_status()
-
         json_response = response.json()
         if "errors" in json_response:
             raise MyclimateError(json_response["errors"])
-
         return MyclimateCarbonEmission(**json_response).emission
     except (requests.RequestException, MyclimateError, Exception):
         # Fallback para cálculo mock em caso de erro
