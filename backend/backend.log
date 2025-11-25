@@ -327,3 +327,45 @@ Traceback (most recent call last):
   File "/home/giovanna/USP/6periodo/engsoft/projeto/BuscAr/backend/app/repositories/myclimate_client.py", line 5, in <module>
     from tenacity import (
 ModuleNotFoundError: No module named 'tenacity'
+WARNING:  StatReload detected changes in 'app/repositories/myclimate_client.py'. Reloading...
+Process SpawnProcess-10:
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/usr/lib/python3.10/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/home/giovanna/.local/lib/python3.10/site-packages/uvicorn/_subprocess.py", line 80, in subprocess_started
+    target(sockets=sockets)
+  File "/home/giovanna/.local/lib/python3.10/site-packages/uvicorn/server.py", line 67, in run
+    return asyncio_run(self.serve(sockets=sockets), loop_factory=self.config.get_loop_factory())
+  File "/home/giovanna/.local/lib/python3.10/site-packages/uvicorn/_compat.py", line 53, in asyncio_run
+    return loop.run_until_complete(main)
+  File "/usr/lib/python3.10/asyncio/base_events.py", line 649, in run_until_complete
+    return future.result()
+  File "/home/giovanna/.local/lib/python3.10/site-packages/uvicorn/server.py", line 71, in serve
+    await self._serve(sockets)
+  File "/home/giovanna/.local/lib/python3.10/site-packages/uvicorn/server.py", line 78, in _serve
+    config.load()
+  File "/home/giovanna/.local/lib/python3.10/site-packages/uvicorn/config.py", line 438, in load
+    self.loaded_app = import_from_string(self.app)
+  File "/home/giovanna/.local/lib/python3.10/site-packages/uvicorn/importer.py", line 22, in import_from_string
+    raise exc from None
+  File "/home/giovanna/.local/lib/python3.10/site-packages/uvicorn/importer.py", line 19, in import_from_string
+    module = importlib.import_module(module_str)
+  File "/usr/lib/python3.10/importlib/__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1050, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1027, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1006, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 688, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 883, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/home/giovanna/USP/6periodo/engsoft/projeto/BuscAr/backend/app/main.py", line 6, in <module>
+    from app.api import (
+  File "/home/giovanna/USP/6periodo/engsoft/projeto/BuscAr/backend/app/api/emission_route.py", line 15, in <module>
+    from app.services import emission_service
+  File "/home/giovanna/USP/6periodo/engsoft/projeto/BuscAr/backend/app/services/emission_service.py", line 10, in <module>
+    from app.repositories import daily_line_statistics_repository, myclimate_client
+  File "/home/giovanna/USP/6periodo/engsoft/projeto/BuscAr/backend/app/repositories/myclimate_client.py", line 5, in <module>
+    from tenacity import (
+ModuleNotFoundError: No module named 'tenacity'
