@@ -79,8 +79,4 @@ def calculate_carbon_emission(distance: float, vehicle_type: VehicleType) -> flo
             raise MyclimateError(json_response["errors"])
         return MyclimateCarbonEmission(**json_response).emission
     except (requests.RequestException, MyclimateError, Exception):
-<<<<<<< HEAD
-=======
-        # Fallback para cálculo mock em caso de erro
->>>>>>> d698ddb (correção de conflito)
         return _calculate_mock_emission(distance, vehicle_type)
