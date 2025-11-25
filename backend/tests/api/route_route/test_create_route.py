@@ -26,8 +26,9 @@ def test_successful_response(client: TestClient):
     line = LineFactory.create_sync()
     departure_stop = StopFactory.create_sync()
     arrival_stop = StopFactory.create_sync()
-    for stop in [departure_stop, arrival_stop]:
-        LineStopFactory.create_sync(line=line, stop=stop)
+    LineStopFactory.create_sync(line=line, stop=departure_stop, stop_order=1)
+    LineStopFactory.create_sync(line=line, stop=arrival_stop, stop_order=2)
+
     MyclimateHelper.mock_carbon_emission(
         distance=None,
         vehicle_type=None,
@@ -75,8 +76,13 @@ def test_my_climate_error(client: TestClient):
     line = LineFactory.create_sync()
     departure_stop = StopFactory.create_sync()
     arrival_stop = StopFactory.create_sync()
-    for stop in [departure_stop, arrival_stop]:
-        LineStopFactory.create_sync(line=line, stop=stop)
+    LineStopFactory.create_sync(
+        line=line, stop=departure_stop, stop_order=1, distance_traveled=0
+    )
+    LineStopFactory.create_sync(
+        line=line, stop=arrival_stop, stop_order=2, distance_traveled=5
+    )
+
     params = {
         "line_id": line.id,
         "departure_stop_id": departure_stop.id,
