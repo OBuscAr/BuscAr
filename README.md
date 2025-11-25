@@ -8,7 +8,7 @@ Sistema web para análise das linhas de ônibus de São Paulo em relação à em
 - Apoiar urbanistas e tomadores de decisão no planejamento sustentável.
 
 ## 👥 Equipe
-- Ana Lívia Rüegger Saldanha  (backend)
+- Ana Lívia Rüegger Saldanha  (arquitetura)
 - Be Zilberman (arquitetura)
 - Diego Hurtado de Mendoza  (backend)
 - Giovanna Hirata (frontend)
