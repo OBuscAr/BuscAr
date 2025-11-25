@@ -17,7 +17,7 @@ def calculate_distance_between_stops(
     Calculates the actual distance (in kilometers) between two stops on the same line,
     using the accumulated distance (distance_traveled) saved in the database.
 
-    distance = |dist(stopB) - dist(stopA)|
+    distance = dist(stopB) - dist(stopA)
     """
 
     stop_a = LineStopRepository.get_first_line_stop(
