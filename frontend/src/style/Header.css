@@ -2,19 +2,22 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.5rem 4rem;
-  gap: 4rem;
-  height: 60px;
+  padding: 1rem clamp(1rem, 3vw, 2rem);
+  gap: clamp(1rem, 2vw, 2rem);
+  min-height: 60px;
   background-color: var(--bg-light);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .header-title {
-  flex: 2.5;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .header-title h2 {
   margin: 0;
-  font-size: 1.25rem;
+  font-size: clamp(1rem, 2vw, 1.25rem);
   font-weight: 600;
   color: var(--text-dark);
 }
@@ -22,15 +25,15 @@
 .header-title p {
   margin: 0;
   color: var(--text-light);
-  font-size: 0.9rem;
+  font-size: clamp(0.8rem, 1.5vw, 0.9rem);
 }
 
 .header-profile {
   display: flex;
   align-items: center;
-  gap: 2rem;
-  flex: 1;
-  justify-content: center;
+  gap: clamp(1rem, 2vw, 2rem);
+  flex: 0 1 auto;
+  justify-content: flex-end;
 }
 
 .header-profile svg {
@@ -64,4 +67,35 @@
 .profile-info .username {
   color: var(--text-dark);
   font-weight: 500;
+}
+
+/* --- Responsive Design --- */
+@media (max-width: 768px) {
+  .dashboard-header {
+    padding: 1rem;
+    gap: 1rem;
+  }
+  
+  .header-profile {
+    gap: 1rem;
+  }
+  
+  .profile-info {
+    padding-left: 1rem;
+  }
+  
+  .profile-info .username {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-title p {
+    display: none;
+  }
+  
+  .profile-info .avatar {
+    width: 36px;
+    height: 36px;
+  }
 }

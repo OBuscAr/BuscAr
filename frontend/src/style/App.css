@@ -28,11 +28,23 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
+  padding: 0;
   min-width: 320px;
   min-height: 100vh;
-  background-color: #f0f2f5; /* Um fundo claro padrão */
+  width: 100%;
+  overflow-x: hidden;
+  background-color: #f0f2f5;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
 }
 
 a {

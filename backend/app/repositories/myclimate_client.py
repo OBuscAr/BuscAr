@@ -19,6 +19,20 @@ AUTH = HTTPBasicAuth(settings.MYCLIMATE_USERNAME, settings.MYCLIMATE_PASSWORD)
 
 logger = logging.getLogger(__name__)
 
+def _calculate_mock_emission(distance: float, vehicle_type: VehicleType) -> float:
+    """Cálculo mock para fallback ou falta de credenciais."""
+    if distance < 1:
+        return 0
+    if vehicle_type == VehicleType.BUS:
+        return distance * 0.6
+    if vehicle_type == VehicleType.CAR:
+        return distance * 0.12
+<<<<<<< HEAD
+    else:
+        raise NotImplementedError(f"O tipo {vehicle_type} não foi implementado")
+=======
+    raise NotImplementedError(f"O tipo {vehicle_type} não foi implementado")
+>>>>>>> 34baacc (Add retries to external apis (#58))
 
 @retry(
     reraise=True,
@@ -35,8 +49,12 @@ def calculate_carbon_emission(distance: float, vehicle_type: VehicleType) -> flo
     - `vehicle_type`: Bus or car type.
     """
     if distance < 1:
-        # Myclimate does not supporte distances less than 1
         return 0
+
+    # Verificar se as credenciais estão configuradas
+    if not settings.MYCLIMATE_USERNAME or settings.MYCLIMATE_USERNAME == "your_username":
+        return _calculate_mock_emission(distance, vehicle_type)
+
     payload = {
         "fuel_type": "diesel",
         "km": distance,
@@ -53,13 +71,12 @@ def calculate_carbon_emission(distance: float, vehicle_type: VehicleType) -> flo
             CARBON_EMISSION_URL,
             auth=AUTH,
             json=payload,
+            timeout=5,
         )
         response.raise_for_status()
-    except Exception as e:
-        raise MyclimateError from e
-
-    json_response = response.json()
-    if "errors" in json_response:
-        raise MyclimateError(json_response["errors"])
-
-    return MyclimateCarbonEmission(**response.json()).emission
+        json_response = response.json()
+        if "errors" in json_response:
+            raise MyclimateError(json_response["errors"])
+        return MyclimateCarbonEmission(**json_response).emission
+    except (requests.RequestException, MyclimateError, Exception):
+        return _calculate_mock_emission(distance, vehicle_type)
