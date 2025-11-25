@@ -26,8 +26,8 @@ def test_calcular_emissao_sucesso(client: TestClient, mocker: MockerFixture):
     line = LineFactory.create_sync()
     stop_a = StopFactory.create_sync()
     stop_b = StopFactory.create_sync()
-    LineStopFactory.create_sync(line=line, stop=stop_a)
-    LineStopFactory.create_sync(line=line, stop=stop_b)
+    LineStopFactory.create_sync(line=line, stop=stop_a, stop_order=1)
+    LineStopFactory.create_sync(line=line, stop=stop_b, stop_order=2)
     params = {
         "line_id": line.id,
         "stop_id_a": stop_a.id,
