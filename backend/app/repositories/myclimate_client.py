@@ -9,14 +9,6 @@ from tenacity import (
     wait_random_exponential,
 )
 
-import logging
-from tenacity import (
-    before_sleep_log,
-    retry,
-    stop_after_attempt,
-    wait_random_exponential,
-)
-
 from app.core.config import settings
 from app.exceptions import MyclimateError
 from app.schemas import MyclimateCarbonEmission, VehicleType
@@ -44,11 +36,7 @@ def _calculate_mock_emission(distance: float, vehicle_type: VehicleType) -> floa
 
 @retry(
     reraise=True,
-<<<<<<< HEAD
     before_sleep=before_sleep_log(logger, logging.INFO),
-=======
-    before_sleep=before_sleep_log(logging.getLogger(__name__), logging.INFO),
->>>>>>> 8e4dcbc (correção de conflito)
     stop=stop_after_attempt(max_attempt_number=3),
     wait=wait_random_exponential(multiplier=1, min=2, max=6),
 )
