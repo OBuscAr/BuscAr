@@ -10,9 +10,11 @@ from app.schemas import (
     EmissionResponse,
     EmissionStatisticsReponse,
     LinesEmissionsResponse,
+    LineEmissionResponse,
     VehicleType,
 )
 from app.services import emission_service
+from typing import List
 
 logger = logging.getLogger(__name__)
 router = APIRouter(
@@ -142,3 +144,22 @@ def get_line_emission_statistics(
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="MyClimate error"
         )
+
+@router.get("/lines/total", response_model=List[LineEmissionResponse]) 
+def get_total_line_emission(
+    line_number: str = Query(..., description="Número da linha (ex: 8055-51)"),
+    db: Session = Depends(get_db),
+):
+
+    """
+    Returns the carbon emissions of a total journey on a given line.
+    """
+    try:
+        return emission_service.calculate_total_emission_by_line_number(
+            db=db, 
+            line_number=line_number, 
+        )
+    except NotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except MyclimateError:
+        raise HTTPException(status_code=503, detail="Erro no serviço de clima")

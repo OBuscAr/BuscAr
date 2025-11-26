@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.models import StopModel
 from app.models.line_stop import LineStop
-
+from sqlalchemy import desc
 
 class LineStopRepository:
 
@@ -39,3 +39,15 @@ class LineStopRepository:
             query = query.filter(LineStop.stop_order >= minimum_stop_order)
 
         return query.order_by(LineStop.stop_order).first()
+        
+    @staticmethod
+    def get_last_stop(db: Session, line_id: int) -> Optional[LineStop]:
+        """
+        Returns to the last stop on the line.
+        """
+        return (
+            db.query(LineStop)
+            .filter_by(line_id=line_id)
+            .order_by(desc(LineStop.stop_order))
+            .first()
+        )

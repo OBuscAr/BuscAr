@@ -9,5 +9,6 @@ class Line(BaseModel):
     id: int
     name: str  
     direction: LineDirection
-
+    description: str | None = None
+    
     model_config = ConfigDict(from_attributes=True)
