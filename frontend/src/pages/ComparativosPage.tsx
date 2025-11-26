@@ -1,79 +1,165 @@
-import { useState, useMemo } from 'react';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { useState, useMemo, useEffect } from 'react';
+import { LineChart, Line as RechartsLine, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { FiSearch, FiX } from 'react-icons/fi';
 import '../style/Comparativos.css';
+import { linesService } from '../services/linesService';
+import { emissionsService } from '../services/emissionsService';
+import type { Line } from '../types/api.types';
+import Loading from '../components/Loading';
 
 interface ComparisonData {
-  linha: string;
-  velocidadeMedia: number;
-  emissoes: number;
-  iqar: string;
-  periodo: string;
+  lineId: number;
+  lineName: string;
+  lineCode: string;
+  totalEmission: number;
+  totalDistance: number;
+  avgEmission: number;
 }
 
-interface RouteOption {
-  id: string;
-  nome: string;
+interface HistoricalPoint {
+  date: string;
+  [key: string]: string | number;
 }
 
 const ComparativosPage = () => {
-  const [selectedPeriod, setSelectedPeriod] = useState<'semana' | 'mes' | 'ano'>('semana');
+  const [daysRange, setDaysRange] = useState(7);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedRoutes, setSelectedRoutes] = useState<string[]>(['874C-10', '8705-10']);
+  const [selectedLines, setSelectedLines] = useState<number[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Dados do backend
+  const [allLines, setAllLines] = useState<Line[]>([]);
+  const [comparisonData, setComparisonData] = useState<ComparisonData[]>([]);
+  const [historicalData, setHistoricalData] = useState<HistoricalPoint[]>([]);
 
-  // Todas as rotas disponíveis
-  const allRoutes: RouteOption[] = [
-    { id: '874C-10', nome: 'Linha 874C-10' },
-    { id: '8705-10', nome: 'Linha 8705-10' },
-    { id: '8319-10', nome: 'Linha 8319-10' },
-    { id: '715M-10', nome: 'Linha 715M-10' },
-    { id: '875C-10', nome: 'Linha 875C-10' },
-    { id: '8019-10', nome: 'Linha 8019-10' },
-  ];
+  // Buscar todas as linhas ao carregar
+  useEffect(() => {
+    async function loadLines() {
+      try {
+        const lines = await linesService.searchLines();
+        // Agrupar linhas por código, priorizando direção MAIN
+        const uniqueLinesMap = new Map<string, Line>();
+        lines.forEach(line => {
+          const lineCode = line.name.split(' - ')[0];
+          const existing = uniqueLinesMap.get(lineCode);
+          // Se não existe ou a atual é MAIN, substitui
+          if (!existing || line.direction === 'MAIN') {
+            uniqueLinesMap.set(lineCode, line);
+          }
+        });
+        const uniqueLines = Array.from(uniqueLinesMap.values());
+        setAllLines(uniqueLines);
+        // Selecionar as duas primeiras linhas por padrão
+        if (uniqueLines.length >= 2) {
+          setSelectedLines([uniqueLines[0].id, uniqueLines[1].id]);
+        }
+      } catch (err) {
+        console.error('Erro ao buscar linhas:', err);
+        setError('Erro ao carregar linhas disponíveis');
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadLines();
+  }, []);
 
-  // Dados mockados para comparação
-  const allComparisonData: ComparisonData[] = [
-    { linha: '874C-10', velocidadeMedia: 45, emissoes: 120, iqar: 'Bom', periodo: '7 dias' },
-    { linha: '8705-10', velocidadeMedia: 28, emissoes: 180, iqar: 'Ruim', periodo: '7 dias' },
-    { linha: '8319-10', velocidadeMedia: 35, emissoes: 150, iqar: 'Moderado', periodo: '7 dias' },
-    { linha: '715M-10', velocidadeMedia: 50, emissoes: 110, iqar: 'Bom', periodo: '7 dias' },
-    { linha: '875C-10', velocidadeMedia: 30, emissoes: 165, iqar: 'Moderado', periodo: '7 dias' },
-    { linha: '8019-10', velocidadeMedia: 35, emissoes: 155, iqar: 'Moderado', periodo: '7 dias' },
-  ];
+  // Buscar dados de comparação quando linhas ou período mudam
+  useEffect(() => {
+    if (selectedLines.length === 0) {
+      setComparisonData([]);
+      setHistoricalData([]);
+      return;
+    }
 
-  // Dados para gráfico de linha (histórico temporal)
-  const historicalData = [
-    { dia: 'Seg', '874C-10': 42, '8705-10': 25, '8319-10': 33, '715M-10': 48, '875C-10': 28, '8019-10': 32 },
-    { dia: 'Ter', '874C-10': 44, '8705-10': 27, '8319-10': 35, '715M-10': 49, '875C-10': 29, '8019-10': 34 },
-    { dia: 'Qua', '874C-10': 43, '8705-10': 26, '8319-10': 34, '715M-10': 51, '875C-10': 31, '8019-10': 35 },
-    { dia: 'Qui', '874C-10': 46, '8705-10': 29, '8319-10': 36, '715M-10': 50, '875C-10': 30, '8019-10': 36 },
-    { dia: 'Sex', '874C-10': 45, '8705-10': 28, '8319-10': 35, '715M-10': 50, '875C-10': 30, '8019-10': 35 },
-  ];
+    async function fetchComparisonData() {
+      try {
+        setLoading(true);
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - daysRange);
+        const startDateStr = startDate.toISOString().split('T')[0];
 
-  // Filtrar dados baseado nas rotas selecionadas
-  const comparisonData = useMemo(() => {
-    return allComparisonData.filter(data => selectedRoutes.includes(data.linha));
-  }, [selectedRoutes]);
+        // Buscar estatísticas para cada linha selecionada
+        const promises = selectedLines.map(async (lineId) => {
+          const stats = await emissionsService.getLineStatistics(lineId, startDateStr, daysRange);
+          const line = allLines.find(l => l.id === lineId);
+          const lineCode = line?.name.split(' - ')[0] || `${lineId}`;
+          
+          const totalEmission = stats.reduce((acc, s) => acc + s.total_emission, 0);
+          const totalDistance = stats.reduce((acc, s) => acc + s.total_distance, 0);
+          
+          return {
+            lineId,
+            lineName: line?.name || `Linha ${lineId}`,
+            lineCode,
+            totalEmission,
+            totalDistance,
+            avgEmission: totalDistance > 0 ? totalEmission / totalDistance : 0,
+          };
+        });
 
-  // Filtrar rotas disponíveis
-  const filteredRoutes = useMemo(() => {
-    return allRoutes.filter(route => 
-      route.nome.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      !selectedRoutes.includes(route.id)
-    );
-  }, [searchTerm, selectedRoutes]);
+        const results = await Promise.all(promises);
+        setComparisonData(results);
 
-  const handleAddRoute = (routeId: string) => {
-    if (selectedRoutes.length < 4) {
-      setSelectedRoutes([...selectedRoutes, routeId]);
+        // Montar dados históricos para o gráfico
+        const statsPromises = selectedLines.map(lineId => 
+          emissionsService.getLineStatistics(lineId, startDateStr, daysRange)
+        );
+        const allStats = await Promise.all(statsPromises);
+        
+        // Organizar por data
+        const dateMap = new Map<string, any>();
+        allStats.forEach((stats, idx) => {
+          const lineId = selectedLines[idx];
+          const lineName = allLines.find(l => l.id === lineId)?.name.split(' - ')[0] || `L${lineId}`;
+          
+          stats.forEach(stat => {
+            if (!dateMap.has(stat.date)) {
+              dateMap.set(stat.date, { date: stat.date });
+            }
+            dateMap.get(stat.date)![lineName] = stat.total_emission;
+          });
+        });
+        
+        setHistoricalData(Array.from(dateMap.values()).sort((a, b) => a.date.localeCompare(b.date)));
+        setError(null);
+      } catch (err) {
+        console.error('Erro ao buscar dados de comparação:', err);
+        setError('Erro ao carregar dados comparativos');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchComparisonData();
+  }, [selectedLines, daysRange, allLines]);
+
+  // Filtrar linhas disponíveis
+  const filteredLines = useMemo(() => {
+    if (!searchTerm.trim()) return [];
+    
+    const term = searchTerm.toLowerCase().trim();
+    return allLines.filter(line => {
+      const lineCode = line.name.split(' - ')[0].toLowerCase();
+      const fullName = line.name.toLowerCase();
+      return (
+        (lineCode.includes(term) || fullName.includes(term)) &&
+        !selectedLines.includes(line.id)
+      );
+    });
+  }, [searchTerm, selectedLines, allLines]);
+
+  const handleAddLine = (lineId: number) => {
+    if (selectedLines.length < 4) {
+      setSelectedLines([...selectedLines, lineId]);
       setSearchTerm('');
       setShowDropdown(false);
     }
   };
 
-  const handleRemoveRoute = (routeId: string) => {
-    setSelectedRoutes(selectedRoutes.filter(id => id !== routeId));
+  const handleRemoveLine = (lineId: number) => {
+    setSelectedLines(selectedLines.filter(id => id !== lineId));
   };
 
   const getRouteColor = (index: number) => {
@@ -81,14 +167,13 @@ const ComparativosPage = () => {
     return colors[index % colors.length];
   };
 
-  const getIqarColor = (iqar: string) => {
-    switch (iqar.toLowerCase()) {
-      case 'bom': return 'var(--accent-blue)';
-      case 'moderado': return 'var(--accent-yellow)';
-      case 'ruim': return 'var(--accent-red)';
-      default: return 'var(--text-light)';
-    }
+  const formatDate = (dateStr: string) => {
+    return dateStr.slice(5); // MM-DD
   };
+
+  if (loading && allLines.length === 0) {
+    return <Loading />;
+  }
 
   return (
     <div className="comparativos-container">
@@ -96,33 +181,46 @@ const ComparativosPage = () => {
         <h2>Dados Comparativos</h2>
         <div className="period-selector">
           <button 
-            className={selectedPeriod === 'semana' ? 'active' : ''}
-            onClick={() => setSelectedPeriod('semana')}
+            className={daysRange === 7 ? 'active' : ''}
+            onClick={() => setDaysRange(7)}
           >
-            Semana
+            7 dias
           </button>
           <button 
-            className={selectedPeriod === 'mes' ? 'active' : ''}
-            onClick={() => setSelectedPeriod('mes')}
+            className={daysRange === 30 ? 'active' : ''}
+            onClick={() => setDaysRange(30)}
           >
-            Mês
+            30 dias
           </button>
           <button 
-            className={selectedPeriod === 'ano' ? 'active' : ''}
-            onClick={() => setSelectedPeriod('ano')}
+            className={daysRange === 90 ? 'active' : ''}
+            onClick={() => setDaysRange(90)}
           >
-            Ano
+            90 dias
           </button>
         </div>
       </div>
 
-      {/* Busca de Rotas */}
+      {error && (
+        <div style={{ 
+          padding: '12px 16px', 
+          backgroundColor: '#FFC0CB', 
+          color: '#8B0000',
+          borderRadius: 8,
+          fontSize: '14px',
+          margin: '0 0 1rem'
+        }}>
+          ⚠️ {error}
+        </div>
+      )}
+
+      {/* Busca de Linhas */}
       <div className="route-search-container">
         <div className="search-box">
           <FiSearch className="search-icon" />
           <input
             type="text"
-            placeholder="Buscar linha para comparar..."
+            placeholder="Buscar linha para comparar... (escolha no máx. 4 linhas)"
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);
@@ -130,87 +228,114 @@ const ComparativosPage = () => {
             }}
             onFocus={() => setShowDropdown(true)}
             onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && filteredLines.length > 0) {
+                handleAddLine(filteredLines[0].id);
+              }
+            }}
           />
-          {showDropdown && filteredRoutes.length > 0 && (
+          {showDropdown && filteredLines.length > 0 && (
             <div className="search-dropdown">
-              {filteredRoutes.map((route) => (
-                <div
-                  key={route.id}
-                  className="dropdown-item"
-                  onClick={() => handleAddRoute(route.id)}
-                >
-                  {route.nome}
-                </div>
-              ))}
+              {filteredLines.slice(0, 10).map((line) => {
+                const lineCode = line.name.split(' - ')[0];
+                const lineName = line.name.split(' - ').slice(1).join(' - ');
+                return (
+                  <div
+                    key={line.id}
+                    className="dropdown-item"
+                    onClick={() => handleAddLine(line.id)}
+                  >
+                    <strong>{lineCode}</strong> - {lineName}
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
         
         <div className="selected-routes">
-          {selectedRoutes.map((routeId, index) => (
-            <div 
-              key={routeId} 
-              className="route-tag"
-              style={{ borderColor: getRouteColor(index) }}
-            >
-              <span style={{ color: getRouteColor(index) }}>
-                Linha {routeId}
-              </span>
-              <FiX 
-                className="remove-icon" 
-                onClick={() => handleRemoveRoute(routeId)}
-              />
-            </div>
-          ))}
+          {selectedLines.map((lineId, index) => {
+            const line = allLines.find(l => l.id === lineId);
+            const lineCode = line?.name.split(' - ')[0] || `${lineId}`;
+            return (
+              <div 
+                key={lineId} 
+                className="route-tag"
+                style={{ borderColor: getRouteColor(index) }}
+              >
+                <span style={{ color: getRouteColor(index) }}>
+                  {lineCode}
+                </span>
+                <FiX 
+                  className="remove-icon" 
+                  onClick={() => handleRemoveLine(lineId)}
+                />
+              </div>
+            );
+          })}
         </div>
       </div>
 
+      {loading && selectedLines.length > 0 && (
+        <div style={{ textAlign: 'center', padding: '2rem' }}>
+          <Loading />
+        </div>
+      )}
+
       {/* Gráficos Comparativos */}
-      {selectedRoutes.length > 0 && (
+      {!loading && selectedLines.length > 0 && historicalData.length > 0 && (
         <div className="charts-section">
           <div className="chart-container">
-            <h3>Velocidade Média - Últimos 5 Dias</h3>
+            <h3>Emissões de CO₂ - Últimos {daysRange} Dias</h3>
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={historicalData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                <XAxis dataKey="dia" stroke="#9BA1AD" />
-                <YAxis stroke="#9BA1AD" label={{ value: 'km/h', angle: -90, position: 'insideLeft' }} />
+                <XAxis 
+                  dataKey="date" 
+                  stroke="#9BA1AD" 
+                  tickFormatter={formatDate}
+                />
+                <YAxis stroke="#9BA1AD" label={{ value: 'kg CO₂', angle: -90, position: 'insideLeft' }} />
                 <Tooltip 
                   contentStyle={{ backgroundColor: '#1a1a2e', border: '1px solid #2a2a4e' }}
                   labelStyle={{ color: '#fff' }}
                 />
                 <Legend />
-                {selectedRoutes.map((routeId, index) => (
-                  <Line
-                    key={routeId}
-                    type="monotone"
-                    dataKey={routeId}
-                    stroke={getRouteColor(index)}
-                    strokeWidth={2}
-                    dot={{ fill: getRouteColor(index), r: 4 }}
-                    activeDot={{ r: 6 }}
-                  />
-                ))}
+                {selectedLines.map((lineId, index) => {
+                  const lineName = allLines.find(l => l.id === lineId)?.name.split(' - ')[0] || `L${lineId}`;
+                  return (
+                    <RechartsLine
+                      key={lineId}
+                      type="monotone"
+                      dataKey={lineName}
+                      stroke={getRouteColor(index)}
+                      strokeWidth={2}
+                      dot={{ fill: getRouteColor(index), r: 4 }}
+                      activeDot={{ r: 6 }}
+                    />
+                  );
+                })}
               </LineChart>
             </ResponsiveContainer>
           </div>
 
           <div className="chart-container">
-            <h3>Comparação de Emissões CO₂</h3>
+            <h3>Comparação de Emissões Totais ({daysRange} dias)</h3>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={comparisonData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                <XAxis dataKey="linha" stroke="#9BA1AD" />
-                <YAxis stroke="#9BA1AD" label={{ value: 'g/km', angle: -90, position: 'insideLeft' }} />
+                <XAxis dataKey="lineCode" stroke="#9BA1AD" />
+                <YAxis stroke="#9BA1AD" label={{ value: 'kg CO₂', angle: -90, position: 'insideLeft' }} />
                 <Tooltip 
                   contentStyle={{ backgroundColor: '#1a1a2e', border: '1px solid #2a2a4e' }}
                   labelStyle={{ color: '#fff' }}
                 />
                 <Legend />
                 <Bar 
-                  dataKey="emissoes" 
+                  dataKey="totalEmission" 
                   fill="#FF6B6B" 
                   radius={[8, 8, 0, 0]}
+                  name="Emissões Totais"
                 />
               </BarChart>
             </ResponsiveContainer>
@@ -219,56 +344,74 @@ const ComparativosPage = () => {
       )}
 
       {/* Cards de Comparação */}
-      <div className="comparativos-grid">
-        {comparisonData.map((item, index) => (
-          <div key={index} className="comparison-card">
-            <div className="card-header">
-              <h3 style={{ color: getRouteColor(index) }}>Linha {item.linha}</h3>
-              <span className="period-badge">{item.periodo}</span>
-            </div>
-            <div className="card-content">
-              <div className="metric-item">
-                <span className="metric-label">Velocidade Média</span>
-                <span className="metric-value">{item.velocidadeMedia} km/h</span>
+      {!loading && comparisonData.length > 0 && (
+        <div className="comparativos-grid">
+          {comparisonData.map((item, index) => (
+            <div key={item.lineId} className="comparison-card">
+              <div className="card-header">
+                <h3 style={{ color: getRouteColor(index) }}>{item.lineCode}</h3>
+                <span className="period-badge">{daysRange} dias</span>
               </div>
-              <div className="metric-item">
-                <span className="metric-label">Emissões CO₂</span>
-                <span className="metric-value">{item.emissoes} g/km</span>
-              </div>
-              <div className="metric-item">
-                <span className="metric-label">Qualidade do Ar</span>
-                <span 
-                  className="metric-value iqar-badge" 
-                  style={{ color: getIqarColor(item.iqar) }}
-                >
-                  {item.iqar}
-                </span>
+              <div className="card-content">
+                <div className="metric-item">
+                  <span className="metric-label">Emissões Totais</span>
+                  <span className="metric-value">{item.totalEmission.toFixed(2)} kg CO₂</span>
+                </div>
+                <div className="metric-item">
+                  <span className="metric-label">Distância Total</span>
+                  <span className="metric-value">{item.totalDistance.toFixed(2)} km</span>
+                </div>
+                <div className="metric-item">
+                  <span className="metric-label">Emissões Médias</span>
+                  <span className="metric-value">{item.avgEmission.toFixed(3)} kg/km</span>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       {/* Resumo Geral */}
-      {comparisonData.length > 0 && (
+      {!loading && comparisonData.length > 1 && (
         <div className="comparativos-summary">
           <div className="summary-card">
-            <h3>Média Geral das Rotas Selecionadas</h3>
+            <h3>Resumo Comparativo ({daysRange} dias)</h3>
             <div className="summary-metrics">
               <div className="summary-item">
-                <span>Velocidade Média</span>
+                <span>Emissões Totais</span>
                 <strong>
-                  {(comparisonData.reduce((acc, item) => acc + item.velocidadeMedia, 0) / comparisonData.length).toFixed(1)} km/h
+                  {comparisonData.reduce((acc, item) => acc + item.totalEmission, 0).toFixed(2)} kg CO₂
                 </strong>
               </div>
               <div className="summary-item">
-                <span>Emissões Médias</span>
+                <span>Distância Total</span>
                 <strong>
-                  {(comparisonData.reduce((acc, item) => acc + item.emissoes, 0) / comparisonData.length).toFixed(1)} g/km
+                  {comparisonData.reduce((acc, item) => acc + item.totalDistance, 0).toFixed(2)} km
+                </strong>
+              </div>
+              <div className="summary-item">
+                <span>Média Geral de Emissões</span>
+                <strong>
+                  {(comparisonData.reduce((acc, item) => acc + item.avgEmission, 0) / comparisonData.length).toFixed(3)} kg/km
                 </strong>
               </div>
             </div>
           </div>
+        </div>
+      )}
+
+      {selectedLines.length === 0 && !loading && (
+        <div style={{ 
+          textAlign: 'center', 
+          padding: '3rem 1rem',
+          color: '#9BA1AD'
+        }}>
+          <p style={{ fontSize: '16px', marginBottom: '0.5rem' }}>
+            Nenhuma linha selecionada para comparação
+          </p>
+          <p style={{ fontSize: '14px' }}>
+            Use o campo de busca acima para adicionar linhas e comparar suas emissões
+          </p>
         </div>
       )}
     </div>
