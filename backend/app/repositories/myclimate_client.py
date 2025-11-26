@@ -19,6 +19,7 @@ AUTH = HTTPBasicAuth(settings.MYCLIMATE_USERNAME, settings.MYCLIMATE_PASSWORD)
 
 logger = logging.getLogger(__name__)
 
+
 def _calculate_mock_emission(distance: float, vehicle_type: VehicleType) -> float:
     """Cálculo mock para fallback ou falta de credenciais."""
     if distance < 1:
@@ -27,12 +28,9 @@ def _calculate_mock_emission(distance: float, vehicle_type: VehicleType) -> floa
         return distance * 0.6
     if vehicle_type == VehicleType.CAR:
         return distance * 0.12
-<<<<<<< HEAD
     else:
         raise NotImplementedError(f"O tipo {vehicle_type} não foi implementado")
-=======
-    raise NotImplementedError(f"O tipo {vehicle_type} não foi implementado")
->>>>>>> 34baacc (Add retries to external apis (#58))
+
 
 @retry(
     reraise=True,
@@ -52,7 +50,10 @@ def calculate_carbon_emission(distance: float, vehicle_type: VehicleType) -> flo
         return 0
 
     # Verificar se as credenciais estão configuradas
-    if not settings.MYCLIMATE_USERNAME or settings.MYCLIMATE_USERNAME == "your_username":
+    if (
+        not settings.MYCLIMATE_USERNAME
+        or settings.MYCLIMATE_USERNAME == "your_username"
+    ):
         return _calculate_mock_emission(distance, vehicle_type)
 
     payload = {
