@@ -221,6 +221,29 @@
   color: var(--text-light);
 }
 
+.save-route-btn-comp {
+  background: transparent;
+  border: 1px solid var(--accent-blue);
+  color: var(--accent-blue);
+  padding: 0.4rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+}
+
+.save-route-btn-comp:hover {
+  background: rgba(93, 156, 236, 0.1);
+  transform: scale(1.05);
+}
+
+.save-route-btn-comp:active {
+  transform: scale(0.95);
+}
+
 .card-content {
   display: flex;
   flex-direction: column;

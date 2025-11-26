@@ -1,11 +1,12 @@
 import { useState, useMemo, useEffect } from 'react';
 import { LineChart, Line as RechartsLine, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { FiSearch, FiX } from 'react-icons/fi';
+import { FiSearch, FiX, FiBookmark } from 'react-icons/fi';
 import '../style/Comparativos.css';
 import { linesService } from '../services/linesService';
 import { emissionsService } from '../services/emissionsService';
 import type { Line } from '../types/api.types';
 import Loading from '../components/Loading';
+import SaveRouteModal from '../components/SaveRouteModal';
 
 interface ComparisonData {
   lineId: number;
@@ -33,6 +34,10 @@ const ComparativosPage = () => {
   const [allLines, setAllLines] = useState<Line[]>([]);
   const [comparisonData, setComparisonData] = useState<ComparisonData[]>([]);
   const [historicalData, setHistoricalData] = useState<HistoricalPoint[]>([]);
+
+  // Estados do modal
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedLineId, setSelectedLineId] = useState<number | null>(null);
 
   // Buscar todas as linhas ao carregar
   useEffect(() => {
@@ -350,7 +355,19 @@ const ComparativosPage = () => {
             <div key={item.lineId} className="comparison-card">
               <div className="card-header">
                 <h3 style={{ color: getRouteColor(index) }}>{item.lineCode}</h3>
-                <span className="period-badge">{daysRange} dias</span>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <span className="period-badge">{daysRange} dias</span>
+                  <button 
+                    className="save-route-btn-comp"
+                    onClick={() => {
+                      setSelectedLineId(item.lineId);
+                      setIsModalOpen(true);
+                    }}
+                    title="Salvar no histórico"
+                  >
+                    <FiBookmark />
+                  </button>
+                </div>
               </div>
               <div className="card-content">
                 <div className="metric-item">
@@ -414,6 +431,20 @@ const ComparativosPage = () => {
           </p>
         </div>
       )}
+
+      <SaveRouteModal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setSelectedLineId(null);
+        }}
+        onSaved={() => {
+          setIsModalOpen(false);
+          setSelectedLineId(null);
+          alert('Rota salva com sucesso no histórico!');
+        }}
+        lineId={selectedLineId ?? undefined}
+      />
     </div>
   );
 };
