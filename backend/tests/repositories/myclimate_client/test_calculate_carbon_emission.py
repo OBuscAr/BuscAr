@@ -1,8 +1,12 @@
+import math
 import random
 
 import pytest
 from app.exceptions import MyclimateError
-from app.repositories.myclimate_client import calculate_carbon_emission
+from app.repositories.myclimate_client import (
+    MAXIMUM_ACCEPTED_DISTANCE,
+    calculate_carbon_emission,
+)
 from app.schemas import VehicleType
 
 from tests.factories.schemas import MyclimateCarbonEmissionFactory
@@ -31,15 +35,15 @@ def test_response(vehicle_type: VehicleType):
     )
 
     # THEN
-    assert returned_emission == expected_emission.emission
     assert endpoint_mock.call_count == 1
+    assert returned_emission == expected_emission.emission
 
 
 def test_smaller_distances():
     """
     GIVEN  a distance less than 1 to be sent to Myclimate API
     WHEN   the `calculate_carbon_emission` is called
-    THEN   the funciton should return 0 without calling Myclimate
+    THEN   the function should return 0 without calling Myclimate
     """
     # GIVEN
     vehicle_type = random.choice(list(VehicleType))
@@ -51,6 +55,37 @@ def test_smaller_distances():
     # THEN
     assert returned_emission == 0
     assert endpoint_mock.call_count == 0
+
+
+def test_bigger_distances():
+    """
+    GIVEN  a distance greater than maximum allowed to be sent to Myclimate API
+    WHEN   the `calculate_carbon_emission` is called
+    THEN   the function should make a call to the API with the maximum allowed distance
+    """
+    # GIVEN
+    multiplier = 3.3
+    distance = multiplier * MAXIMUM_ACCEPTED_DISTANCE
+    vehicle_type = random.choice(list(VehicleType))
+    response = MyclimateCarbonEmissionFactory.build()
+    endpoint_mock = MyclimateHelper.mock_carbon_emission(
+        response=response,
+        distance=MAXIMUM_ACCEPTED_DISTANCE,
+        vehicle_type=vehicle_type,
+    )
+
+    # WHEN
+    returned_emission = calculate_carbon_emission(
+        distance=distance, vehicle_type=vehicle_type
+    )
+
+    # THEN
+    assert endpoint_mock.call_count == 1
+    assert math.isclose(
+        returned_emission,
+        response.emission * multiplier,
+        abs_tol=1e-2,
+    )
 
 
 def test_error():

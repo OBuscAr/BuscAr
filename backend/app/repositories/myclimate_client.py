@@ -15,6 +15,7 @@ from app.schemas import MyclimateCarbonEmission, VehicleType
 
 BUS_FUEL_CONSUMPTION = 46.2
 CARBON_EMISSION_URL = f"{settings.MYCLIMATE_PREFIX_URL}/v1/car_calculators.json"
+MAXIMUM_ACCEPTED_DISTANCE = 1000000
 AUTH = HTTPBasicAuth(settings.MYCLIMATE_USERNAME, settings.MYCLIMATE_PASSWORD)
 
 logger = logging.getLogger(__name__)
@@ -58,6 +59,18 @@ def calculate_carbon_emission(distance: float, vehicle_type: VehicleType) -> flo
     """
     if distance < 1:
         return 0
+
+    if distance > MAXIMUM_ACCEPTED_DISTANCE:
+        # We would calculate the distance for the biggest allowed value
+        # and multiply it by an approximate factor correction
+        multiplier = distance / MAXIMUM_ACCEPTED_DISTANCE
+        return (
+            calculate_carbon_emission(
+                distance=MAXIMUM_ACCEPTED_DISTANCE,
+                vehicle_type=vehicle_type,
+            )
+            * multiplier
+        )
 
     payload = {
         "fuel_type": "diesel",
