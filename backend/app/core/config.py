@@ -10,7 +10,8 @@ class Settings(BaseSettings):
     MYCLIMATE_USERNAME: str = ""
     MYCLIMATE_PASSWORD: str = ""
     MYCLIMATE_PREFIX_URL: str = ""
-    
+    ENABLE_MYCLIMATE_FALLBACK: bool = True
+
     # Database
     DATABASE_URL: str = ""
     

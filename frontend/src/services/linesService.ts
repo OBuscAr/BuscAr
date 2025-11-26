@@ -1,5 +1,5 @@
 import api from './api';
-import { Line, Stop } from '../types/api.types';
+import type { Line, Stop } from '../types/api.types';
 
 export const linesService = {
   async searchLines(term?: string): Promise<Line[]> {

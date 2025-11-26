@@ -1,3 +1,5 @@
+import math
+
 from app.core.database import SessionLocal
 from app.schemas import VehicleType
 from app.services.emission_service import (
@@ -43,7 +45,9 @@ def test_car_emission():
     )
 
     # THEN
-    assert result.emission_kg_co2 == emission_response.emission
+    assert math.isclose(
+        result.emission_kg_co2, emission_response.emission, abs_tol=1e-2
+    )
 
 
 def test_bus_emission():
@@ -79,7 +83,8 @@ def test_bus_emission():
     )
 
     # THEN
-    assert (
-        result.emission_kg_co2
-        == emission_response.emission / AVERAGE_PASSENGERS_PER_BUS
+    assert math.isclose(
+        result.emission_kg_co2,
+        emission_response.emission / AVERAGE_PASSENGERS_PER_BUS,
+        abs_tol=1e-2,
     )

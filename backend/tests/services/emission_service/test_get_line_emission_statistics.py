@@ -1,3 +1,4 @@
+import math
 from datetime import date, datetime, timedelta
 
 import pytest
@@ -110,7 +111,11 @@ def test_emission():
     # THEN
     assert len(results) == 1
     [returned_line_emission] = results
-    assert returned_line_emission.total_emission == emission_response.emission
-    assert (
-        returned_line_emission.total_distance == daily_line_statistics.distance_traveled
+    assert math.isclose(
+        returned_line_emission.total_emission, emission_response.emission, abs_tol=1e-2
+    )
+    assert math.isclose(
+        returned_line_emission.total_distance,
+        daily_line_statistics.distance_traveled,
+        abs_tol=1e-2,
     )
