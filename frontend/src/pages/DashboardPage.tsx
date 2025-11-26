@@ -15,17 +15,22 @@ const DashboardPage = () => {
   const [topLines, setTopLines] = useState<LineEmission[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [daysRange, setDaysRange] = useState(7);
+  const [startDate, setStartDate] = useState(() => {
+    // Iniciar com 7 dias atrás para evitar problemas com datas futuras
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    return sevenDaysAgo.toISOString().split('T')[0];
+  });
 
   useEffect(() => {
     async function fetchData() {
       try {
         setLoading(true);
-        const today = new Date().toISOString().split('T')[0];
         // Buscar estatísticas dos últimos X dias
-        const statsData = await emissionsService.getOverallStatistics(today, daysRange);
+        const statsData = await emissionsService.getOverallStatistics(startDate, daysRange);
         setStatistics(statsData);
         // Buscar ranking das linhas mais poluentes de hoje
-        const rankingData = await emissionsService.getLinesRanking(today, 1, 5);
+        const rankingData = await emissionsService.getLinesRanking(startDate, 1, 5);
         setTopLines(rankingData.lines_emissions);
       } catch (err) {
         console.error('Erro ao buscar dados:', err);
@@ -35,7 +40,7 @@ const DashboardPage = () => {
       }
     }
     fetchData();
-  }, [daysRange]);
+  }, [daysRange, startDate]);
 
   // Formatar dados para os cards de relatório
   const getEmissionColor = (emission: number): string => {
@@ -185,6 +190,22 @@ const DashboardPage = () => {
               <option value={30}>30 dias</option>
               <option value={90}>90 dias</option>
             </select>
+            <label htmlFor="startDate" style={{ fontWeight: 500, color: 'var(--text-dark)' }}>Data inicial:</label>
+            <input
+              type="date"
+              id="startDate"
+              value={startDate}
+              max={new Date().toISOString().split('T')[0]}
+              onChange={e => setStartDate(e.target.value)}
+              style={{
+                padding: '8px 12px',
+                borderRadius: 8,
+                border: '1px solid #ddd',
+                backgroundColor: '#fff',
+                cursor: 'pointer',
+                fontSize: '14px'
+              }}
+            />
           </div>
           
           <div className="timeline-card-container">
