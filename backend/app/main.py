@@ -2,6 +2,7 @@ import logging
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from app.core.config import settings
 
 from app.api import (
     emission_route,
@@ -9,6 +10,7 @@ from app.api import (
     login_route,  # importa a rota de login
     route_route,
     user_route,  # importa a rota de cadastro
+    route_comparison_route,
 )
 
 logging.basicConfig(level=logging.INFO)
@@ -39,6 +41,8 @@ def health_check():
 # Inclui as rotas
 app.include_router(login_route.router)  # registra o endpoint /login
 app.include_router(user_route.router)  # registra o endpoint
-app.include_router(line_route.router)  # registra o endpoint /lines
-app.include_router(emission_route.router)  # registra o endpoint /emission
+app.include_router(line_route.router) # registra o endpoint /lines
+app.include_router(emission_route.router) # registra o endpoint /emission
 app.include_router(route_route.router)
+app.include_router(route_comparison_route.router) 
+

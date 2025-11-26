@@ -14,6 +14,9 @@ class Settings(BaseSettings):
 
     # Database
     DATABASE_URL: str = ""
+    
+    # Google
+    GOOGLE_API_KEY: str = ""
 
     # Security
     SECRET_KEY: str = ""
