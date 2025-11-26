@@ -1,9 +1,11 @@
 from datetime import date
+from typing import Annotated
 
 from pydantic import BaseModel, Field
 
 from app.schemas.line import Line
 from app.schemas.pagination import PaginationResponse
+from app.schemas.validators import DefaultRoundedFloat, round_to
 
 
 class EmissionResponse(BaseModel):
@@ -12,14 +14,14 @@ class EmissionResponse(BaseModel):
     Ex: {"distance_km": 8.19, "emission_kg_co2": 17.2}
     """
 
-    distance_km: float
-    emission_kg_co2: float
+    distance_km: Annotated[float, round_to(3)]
+    emission_kg_co2: Annotated[float, round_to(3)]
 
 
 class LineEmissionResponse(BaseModel):
     line: Line
-    emission: float = Field(description="emission in kg of CO2")
-    distance: float = Field(description="distance in km")
+    emission: DefaultRoundedFloat = Field(description="emission in kg of CO2")
+    distance: DefaultRoundedFloat = Field(description="distance in km")
 
 
 class LinesEmissionsResponse(BaseModel):
@@ -28,6 +30,6 @@ class LinesEmissionsResponse(BaseModel):
 
 
 class EmissionStatisticsReponse(BaseModel):
-    total_emission: float = Field(description="emission in kg of CO2")
-    total_distance: float = Field(description="distance in km")
+    total_emission: DefaultRoundedFloat = Field(description="emission in kg of CO2")
+    total_distance: DefaultRoundedFloat = Field(description="distance in km")
     date: date
