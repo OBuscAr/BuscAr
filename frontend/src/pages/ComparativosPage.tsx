@@ -122,7 +122,7 @@ const ComparativosPage = () => {
           <FiSearch className="search-icon" />
           <input
             type="text"
-            placeholder="Buscar linha para comparar..."
+            placeholder="Buscar linha para comparar... (escolha no máx. 4 linhas)"
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);
