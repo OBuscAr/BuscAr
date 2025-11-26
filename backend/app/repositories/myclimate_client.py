@@ -27,12 +27,9 @@ def _calculate_mock_emission(distance: float, vehicle_type: VehicleType) -> floa
         return distance * 0.6
     if vehicle_type == VehicleType.CAR:
         return distance * 0.12
-<<<<<<< HEAD
     else:
         raise NotImplementedError(f"O tipo {vehicle_type} não foi implementado")
-=======
-    raise NotImplementedError(f"O tipo {vehicle_type} não foi implementado")
->>>>>>> 34baacc (Add retries to external apis (#58))
+
 
 @retry(
     reraise=True,

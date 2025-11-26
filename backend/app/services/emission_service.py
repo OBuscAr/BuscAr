@@ -7,7 +7,8 @@ from sqlalchemy.orm import Session
 
 from app.constants import SAO_PAULO_ZONE
 from app.exceptions import ValidationError
-from app.repositories import daily_line_statistics_repository, myclimate_client
+from app.repositories import daily_line_statistics_repository, myclimate_client 
+from app.repositories.line_stop_repository import LineStopRepository
 from app.schemas import (
     DailyLineStatistics,
     EmissionResponse,
@@ -18,7 +19,10 @@ from app.schemas import (
     VehicleType,
 )
 from app.services import distance_service
-
+from app.models.line import LineDirection
+from app.models import LineModel
+from app.exceptions import NotFoundError
+from typing import List
 
 def get_emission_lines_ranking(
     date: datetime.date,
@@ -168,3 +172,38 @@ def calculate_emission_stops(
         distance_km=distance_ab_km,
         emission_kg_co2=emission_calculate_kg,
     )
+    
+def calculate_total_emission_by_line_number(
+    db: Session, 
+    line_number: str, 
+) -> List[LineEmissionResponse]:
+    """
+    Calculates the total carbon emission for all directions of a given line number.
+    """
+        
+    lines = db.query(LineModel).filter(LineModel.name == line_number).all()
+    
+    if not lines:
+        raise NotFoundError(f"Linha {line_number} não encontrada.")
+
+    results = []
+    
+    for line in lines:
+    
+        last_stop = LineStopRepository.get_last_stop(db, line.id)
+        total_distance = last_stop.distance_traveled if last_stop else 0.0
+
+        emission = myclimate_client.calculate_carbon_emission(
+            distance=total_distance, 
+            vehicle_type=VehicleType.BUS
+        )
+
+        results.append(
+                    LineEmissionResponse(
+                        line=line,
+                        distance=total_distance,
+                        emission=emission
+                    )
+                )
+                
+    return results

@@ -16,3 +16,4 @@ class Line(SerializableBase):
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     name: Mapped[str] = mapped_column(index=True, nullable=False)
     direction: Mapped[LineDirection] = mapped_column(nullable=False)
+    description: Mapped[str] = mapped_column(nullable=True)
