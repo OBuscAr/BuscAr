@@ -19,26 +19,34 @@ AUTH = HTTPBasicAuth(settings.MYCLIMATE_USERNAME, settings.MYCLIMATE_PASSWORD)
 
 logger = logging.getLogger(__name__)
 
+
 def _calculate_mock_emission(distance: float, vehicle_type: VehicleType) -> float:
     """Cálculo mock para fallback ou falta de credenciais."""
+    logger.warning("Usando o fallback para o cálculo da emissão de carbono")
     if distance < 1:
         return 0
     if vehicle_type == VehicleType.BUS:
         return distance * 0.6
     if vehicle_type == VehicleType.CAR:
         return distance * 0.12
-<<<<<<< HEAD
     else:
         raise NotImplementedError(f"O tipo {vehicle_type} não foi implementado")
-=======
-    raise NotImplementedError(f"O tipo {vehicle_type} não foi implementado")
->>>>>>> 34baacc (Add retries to external apis (#58))
+
 
 @retry(
     reraise=True,
     before_sleep=before_sleep_log(logger, logging.INFO),
     stop=stop_after_attempt(max_attempt_number=3),
     wait=wait_random_exponential(multiplier=1, min=2, max=6),
+    retry_error_callback=(
+        (
+            lambda retry_state: (
+                (_calculate_mock_emission(*retry_state.args, **retry_state.kwargs))
+            )
+        )
+        if settings.ENABLE_MYCLIMATE_FALLBACK
+        else None
+    ),
 )
 def calculate_carbon_emission(distance: float, vehicle_type: VehicleType) -> float:
     """
@@ -51,10 +59,6 @@ def calculate_carbon_emission(distance: float, vehicle_type: VehicleType) -> flo
     if distance < 1:
         return 0
 
-    # Verificar se as credenciais estão configuradas
-    if not settings.MYCLIMATE_USERNAME or settings.MYCLIMATE_USERNAME == "your_username":
-        return _calculate_mock_emission(distance, vehicle_type)
-
     payload = {
         "fuel_type": "diesel",
         "km": distance,
@@ -66,17 +70,14 @@ def calculate_carbon_emission(distance: float, vehicle_type: VehicleType) -> flo
     else:
         raise NotImplementedError(f"O tipo {vehicle_type} não foi implementado")
 
-    try:
-        response = requests.post(
-            CARBON_EMISSION_URL,
-            auth=AUTH,
-            json=payload,
-            timeout=5,
-        )
-        response.raise_for_status()
-        json_response = response.json()
-        if "errors" in json_response:
-            raise MyclimateError(json_response["errors"])
-        return MyclimateCarbonEmission(**json_response).emission
-    except (requests.RequestException, MyclimateError, Exception):
-        return _calculate_mock_emission(distance, vehicle_type)
+    response = requests.post(
+        CARBON_EMISSION_URL,
+        auth=AUTH,
+        json=payload,
+        timeout=5,
+    )
+    response.raise_for_status()
+    json_response = response.json()
+    if "errors" in json_response:
+        raise MyclimateError(json_response["errors"])
+    return MyclimateCarbonEmission(**json_response).emission
