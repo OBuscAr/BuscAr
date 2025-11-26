@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../style/EmissionHistoryPage.css';
 import { FiSearch } from 'react-icons/fi';
+import { routesService } from '../services/routesService';
+import Loading from '../components/Loading';
 
 interface EmissionRecord {
   id: string;
@@ -10,142 +12,70 @@ interface EmissionRecord {
   destino: string;
   ranking: number;
   data: string;
-  carbono: string;
-  velocidadeMedia: string;
+  carbono: number;
+  distance: number;
+  emissionSaving: number;
   acao: string;
 }
 
 function EmissionHistoryPage() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(7);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [emissionData, setEmissionData] = useState<EmissionRecord[]>([]);
+  const [authError, setAuthError] = useState(false);
 
-  // Carregar dados (simulando API call)
+  // Carregar rotas salvas do usuário
   useEffect(() => {
-    const loadEmissionData = async () => {
+    const loadRoutes = async () => {
       setIsLoading(true);
+      setAuthError(false);
       try {
-        // TODO: Substituir por chamada real à API quando disponível
-        // const response = await fetch('/api/emission-history');
-        // const data = await response.json();
-        // setEmissionData(data);
+        const routes = await routesService.getRoutes();
         
-        // Dados mockados por enquanto
-        setTimeout(() => {
-          const mockData: EmissionRecord[] = [
-            {
-              id: '8705-10',
-              linha: '8705-10',
-              origem: 'São Continental',
-              destino: 'Anhangabaú',
-              ranking: 1,
-              data: '24 Junho, 2025',
-              carbono: '45.2 µg/m³',
-              velocidadeMedia: '32 km/h',
-              acao: 'download'
-            },
-            {
-              id: '8745-10',
-              linha: '8745-10',
-              origem: 'São Continental',
-              destino: 'Dharco MMDC',
-              ranking: 2,
-              data: '24 Agosto, 2025',
-              carbono: '52.8 µg/m³',
-              velocidadeMedia: '28 km/h',
-              acao: 'download'
-            },
-            {
-              id: '875C-10',
-              linha: '875C-10',
-              origem: 'Lapa',
-              destino: 'Santa Cruz',
-              ranking: 3,
-              data: '18 Dezembro, 2024',
-              carbono: '58.3 µg/m³',
-              velocidadeMedia: '25 km/h',
-              acao: 'download'
-            },
-            {
-              id: '8086',
-              linha: '8086',
-              origem: 'Lapa',
-              destino: 'Pinheiros',
-              ranking: 4,
-              data: '8 Outubro, 2025',
-              carbono: '63.7 µg/m³',
-              velocidadeMedia: '22 km/h',
-              acao: 'download'
-            },
-            {
-              id: '8082',
-              linha: '8082',
-              origem: 'Cid. Universitária',
-              destino: 'Butantã',
-              ranking: 5,
-              data: '15 Junho, 2025',
-              carbono: '71.5 µg/m³',
-              velocidadeMedia: '19 km/h',
-              acao: 'download'
-            },
-            {
-              id: '8084',
-              linha: '8084',
-              origem: 'Cid. Universitária',
-              destino: 'Butantã',
-              ranking: 6,
-              data: '12 Julho, 2025',
-              carbono: '78.2 µg/m³',
-              velocidadeMedia: '17 km/h',
-              acao: 'download'
-            },
-            {
-              id: '8085',
-              linha: '8085',
-              origem: 'Cid. Universitária',
-              destino: 'Rio Pequeno',
-              ranking: 7,
-              data: '21 Julho, 2025',
-              carbono: '85.9 µg/m³',
-              velocidadeMedia: '15 km/h',
-              acao: 'download'
-            },
-            {
-              id: '8090',
-              linha: '8090',
-              origem: 'Pinheiros',
-              destino: 'Consolação',
-              ranking: 8,
-              data: '5 Setembro, 2025',
-              carbono: '92.4 µg/m³',
-              velocidadeMedia: '13 km/h',
-              acao: 'download'
-            },
-          ];
-          setEmissionData(mockData);
-          setIsLoading(false);
-        }, 500);
-      } catch (error) {
-        console.error('Erro ao carregar dados:', error);
+        // Mapear rotas para o formato do componente
+        const records: EmissionRecord[] = routes.map((route, index) => {
+          const lineCode = route.line.name.split(' - ')[0];
+          
+          return {
+            id: route.id,
+            linha: lineCode,
+            origem: route.departure_stop.name,
+            destino: route.arrival_stop.name,
+            ranking: index + 1,
+            data: route.created_at,
+            carbono: route.emission,
+            distance: route.distance,
+            emissionSaving: route.emission_saving,
+            acao: 'download'
+          };
+        });
+
+        setEmissionData(records);
+      } catch (error: any) {
+        console.error('Erro ao carregar rotas:', error);
+        // Detecta erro 401 (não autenticado)
+        if (error.response?.status === 401) {
+          setAuthError(true);
+        }
+      } finally {
         setIsLoading(false);
       }
     };
 
-    loadEmissionData();
+    loadRoutes();
   }, []);
 
-  const filteredData = emissionData.filter(record =>
-    record.linha.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    record.origem.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    record.destino.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Filtrar dados com base na busca
+  const filteredData = searchQuery.trim()
+    ? emissionData.filter(record =>
+        record.linha.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        record.origem.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        record.destino.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : emissionData;
 
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedData = filteredData.slice(startIndex, startIndex + itemsPerPage);
+  const paginatedData = filteredData;
 
   // Calcula o ranking máximo para normalizar a barra
   const maxRanking = Math.max(...emissionData.map(r => r.ranking), 1);
@@ -159,11 +89,6 @@ function EmissionHistoryPage() {
 
   const getRankingWidth = (ranking: number) => {
     return ((maxRanking - ranking + 1) / maxRanking) * 100;
-  };
-
-  const handleItemsPerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setItemsPerPage(Number(e.target.value));
-    setCurrentPage(1); // Reset para primeira página
   };
 
   const handleNewSearch = () => {
@@ -185,24 +110,18 @@ function EmissionHistoryPage() {
     URL.revokeObjectURL(url);
   };
 
-  const handleDelete = (recordId: string) => {
-    if (window.confirm('Tem certeza que deseja excluir este registro do histórico?')) {
-      // TODO: Implementar chamada à API para deletar
-      setEmissionData(prevData => prevData.filter(record => record.id !== recordId));
-      
-      // Ajusta a página atual se necessário
-      const newFilteredLength = filteredData.filter(r => r.id !== recordId).length;
-      const newTotalPages = Math.ceil(newFilteredLength / itemsPerPage);
-      if (currentPage > newTotalPages && newTotalPages > 0) {
-        setCurrentPage(newTotalPages);
+  const handleDelete = async (routeId: string) => {
+    if (window.confirm('Tem certeza que deseja excluir esta rota do histórico?')) {
+      try {
+        await routesService.deleteRoute(routeId);
+        // Remove da lista local
+        setEmissionData(prevData => prevData.filter(record => record.id !== routeId));
+      } catch (error) {
+        console.error('Erro ao deletar rota:', error);
+        alert('Erro ao deletar rota. Tente novamente.');
       }
     }
   };
-
-  // Reset para primeira página quando a busca muda
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery]);
 
   return (
     <div className="emission-history-container">
@@ -233,9 +152,27 @@ function EmissionHistoryPage() {
         <h2>Histórico de linhas</h2>
         
         {isLoading ? (
-          <div className="loading-container">
-            <div className="loading-spinner"></div>
-            <p>Carregando histórico...</p>
+          <Loading />
+        ) : authError ? (
+          <div className="empty-state" style={{ padding: '3rem', textAlign: 'center' }}>
+            <p style={{ fontSize: '1.1rem', marginBottom: '1rem', color: '#ef4444' }}>
+              ⚠️ Você precisa fazer login para acessar seu histórico de rotas
+            </p>
+            <button 
+              onClick={() => navigate('/login')}
+              style={{
+                padding: '0.75rem 2rem',
+                backgroundColor: 'var(--accent-blue)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '1rem',
+                cursor: 'pointer',
+                fontWeight: '600'
+              }}
+            >
+              Ir para Login
+            </button>
           </div>
         ) : filteredData.length === 0 ? (
           <div className="empty-state">
@@ -254,8 +191,9 @@ function EmissionHistoryPage() {
                     <th>Linha</th>
                     <th>Ranking</th>
                     <th>Data</th>
-                    <th>Carbono</th>
-                    <th>Velocidade Média</th>
+                    <th>Emissões</th>
+                    <th>Distância</th>
+                    <th>Economia CO₂</th>
                     <th>Ação</th>
                   </tr>
                 </thead>
@@ -286,9 +224,12 @@ function EmissionHistoryPage() {
                           <span className="ranking-number">#{record.ranking}</span>
                         </div>
                       </td>
-                      <td>{record.data}</td>
-                      <td>{record.carbono}</td>
-                      <td>{record.velocidadeMedia}</td>
+                      <td>{new Date(record.data).toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' })}</td>
+                      <td>{record.carbono.toFixed(2)} kg CO₂</td>
+                      <td>{record.distance.toFixed(2)} km</td>
+                      <td style={{ color: '#22c55e', fontWeight: 'bold' }}>
+                        -{record.emissionSaving.toFixed(2)} kg
+                      </td>
                       <td>
                         <div className="action-buttons">
                           <button 
@@ -315,38 +256,9 @@ function EmissionHistoryPage() {
 
             <div className="pagination">
               <div className="pagination-info">
-                Itens por pág:
-                <select 
-                  value={itemsPerPage} 
-                  onChange={handleItemsPerPageChange}
-                  className="items-per-page"
-                >
-                  <option value="5">5</option>
-                  <option value="7">7</option>
-                  <option value="10">10</option>
-                  <option value="20">20</option>
-                </select>
-              </div>
-              <div className="pagination-controls">
-                <button 
-                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                  disabled={currentPage === 1}
-                  className="pagination-btn"
-                  title="Página anterior"
-                >
-                  ‹
-                </button>
                 <span className="page-info">
-                  {startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredData.length)} de {filteredData.length}
+                  {filteredData.length} {filteredData.length === 1 ? 'rota salva' : 'rotas salvas'}
                 </span>
-                <button 
-                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                  disabled={currentPage === totalPages || totalPages === 0}
-                  className="pagination-btn"
-                  title="Próxima página"
-                >
-                  ›
-                </button>
               </div>
             </div>
           </>

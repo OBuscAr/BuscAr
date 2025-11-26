@@ -71,9 +71,39 @@
   color: var(--text-light);
 }
 
+.report-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .report-item-value {
   font-weight: 600;
   font-size: 0.9rem;
+}
+
+.save-route-btn {
+  background: transparent;
+  border: 1px solid rgba(106, 102, 255, 0.3);
+  color: var(--accent-blue);
+  padding: 6px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  font-size: 1rem;
+}
+
+.save-route-btn:hover {
+  background: rgba(106, 102, 255, 0.1);
+  border-color: var(--accent-blue);
+  transform: translateY(-1px);
+}
+
+.save-route-btn:active {
+  transform: translateY(0);
 }
 
 

@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import Loading from '../components/Loading';
+import SaveRouteModal from '../components/SaveRouteModal';
 import '../style/Dashboard.css';
 import { emissionsService } from '../services/emissionsService';
 import type { EmissionStatistics, LineEmission } from '../types/api.types';
@@ -15,6 +16,8 @@ const DashboardPage = () => {
   const [topLines, setTopLines] = useState<LineEmission[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [daysRange, setDaysRange] = useState(7);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedLineId, setSelectedLineId] = useState<number | null>(null);
 
   useEffect(() => {
     async function fetchData() {
@@ -55,6 +58,7 @@ const DashboardPage = () => {
         const lineNumber = item.line.name.split(' - ')[0];
         return {
           linha: lineNumber,
+          lineId: item.line.id,
           data: formatDate(new Date().toISOString().split('T')[0]),
           value: `${item.emission.toFixed(2)} kg`,
           color: getEmissionColor(item.emission),
@@ -65,6 +69,21 @@ const DashboardPage = () => {
         { linha: '8705-10', data: '21 Julho 2025', value: 'Sem dados', color: 'var(--accent-red)' },
         { linha: '8319-10', data: '21 Julho 2025', value: 'Sem dados', color: 'var(--accent-yellow)' },
       ];
+
+  const handleSaveRoute = (lineId: number) => {
+    setSelectedLineId(lineId);
+    setIsModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setSelectedLineId(null);
+  };
+
+  const handleRouteSaved = () => {
+    // Opcional: mostrar notificação de sucesso
+    alert('Rota salva com sucesso no histórico!');
+  };
 
   // Dados mockados para velocidades médias (ainda não disponível na API)
   const velocidadeItems = [
@@ -254,7 +273,8 @@ const DashboardPage = () => {
             title="Histórico de emissões" 
             items={historicoItems}
             unit=''
-            linkTo="/painel/historico" 
+            linkTo="/painel/historico"
+            onSaveRoute={handleSaveRoute}
             />
           <ReportCard
             title="Velocidades médias" 
@@ -264,6 +284,13 @@ const DashboardPage = () => {
             />
         </div>
       </Suspense>
+
+      <SaveRouteModal
+        isOpen={isModalOpen}
+        onClose={handleModalClose}
+        lineId={selectedLineId || undefined}
+        onSaved={handleRouteSaved}
+      />
     </>
   );
 };
