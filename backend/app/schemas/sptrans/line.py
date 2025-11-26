@@ -1,4 +1,11 @@
+from enum import Enum
+
 from pydantic import BaseModel, ConfigDict, Field
+
+
+class SPTransLineDirection(Enum):
+    MAIN = 1
+    SECONDARY = 2
 
 
 class SPTransLine(BaseModel):
@@ -7,4 +14,4 @@ class SPTransLine(BaseModel):
     id: int = Field(alias="cl")
     base_name: str = Field(alias="lt")
     operation_mode: int = Field(alias="tl")
-    direction: int = Field(alias="sl")
+    direction: SPTransLineDirection = Field(alias="sl")

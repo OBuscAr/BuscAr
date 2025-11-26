@@ -8,7 +8,7 @@ Sistema web para análise das linhas de ônibus de São Paulo em relação à em
 - Apoiar urbanistas e tomadores de decisão no planejamento sustentável.
 
 ## 👥 Equipe
-- Ana Lívia Rüegger Saldanha  (backend)
+- Ana Lívia Rüegger Saldanha  (arquitetura)
 - Be Zilberman (arquitetura)
 - Diego Hurtado de Mendoza  (backend)
 - Giovanna Hirata (frontend)
@@ -80,3 +80,7 @@ Sistema web para análise das linhas de ônibus de São Paulo em relação à em
     make run
 ```
  
+12. Para preencher os dados de emissões de carbono diárias de cada linha, em um terminal separado execute o seguinte comando (e deixe-o rodando indefinidamente para que atualize os dados em tempo real):
+```bash
+    make update-daily-line-statistics
+```

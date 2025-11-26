@@ -11,10 +11,6 @@
             "source.organizeImports": "explicit"
         },
     },
-    "isort.args": [
-        "--profile",
-        "black"
-    ],
     "flake8.args": [
         "--max-line-length=88"
     ],
@@ -25,5 +21,6 @@
     "files.exclude": {
         "**/.venv": true,
         "**/__pycache__": true
-    }
+    },
+    "python.analysis.typeCheckingMode": "basic"
 }

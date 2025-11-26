@@ -1,25 +1,47 @@
+import logging
+
 import requests
-from app.core.config import settings
-from app.schemas import SPTransLine, SPTransStop
 from pydantic import TypeAdapter
 from requests.cookies import RequestsCookieJar
+from tenacity import (
+    before_sleep_log,
+    retry,
+    stop_after_attempt,
+    wait_random_exponential,
+)
 
-LOGIN_URL = f"{settings.PREFIX_URL}/Login/Autenticar"
+from app.core.config import settings
+from app.schemas import SPTransLine, SPTransLinesVehiclesResponse
+
+logger = logging.getLogger(__name__)
+LOGIN_URL = f"{settings.SPTRANS_PREFIX_URL}/Login/Autenticar"
 
 
+@retry(
+    reraise=True,
+    before_sleep=before_sleep_log(logger, logging.INFO),
+    stop=stop_after_attempt(max_attempt_number=3),
+    wait=wait_random_exponential(multiplier=1, min=2, max=6),
+)
 def login() -> RequestsCookieJar:
     """
     Login to Olho Vivo API and return the cookies to use in other endpoint calls.
     """
-    response = requests.post(LOGIN_URL, params={"token": settings.API_TOKEN})
+    response = requests.post(LOGIN_URL, params={"token": settings.SPTRANS_API_TOKEN})
     response.raise_for_status()
     return response.cookies
 
 
-LINES_URL = f"{settings.PREFIX_URL}/Linha"
+LINES_URL = f"{settings.SPTRANS_PREFIX_URL}/Linha"
 LINES_LOOK_UP_URL = f"{LINES_URL}/Buscar"
 
 
+@retry(
+    reraise=True,
+    before_sleep=before_sleep_log(logger, logging.INFO),
+    stop=stop_after_attempt(max_attempt_number=3),
+    wait=wait_random_exponential(multiplier=1, min=2, max=6),
+)
 def get_lines(credentials: RequestsCookieJar, pattern: str) -> list[SPTransLine]:
     """
     Get all the lines that contains the given `pattern`.
@@ -36,24 +58,27 @@ def get_lines(credentials: RequestsCookieJar, pattern: str) -> list[SPTransLine]
     return TypeAdapter(list[SPTransLine]).validate_python(response.json())
 
 
-STOPS_URL = f"{settings.PREFIX_URL}/Parada"
-STOPS_BY_LINE_URL = f"{STOPS_URL}/BuscarParadasPorLinha"
+POSITION_URL = f"{settings.SPTRANS_PREFIX_URL}/Posicao"
 
 
-def get_stops_by_line(
-    credentials: RequestsCookieJar, line_id: int
-) -> list[SPTransStop]:
+@retry(
+    reraise=True,
+    before_sleep=before_sleep_log(logger, logging.INFO),
+    stop=stop_after_attempt(max_attempt_number=3),
+    wait=wait_random_exponential(multiplier=1, min=2, max=6),
+)
+def get_live_vehicles_positions(
+    credentials: RequestsCookieJar,
+) -> SPTransLinesVehiclesResponse:
     """
-    Get all the stops of the given line.
-
-    Parameters:
-    - `credentials`: Saved cookies from a previous login call.
-    - `line_id`: The id of the line.
+    Get the positions of all the vehicles that are currently moving.
     """
     response = requests.get(
-        STOPS_BY_LINE_URL,
-        params={"codigoLinha": line_id},
+        POSITION_URL,
         cookies=credentials,
     )
     response.raise_for_status()
-    return TypeAdapter(list[SPTransStop]).validate_python(response.json())
+    json_response = response.json()
+    if json_response is None:
+        return SPTransLinesVehiclesResponse(l=[])
+    return SPTransLinesVehiclesResponse(**json_response)

@@ -1,7 +1,6 @@
 from app.commands.create_stops import create_stops
 from app.core.database import SessionLocal
 from app.models import StopModel
-from sqlalchemy import func, select
 
 
 def test_create_stops():
@@ -12,17 +11,17 @@ def test_create_stops():
     """
     # GIVEN
     # WHEN
-    create_stops()
+    create_stops(max_rows=200)
 
     # THEN
     session = SessionLocal()
-    assert session.execute(select(func.count("*")).select_from(StopModel)).scalar() > 0
+    assert session.query(StopModel).count() > 0
 
-    stop = session.query(StopModel).filter_by(id=370010262).one()
-    assert stop.name == "R. Charruas, 5"
-    assert stop.address == "Ref.: R Pampa/ R Getulio Vargas Filho"
-    assert stop.latitude == -23.644969
-    assert stop.longitude == -46.635801
+    stop = session.query(StopModel).filter_by(id=104763).one()
+    assert stop.name == "Av. Luca, 455"
+    assert stop.address == "Ref.: R Paulina / R Maria Afonso"
+    assert stop.latitude == -23.569481
+    assert stop.longitude == -46.559044
 
 
 def test_update_stops():
@@ -38,7 +37,7 @@ def test_update_stops():
     session.commit()
 
     # WHEN
-    create_stops()
+    create_stops(max_rows=100)
 
     # THEN
     stop = session.query(StopModel).filter_by(id=id).one()

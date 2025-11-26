@@ -1,19 +1,18 @@
 from enum import Enum
 
-from app.core.database import Base
-from sqlalchemy import Column
-from sqlalchemy import Enum as EnumDB
-from sqlalchemy import Integer, String
+from sqlalchemy.orm import Mapped, mapped_column
+
+from app.models.base import SerializableBase
 
 
-class LineDirection(Enum):
-    MAIN = 1
-    SECONDARY = 2
+class LineDirection(str, Enum):
+    MAIN = "MAIN"
+    SECONDARY = "SECONDARY"
 
 
-class Line(Base):
+class Line(SerializableBase):
     __tablename__ = "line"
 
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, index=True, nullable=False)
-    direction = Column(EnumDB(LineDirection), nullable=False)
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    name: Mapped[str] = mapped_column(index=True, nullable=False)
+    direction: Mapped[LineDirection] = mapped_column(nullable=False)
