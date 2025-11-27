@@ -44,15 +44,14 @@ def create_lines(max_rows: Optional[int] = None) -> None:
 
         for line in lines:
             line_name = f"{line.base_name}-{line.operation_mode}"
-            
+
             if line.direction == SPTransLineDirection.MAIN:
                 # Na Ida, o destino é o Terminal Secundário
-                line_desc = line.secondary_name 
+                line_desc = f"{line.secondary_name} - {line.principal_name}"
             else:
                 # Na Volta, o destino é o Terminal Principal
-                line_desc = line.principal_name
-                        
-            
+                line_desc = f"{line.principal_name} - {line.secondary_name}"
+
             if line.id in processed_line_ids:
                 continue
             processed_line_ids.add(line.id)
