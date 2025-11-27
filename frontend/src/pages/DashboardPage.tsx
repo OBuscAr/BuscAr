@@ -24,8 +24,12 @@ const DashboardPage = () => {
       try {
         setLoading(true);
         const today = new Date().toISOString().split('T')[0];
+        // Calcular data de início (daysRange dias atrás)
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - daysRange);
+        const startDateStr = startDate.toISOString().split('T')[0];
         // Buscar estatísticas dos últimos X dias
-        const statsData = await emissionsService.getOverallStatistics(today, daysRange);
+        const statsData = await emissionsService.getOverallStatistics(startDateStr, daysRange);
         setStatistics(statsData);
         // Buscar ranking das linhas mais poluentes de hoje
         const rankingData = await emissionsService.getLinesRanking(today, 1, 5);
@@ -56,18 +60,20 @@ const DashboardPage = () => {
     ? topLines.slice(0, 3).map(item => {
         // Extrair número da linha do nome (formato: "874C-10 - NOME DA LINHA")
         const lineNumber = item.line.name.split(' - ')[0];
+        const direction = item.line.direction === 'MAIN' ? '(Ida)' : '(Volta)';
         return {
-          linha: lineNumber,
+          linha: `${lineNumber} ${direction}`,
           lineId: item.line.id,
+          lineName: item.line.name,
           data: formatDate(new Date().toISOString().split('T')[0]),
           value: `${item.emission.toFixed(2)} kg`,
           color: getEmissionColor(item.emission),
         };
       })
     : [
-        { linha: '874c-10', data: '21 Julho 2025', value: 'Sem dados', color: 'var(--accent-blue)' },
-        { linha: '8705-10', data: '21 Julho 2025', value: 'Sem dados', color: 'var(--accent-red)' },
-        { linha: '8319-10', data: '21 Julho 2025', value: 'Sem dados', color: 'var(--accent-yellow)' },
+        { linha: '874c-10 (Ida)', data: '21 Julho 2025', value: 'Sem dados', color: 'var(--accent-blue)' },
+        { linha: '8705-10 (Volta)', data: '21 Julho 2025', value: 'Sem dados', color: 'var(--accent-red)' },
+        { linha: '8319-10 (Ida)', data: '21 Julho 2025', value: 'Sem dados', color: 'var(--accent-yellow)' },
       ];
 
   const handleSaveRoute = (lineId: number) => {
@@ -269,10 +275,10 @@ const DashboardPage = () => {
 
         <div className="dashboard-sidebar">
           <EmissionsCard />
-          <ReportCard 
+          <ReportCard
             title="Histórico de emissões" 
-            items={historicoItems}
-            unit=''
+            items={historicoItems} 
+            unit="" 
             linkTo="/painel/historico"
             onSaveRoute={handleSaveRoute}
             />
@@ -288,7 +294,8 @@ const DashboardPage = () => {
       <SaveRouteModal
         isOpen={isModalOpen}
         onClose={handleModalClose}
-        lineId={selectedLineId || undefined}
+        lineId={selectedLineId ?? undefined}
+        lineName={topLines.find(item => item.line.id === selectedLineId)?.line.name}
         onSaved={handleRouteSaved}
       />
     </>

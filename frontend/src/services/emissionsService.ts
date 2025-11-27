@@ -24,5 +24,12 @@ export const emissionsService = {
       params: { start_date: startDate, days_range: daysRange }
     });
     return data;
+  },
+
+  async getTotalLineEmission(lineNumber: string): Promise<{ line: { id: number; name: string; direction: string; description?: string }; emission: number; distance: number }[]> {
+    const { data } = await api.get(`/emissions/lines/total`, {
+      params: { line_number: lineNumber }
+    });
+    return data;
   }
 };

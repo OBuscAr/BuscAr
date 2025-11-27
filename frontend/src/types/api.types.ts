@@ -2,6 +2,7 @@ export interface Line {
   id: number;
   name: string;
   direction: 'MAIN' | 'SECONDARY';
+  description?: string;
 }
 
 export interface Stop {
