@@ -7,19 +7,13 @@ interface SaveRouteModalProps {
   isOpen: boolean;
   onClose: () => void;
   lineId?: number;
+  lineName?: string;
   onSaved?: () => void;
 }
 
-interface Stop {
-  id: number;
-  code: string;
-  name: string;
-  lat: number;
-  lon: number;
-  sequence: number;
-}
+import type { Stop } from '../types/api.types';
 
-const SaveRouteModal: React.FC<SaveRouteModalProps> = ({ isOpen, onClose, lineId, onSaved }) => {
+const SaveRouteModal: React.FC<SaveRouteModalProps> = ({ isOpen, onClose, lineId, lineName, onSaved }) => {
   const [stops, setStops] = useState<Stop[]>([]);
   const [departureStopId, setDepartureStopId] = useState<number | null>(null);
   const [arrivalStopId, setArrivalStopId] = useState<number | null>(null);
@@ -30,6 +24,8 @@ const SaveRouteModal: React.FC<SaveRouteModalProps> = ({ isOpen, onClose, lineId
   useEffect(() => {
     if (isOpen && lineId) {
       loadStops();
+      setDepartureStopId(null);
+      setArrivalStopId(null);
     }
   }, [isOpen, lineId]);
 
@@ -84,6 +80,7 @@ const SaveRouteModal: React.FC<SaveRouteModalProps> = ({ isOpen, onClose, lineId
   const resetForm = () => {
     setDepartureStopId(null);
     setArrivalStopId(null);
+    setStops([]);
     setError(null);
   };
 
@@ -98,7 +95,14 @@ const SaveRouteModal: React.FC<SaveRouteModalProps> = ({ isOpen, onClose, lineId
     <div className="modal-overlay" onClick={handleClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2>Salvar Rota no Histórico</h2>
+          <div>
+            <h2>Salvar Rota no Histórico</h2>
+            {lineName && (
+              <p style={{ margin: '4px 0 0 0', color: '#757575', fontSize: '0.9rem' }}>
+                Linha: <strong>{lineName}</strong>
+              </p>
+            )}
+          </div>
           <button className="modal-close" onClick={handleClose}>×</button>
         </div>
 
@@ -124,7 +128,7 @@ const SaveRouteModal: React.FC<SaveRouteModalProps> = ({ isOpen, onClose, lineId
                   <option value="">Selecione a origem</option>
                   {stops.map((stop) => (
                     <option key={stop.id} value={stop.id}>
-                      {stop.name} ({stop.code})
+                      {stop.stop_name} ({stop.stop_code})
                     </option>
                   ))}
                 </select>
@@ -141,7 +145,7 @@ const SaveRouteModal: React.FC<SaveRouteModalProps> = ({ isOpen, onClose, lineId
                   <option value="">Selecione o destino</option>
                   {stops.map((stop) => (
                     <option key={stop.id} value={stop.id}>
-                      {stop.name} ({stop.code})
+                      {stop.stop_name} ({stop.stop_code})
                     </option>
                   ))}
                 </select>

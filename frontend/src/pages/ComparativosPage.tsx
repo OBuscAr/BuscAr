@@ -12,6 +12,7 @@ interface ComparisonData {
   lineId: number;
   lineName: string;
   lineCode: string;
+  lineDirection?: 'MAIN' | 'SECONDARY';
   totalEmission: number;
   totalDistance: number;
   avgEmission: number;
@@ -27,7 +28,7 @@ const ComparativosPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLines, setSelectedLines] = useState<number[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
   // Dados do backend
@@ -43,26 +44,12 @@ const ComparativosPage = () => {
   useEffect(() => {
     async function loadLines() {
       try {
-        const lines = await linesService.searchLines();
-        // Agrupar linhas por código, priorizando direção MAIN
-        const uniqueLinesMap = new Map<string, Line>();
-        lines.forEach(line => {
-          const lineCode = line.name.split(' - ')[0];
-          const existing = uniqueLinesMap.get(lineCode);
-          // Se não existe ou a atual é MAIN, substitui
-          if (!existing || line.direction === 'MAIN') {
-            uniqueLinesMap.set(lineCode, line);
-          }
-        });
-        const uniqueLines = Array.from(uniqueLinesMap.values());
-        setAllLines(uniqueLines);
-        // Selecionar as duas primeiras linhas por padrão
-        if (uniqueLines.length >= 2) {
-          setSelectedLines([uniqueLines[0].id, uniqueLines[1].id]);
-        }
+        setLoading(true);
+        const linesData = await linesService.searchLines('');
+        setAllLines(linesData); // Manter todas as linhas, incluindo ida e volta
       } catch (err) {
-        console.error('Erro ao buscar linhas:', err);
-        setError('Erro ao carregar linhas disponíveis');
+        console.error('Erro ao carregar linhas:', err);
+        setError('Não foi possível carregar a lista de linhas.');
       } finally {
         setLoading(false);
       }
@@ -85,41 +72,137 @@ const ComparativosPage = () => {
         startDate.setDate(startDate.getDate() - daysRange);
         const startDateStr = startDate.toISOString().split('T')[0];
 
+        console.log('=== Iniciando fetchComparisonData ===');
+        console.log('selectedLines:', selectedLines);
+        console.log('allLines.length:', allLines.length);
+        console.log('daysRange:', daysRange);
+
         // Buscar estatísticas para cada linha selecionada
         const promises = selectedLines.map(async (lineId) => {
-          const stats = await emissionsService.getLineStatistics(lineId, startDateStr, daysRange);
           const line = allLines.find(l => l.id === lineId);
-          const lineCode = line?.name.split(' - ')[0] || `${lineId}`;
+          console.log(`Linha encontrada para id ${lineId}:`, line);
+          const lineCode = line?.name || `${lineId}`;
+          const fullName = line?.description ? `${line.name} - ${line.description}` : (line?.name || `Linha ${lineId}`);
           
-          const totalEmission = stats.reduce((acc, s) => acc + s.total_emission, 0);
-          const totalDistance = stats.reduce((acc, s) => acc + s.total_distance, 0);
+          try {
+            // Tentar buscar dados históricos primeiro
+            const stats = await emissionsService.getLineStatistics(lineId, startDateStr, daysRange);
+            
+            if (stats.length > 0) {
+              const totalEmission = stats.reduce((acc, s) => acc + s.total_emission, 0);
+              const totalDistance = stats.reduce((acc, s) => acc + s.total_distance, 0);
+              
+              return {
+                lineId,
+                lineName: fullName,
+                lineCode,
+                lineDirection: line?.direction,
+                totalEmission,
+                totalDistance,
+                avgEmission: totalDistance > 0 ? totalEmission / totalDistance : 0,
+              };
+            }
+          } catch (err) {
+            console.log(`Sem dados históricos para linha ${lineCode}, calculando emissão total...`);
+          }
           
+          // Se não houver dados históricos, calcular emissão total da linha
+          try {
+            console.log(`Buscando emissão total para linha ${lineCode} (id: ${lineId})`);
+            const totalEmissions = await emissionsService.getTotalLineEmission(lineCode);
+            console.log(`Resposta getTotalLineEmission:`, totalEmissions);
+            const lineEmission = totalEmissions.find(e => e.line.id === lineId);
+            console.log(`Emissão encontrada para linha ${lineId}:`, lineEmission);
+            
+            if (lineEmission) {
+              // Multiplicar por daysRange para simular dados do período
+              const totalEmission = lineEmission.emission * daysRange;
+              const totalDistance = lineEmission.distance * daysRange;
+              
+              console.log(`Calculado - Emissão: ${totalEmission}, Distância: ${totalDistance}`);
+              
+              return {
+                lineId,
+                lineName: fullName,
+                lineCode,
+                lineDirection: line?.direction,
+                totalEmission,
+                totalDistance,
+                avgEmission: totalDistance > 0 ? totalEmission / totalDistance : 0,
+              };
+            } else {
+              console.warn(`Linha ${lineId} não encontrada na resposta do backend`);
+            }
+          } catch (err) {
+            console.error(`Erro ao calcular emissão para linha ${lineCode}:`, err);
+          }
+          
+          // Retornar dados vazios se nenhum método funcionou
           return {
             lineId,
-            lineName: line?.name || `Linha ${lineId}`,
+            lineName: fullName,
             lineCode,
-            totalEmission,
-            totalDistance,
-            avgEmission: totalDistance > 0 ? totalEmission / totalDistance : 0,
+            lineDirection: line?.direction,
+            totalEmission: 0,
+            totalDistance: 0,
+            avgEmission: 0,
           };
         });
 
         const results = await Promise.all(promises);
+        console.log('=== Resultados finais ===');
+        console.log('comparisonData:', results);
         setComparisonData(results);
 
         // Montar dados históricos para o gráfico
-        const statsPromises = selectedLines.map(lineId => 
-          emissionsService.getLineStatistics(lineId, startDateStr, daysRange)
-        );
-        const allStats = await Promise.all(statsPromises);
+        const statsPromises = selectedLines.map(async (lineId) => {
+          try {
+            const stats = await emissionsService.getLineStatistics(lineId, startDateStr, daysRange);
+            if (stats.length > 0) {
+              return { lineId, stats, hasHistorical: true };
+            }
+          } catch (err) {
+            console.log(`Sem dados históricos para linha ${lineId}`);
+          }
+          
+          // Se não houver dados históricos, simular com dados calculados
+          const line = allLines.find(l => l.id === lineId);
+          const lineCode = line?.name || `${lineId}`;
+          
+          try {
+            const totalEmissions = await emissionsService.getTotalLineEmission(lineCode);
+            const lineEmission = totalEmissions.find(e => e.line.id === lineId);
+            
+            if (lineEmission) {
+              // Criar dados simulados distribuindo uniformemente ao longo do período
+              const simulatedStats = [];
+              for (let i = 0; i < daysRange; i++) {
+                const date = new Date(startDateStr);
+                date.setDate(date.getDate() + i);
+                simulatedStats.push({
+                  date: date.toISOString().split('T')[0],
+                  total_emission: lineEmission.emission,
+                  total_distance: lineEmission.distance,
+                });
+              }
+              return { lineId, stats: simulatedStats, hasHistorical: false };
+            }
+          } catch (err) {
+            console.error(`Erro ao simular dados para linha ${lineCode}:`, err);
+          }
+          
+          return { lineId, stats: [], hasHistorical: false };
+        });
+        
+        const allStatsResults = await Promise.all(statsPromises);
         
         // Organizar por data
         const dateMap = new Map<string, any>();
-        allStats.forEach((stats, idx) => {
-          const lineId = selectedLines[idx];
-          const lineName = allLines.find(l => l.id === lineId)?.name.split(' - ')[0] || `L${lineId}`;
+        allStatsResults.forEach((result) => {
+          const lineId = result.lineId;
+          const lineName = allLines.find(l => l.id === lineId)?.name || `L${lineId}`;
           
-          stats.forEach(stat => {
+          result.stats.forEach(stat => {
             if (!dateMap.has(stat.date)) {
               dateMap.set(stat.date, { date: stat.date });
             }
@@ -241,16 +324,15 @@ const ComparativosPage = () => {
           />
           {showDropdown && filteredLines.length > 0 && (
             <div className="search-dropdown">
-              {filteredLines.slice(0, 10).map((line) => {
-                const lineCode = line.name.split(' - ')[0];
-                const lineName = line.name.split(' - ').slice(1).join(' - ');
+              {filteredLines.slice(0, 20).map((line) => {
+                const fullName = line.description ? `${line.name} - ${line.description}` : line.name;
                 return (
                   <div
                     key={line.id}
                     className="dropdown-item"
                     onClick={() => handleAddLine(line.id)}
                   >
-                    <strong>{lineCode}</strong> - {lineName}
+                    {fullName}
                   </div>
                 );
               })}
@@ -261,7 +343,7 @@ const ComparativosPage = () => {
         <div className="selected-routes">
           {selectedLines.map((lineId, index) => {
             const line = allLines.find(l => l.id === lineId);
-            const lineCode = line?.name.split(' - ')[0] || `${lineId}`;
+            const fullName = line?.description ? `${line.name} - ${line.description}` : (line?.name || `${lineId}`);
             return (
               <div 
                 key={lineId} 
@@ -269,7 +351,7 @@ const ComparativosPage = () => {
                 style={{ borderColor: getRouteColor(index) }}
               >
                 <span style={{ color: getRouteColor(index) }}>
-                  {lineCode}
+                  {fullName}
                 </span>
                 <FiX 
                   className="remove-icon" 
@@ -348,25 +430,76 @@ const ComparativosPage = () => {
         </div>
       )}
 
-      {/* Cards de Comparação */}
-      {!loading && comparisonData.length > 0 && (
+      {/* Cards Individuais por Linha (dados do trajeto completo) */}
+      {!loading && selectedLines.length > 0 && (
         <div className="comparativos-grid">
-          {comparisonData.map((item, index) => (
-            <div key={item.lineId} className="comparison-card">
+          {selectedLines.map((lineId, index) => {
+            const line = allLines.find(l => l.id === lineId);
+            const direction = line?.direction === 'MAIN' ? 'Ida' : 'Volta';
+            const compData = comparisonData.find(c => c.lineId === lineId);
+            
+            // Dados do trajeto completo (dividir pelo daysRange para obter valores de um trajeto)
+            const routeEmission = compData ? compData.totalEmission / daysRange : 0;
+            const routeDistance = compData ? compData.totalDistance / daysRange : 0;
+            const avgEmission = compData ? compData.avgEmission : 0;
+            
+            return (
+            <div key={lineId} className="comparison-card">
               <div className="card-header">
-                <h3 style={{ color: getRouteColor(index) }}>{item.lineCode}</h3>
+                <div>
+                  <h3 style={{ color: getRouteColor(index), margin: 0 }}>{line?.name || lineId}</h3>
+                  <span style={{ fontSize: '0.85rem', color: '#9BA1AD' }}>({direction}) - {line?.description}</span>
+                </div>
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                  <span className="period-badge">{daysRange} dias</span>
+                  <span className="period-badge">Trajeto completo</span>
                   <button 
                     className="save-route-btn-comp"
                     onClick={() => {
-                      setSelectedLineId(item.lineId);
+                      setSelectedLineId(lineId);
                       setIsModalOpen(true);
                     }}
                     title="Salvar no histórico"
                   >
                     <FiBookmark />
                   </button>
+                </div>
+              </div>
+              <div className="card-content">
+                <div className="metric-item">
+                  <span className="metric-label">Emissão do Trajeto</span>
+                  <span className="metric-value">{routeEmission.toFixed(2)} kg CO₂</span>
+                </div>
+                <div className="metric-item">
+                  <span className="metric-label">Distância do Trajeto</span>
+                  <span className="metric-value">{routeDistance.toFixed(2)} km</span>
+                </div>
+                <div className="metric-item">
+                  <span className="metric-label">Emissão Média</span>
+                  <span className="metric-value">{avgEmission.toFixed(3)} kg/km</span>
+                </div>
+              </div>
+            </div>
+          );
+          })}
+        </div>
+      )}
+
+      {/* Cards de Comparação do Período */}
+      {!loading && comparisonData.length > 0 && (
+        <>
+          <h3 style={{ color: '#fff', marginTop: '2rem', marginBottom: '1rem' }}>Totais do Período ({daysRange} dias)</h3>
+          <div className="comparativos-grid">
+          {comparisonData.map((item, index) => {
+            const direction = item.lineDirection === 'MAIN' ? 'Ida' : 'Volta';
+            return (
+            <div key={item.lineId} className="comparison-card">
+              <div className="card-header">
+                <div>
+                  <h3 style={{ color: getRouteColor(index), margin: 0 }}>{item.lineCode}</h3>
+                  <span style={{ fontSize: '0.85rem', color: '#9BA1AD' }}>({direction})</span>
+                </div>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <span className="period-badge">{daysRange} dias</span>
                 </div>
               </div>
               <div className="card-content">
@@ -384,8 +517,10 @@ const ComparativosPage = () => {
                 </div>
               </div>
             </div>
-          ))}
-        </div>
+          );
+          })}
+          </div>
+        </>
       )}
 
       {/* Resumo Geral */}
@@ -444,6 +579,7 @@ const ComparativosPage = () => {
           alert('Rota salva com sucesso no histórico!');
         }}
         lineId={selectedLineId ?? undefined}
+        lineName={comparisonData.find(item => item.lineId === selectedLineId)?.lineName}
       />
     </div>
   );
