@@ -107,7 +107,6 @@ function LoginPage() {
               />
               {}
             </div>
-            <Link to="/cadastro" className="forgot-password-link">Esqueceu a senha?</Link>
           </div>
           
           <div className="form-group-checkbox">
