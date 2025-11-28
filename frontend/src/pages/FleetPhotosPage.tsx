@@ -7,6 +7,33 @@ import { emissionsService } from '../services/emissionsService';
 import type { Line } from '../types/api.types';
 import Loading from '../components/Loading';
 
+interface RouteSegment {
+  type: 'WALK' | 'BUS';
+  instruction: string;
+  distance_km: number;
+  duration_text: string | null;
+  line_name: string | null;
+  line_color: string | null;
+  vehicle_type: string | null;
+  polyline: {
+    encodedPolyline: string;
+  };
+}
+
+interface RouteOption {
+  description: string;
+  distance_km: number;
+  emission_kg_co2: number;
+  polyline: {
+    encodedPolyline: string;
+  };
+  segments: RouteSegment[];
+}
+
+interface RouteComparisonResponse {
+  routes: RouteOption[];
+}
+
 interface PhotoData {
   id: string;
   linha: string;
@@ -35,15 +62,20 @@ interface RoutePoint {
 
 function FleetPhotosPage() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [originAddress, setOriginAddress] = useState('');
+  const [destinationAddress, setDestinationAddress] = useState('');
   const [selectedLine, setSelectedLine] = useState<Line | null>(null);
+  const [selectedRoute, setSelectedRoute] = useState<RouteOption | null>(null);
+  const [routes, setRoutes] = useState<RouteOption[]>([]);
+  const [photoData, setPhotoData] = useState<PhotoData | null>(null);
+  const [allLines, setAllLines] = useState<Line[]>([]);
+  const [filteredLines, setFilteredLines] = useState<Line[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [searchMode, setSearchMode] = useState<'line' | 'route'>('line');
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedMetric, setSelectedMetric] = useState<'velocidade' | 'emissao' | 'iqar'>('velocidade');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [photoData, setPhotoData] = useState<PhotoData | null>(null);
-  const [allLines, setAllLines] = useState<Line[]>([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [filteredLines, setFilteredLines] = useState<Line[]>([]);
   const itemsPerPage = 6;
 
   // Carregar todas as linhas ao iniciar
@@ -194,9 +226,43 @@ function FleetPhotosPage() {
     }
   };
 
+  const handleCompareRoutes = async () => {
+    if (!originAddress.trim() || !destinationAddress.trim()) {
+      setError('Por favor, preencha origem e destino');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    setRoutes([]);
+    setSelectedRoute(null);
+
+    try {
+      const { routeComparisonService } = await import('../services/routeComparisonService');
+      const result = await routeComparisonService.compareRoutes(
+        originAddress.trim(),
+        destinationAddress.trim()
+      );
+      
+      setRoutes(result.routes);
+      if (result.routes.length > 0) {
+        setSelectedRoute(result.routes[0]);
+      }
+    } catch (err: any) {
+      console.error('Erro ao comparar rotas:', err);
+      setError(err.response?.data?.detail || 'Erro ao buscar rotas. Tente novamente.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
-      handleSearch();
+      if (searchMode === 'line') {
+        handleSearch();
+      } else {
+        handleCompareRoutes();
+      }
     }
   };
 
@@ -260,53 +326,138 @@ function FleetPhotosPage() {
       </div>
 
       <div className="search-section">
-        <div className="search-input-wrapper" style={{ position: 'relative' }}>
-          <FiSearch className="search-icon" />
-          <input
-            type="text"
-            placeholder="Digite o número da linha (ex: 8055-10)"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyPress={handleKeyPress}
-            onFocus={() => searchQuery.length >= 2 && setShowSuggestions(true)}
-            onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-            className="search-input"
-          />
-          {showSuggestions && filteredLines.length > 0 && (
-            <div className="search-suggestions">
-              {filteredLines.map((line) => (
-                <div
-                  key={line.id}
-                  className="suggestion-item"
-                  onClick={() => {
-                    setSearchQuery(line.name);
-                    setShowSuggestions(false);
-                    // Buscar automaticamente quando seleciona da lista
-                    setTimeout(() => handleSearch(), 100);
-                  }}
-                >
-                  <strong>{line.name}</strong>
-                  {line.description && <span> - {line.description}</span>}
-                  <span style={{ fontSize: '0.85rem', color: '#64748b', marginLeft: '8px' }}>
-                    ({line.direction === 'MAIN' ? 'Ida' : 'Volta'})
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-        <div className="search-buttons">
-          <button className="search-btn primary" onClick={handleSearch} disabled={loading}>
-            <FiSearch /> {loading ? 'Buscando...' : 'Buscar Linha'}
-          </button>
-          <button 
-            className="search-btn secondary" 
-            onClick={handleSavePhoto}
-            disabled={!photoData}
+        {/* Alternador de Modo */}
+        <div className="mode-selector" style={{ 
+          display: 'flex', 
+          gap: '1rem', 
+          marginBottom: '1rem',
+          justifyContent: 'center'
+        }}>
+          <button
+            className={`mode-btn ${searchMode === 'line' ? 'active' : ''}`}
+            onClick={() => setSearchMode('line')}
+            style={{
+              padding: '0.6rem 1.5rem',
+              border: searchMode === 'line' ? '2px solid #2563eb' : '2px solid #e2e8f0',
+              borderRadius: '8px',
+              background: searchMode === 'line' ? '#dbeafe' : 'white',
+              color: searchMode === 'line' ? '#1e40af' : '#64748b',
+              fontWeight: searchMode === 'line' ? '600' : '400',
+              cursor: 'pointer',
+              transition: 'all 0.2s'
+            }}
           >
-            <FiSave /> Salvar Fotografia
+            🚌 Buscar por Linha
+          </button>
+          <button
+            className={`mode-btn ${searchMode === 'route' ? 'active' : ''}`}
+            onClick={() => setSearchMode('route')}
+            style={{
+              padding: '0.6rem 1.5rem',
+              border: searchMode === 'route' ? '2px solid #2563eb' : '2px solid #e2e8f0',
+              borderRadius: '8px',
+              background: searchMode === 'route' ? '#dbeafe' : 'white',
+              color: searchMode === 'route' ? '#1e40af' : '#64748b',
+              fontWeight: searchMode === 'route' ? '600' : '400',
+              cursor: 'pointer',
+              transition: 'all 0.2s'
+            }}
+          >
+            📍 Comparar Rotas
           </button>
         </div>
+
+        {/* Busca por Linha */}
+        {searchMode === 'line' && (
+          <>
+            <div className="search-input-wrapper" style={{ position: 'relative' }}>
+              <FiSearch className="search-icon" />
+              <input
+                type="text"
+                placeholder="Digite o número da linha (ex: 8055-10)"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyPress={handleKeyPress}
+                onFocus={() => searchQuery.length >= 2 && setShowSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                className="search-input"
+              />
+              {showSuggestions && filteredLines.length > 0 && (
+                <div className="search-suggestions">
+                  {filteredLines.map((line) => (
+                    <div
+                      key={line.id}
+                      className="suggestion-item"
+                      onClick={() => {
+                        setSearchQuery(line.name);
+                        setShowSuggestions(false);
+                        setTimeout(() => handleSearch(), 100);
+                      }}
+                    >
+                      <strong>{line.name}</strong>
+                      {line.description && <span> - {line.description}</span>}
+                      <span style={{ fontSize: '0.85rem', color: '#64748b', marginLeft: '8px' }}>
+                        ({line.direction === 'MAIN' ? 'Ida' : 'Volta'})
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="search-buttons">
+              <button className="search-btn primary" onClick={handleSearch} disabled={loading}>
+                <FiSearch /> {loading ? 'Buscando...' : 'Buscar Linha'}
+              </button>
+              <button 
+                className="search-btn secondary" 
+                onClick={handleSavePhoto}
+                disabled={!photoData}
+              >
+                <FiSave /> Salvar Fotografia
+              </button>
+            </div>
+          </>
+        )}
+
+        {/* Busca por Rota */}
+        {searchMode === 'route' && (
+          <>
+            <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+              <div className="search-input-wrapper" style={{ flex: 1, position: 'relative' }}>
+                <FiMapPin className="search-icon" />
+                <input
+                  type="text"
+                  placeholder="Endereço de origem (ex: Av. Paulista, 1000, São Paulo)"
+                  value={originAddress}
+                  onChange={(e) => setOriginAddress(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  className="search-input"
+                />
+              </div>
+              <div className="search-input-wrapper" style={{ flex: 1, position: 'relative' }}>
+                <FiMapPin className="search-icon" />
+                <input
+                  type="text"
+                  placeholder="Endereço de destino (ex: Rua da Consolação, 500, São Paulo)"
+                  value={destinationAddress}
+                  onChange={(e) => setDestinationAddress(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  className="search-input"
+                />
+              </div>
+            </div>
+            <div className="search-buttons">
+              <button 
+                className="search-btn primary" 
+                onClick={handleCompareRoutes} 
+                disabled={loading}
+                style={{ width: '100%' }}
+              >
+                <FiSearch /> {loading ? 'Buscando rotas...' : 'Comparar Rotas'}
+              </button>
+            </div>
+          </>
+        )}
       </div>
 
       {loading && (
@@ -328,7 +479,143 @@ function FleetPhotosPage() {
         </div>
       )}
 
-      {selectedLine && photoData && !loading && (
+      {/* Resultados de Comparação de Rotas */}
+      {searchMode === 'route' && routes.length > 0 && !loading && (
+        <div className="route-comparison-results" style={{ marginBottom: '2rem' }}>
+          <h2 style={{ marginBottom: '1rem', color: '#1e293b' }}>
+            📊 Rotas Encontradas ({routes.length})
+          </h2>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '1rem' }}>
+            {routes.map((route, index) => (
+              <div
+                key={index}
+                onClick={() => setSelectedRoute(route)}
+                style={{
+                  border: selectedRoute === route ? '3px solid #2563eb' : '2px solid #e2e8f0',
+                  borderRadius: '12px',
+                  padding: '1.5rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  backgroundColor: selectedRoute === route ? '#f0f9ff' : 'white',
+                  boxShadow: selectedRoute === route ? '0 4px 12px rgba(37, 99, 235, 0.15)' : '0 1px 3px rgba(0,0,0,0.1)'
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '1rem' }}>
+                  <h3 style={{ margin: 0, color: '#1e293b', fontSize: '1.1rem' }}>
+                    Rota {index + 1}
+                  </h3>
+                  {selectedRoute === route && (
+                    <span style={{ 
+                      backgroundColor: '#2563eb', 
+                      color: 'white', 
+                      padding: '0.25rem 0.75rem', 
+                      borderRadius: '12px',
+                      fontSize: '0.75rem',
+                      fontWeight: '600'
+                    }}>
+                      SELECIONADA
+                    </span>
+                  )}
+                </div>
+
+                <p style={{ 
+                  color: '#64748b', 
+                  fontSize: '0.9rem', 
+                  marginBottom: '1rem',
+                  lineHeight: '1.5'
+                }}>
+                  {route.description}
+                </p>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between',
+                    padding: '0.75rem',
+                    backgroundColor: '#f8fafc',
+                    borderRadius: '8px'
+                  }}>
+                    <span style={{ color: '#64748b', fontSize: '0.9rem' }}>📏 Distância:</span>
+                    <strong style={{ color: '#1e293b' }}>{route.distance_km.toFixed(2)} km</strong>
+                  </div>
+                  
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between',
+                    padding: '0.75rem',
+                    backgroundColor: '#fef3c7',
+                    borderRadius: '8px'
+                  }}>
+                    <span style={{ color: '#92400e', fontSize: '0.9rem' }}>🌱 Emissão CO₂:</span>
+                    <strong style={{ color: '#92400e' }}>{route.emission_kg_co2.toFixed(2)} kg</strong>
+                  </div>
+
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between',
+                    padding: '0.75rem',
+                    backgroundColor: route.emission_kg_co2 / route.distance_km < 0.3 ? '#dcfce7' : '#fee2e2',
+                    borderRadius: '8px'
+                  }}>
+                    <span style={{ 
+                      color: route.emission_kg_co2 / route.distance_km < 0.3 ? '#166534' : '#991b1b', 
+                      fontSize: '0.9rem' 
+                    }}>
+                      📊 Emissão/km:
+                    </span>
+                    <strong style={{ 
+                      color: route.emission_kg_co2 / route.distance_km < 0.3 ? '#166534' : '#991b1b'
+                    }}>
+                      {(route.emission_kg_co2 / route.distance_km).toFixed(3)} kg/km
+                    </strong>
+                  </div>
+                </div>
+
+                {route.segments.length > 0 && (
+                  <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #e2e8f0' }}>
+                    <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '0.9rem', color: '#64748b' }}>
+                      📍 Trechos ({route.segments.length}):
+                    </h4>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                      {route.segments.slice(0, 3).map((segment, segIndex) => (
+                        <div 
+                          key={segIndex}
+                          style={{ 
+                            fontSize: '0.85rem', 
+                            color: '#64748b',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem'
+                          }}
+                        >
+                          {segment.type === 'WALK' ? '🚶' : '🚌'}
+                          <span style={{ 
+                            color: segment.type === 'BUS' ? '#2563eb' : '#64748b',
+                            fontWeight: segment.type === 'BUS' ? '600' : '400'
+                          }}>
+                            {segment.line_name || segment.instruction.substring(0, 40)}
+                          </span>
+                          <span style={{ color: '#94a3b8', fontSize: '0.8rem' }}>
+                            ({segment.distance_km.toFixed(2)} km)
+                          </span>
+                        </div>
+                      ))}
+                      {route.segments.length > 3 && (
+                        <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>
+                          +{route.segments.length - 3} trechos
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {selectedLine && photoData && !loading && searchMode === 'line' && (
         <div className="results-container">
           <div className="results-header">
             <h2>
