@@ -7,11 +7,10 @@ export interface Line {
 
 export interface Stop {
   id: number;
-  stop_code: string;
-  stop_name: string;
-  stop_lat: number;
-  stop_lon: number;
-  sequence: number;
+  name: string;
+  address: string;
+  latitude: number;
+  longitude: number;
 }
 
 export interface EmissionStatistics {

@@ -128,7 +128,7 @@ const SaveRouteModal: React.FC<SaveRouteModalProps> = ({ isOpen, onClose, lineId
                   <option value="">Selecione a origem</option>
                   {stops.map((stop) => (
                     <option key={stop.id} value={stop.id}>
-                      {stop.stop_name} ({stop.stop_code})
+                      {stop.name}
                     </option>
                   ))}
                 </select>
@@ -145,7 +145,7 @@ const SaveRouteModal: React.FC<SaveRouteModalProps> = ({ isOpen, onClose, lineId
                   <option value="">Selecione o destino</option>
                   {stops.map((stop) => (
                     <option key={stop.id} value={stop.id}>
-                      {stop.stop_name} ({stop.stop_code})
+                      {stop.name}
                     </option>
                   ))}
                 </select>

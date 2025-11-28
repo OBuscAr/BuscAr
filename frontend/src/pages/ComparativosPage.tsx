@@ -487,7 +487,7 @@ const ComparativosPage = () => {
       {/* Cards de Comparação do Período */}
       {!loading && comparisonData.length > 0 && (
         <>
-          <h3 style={{ color: '#fff', marginTop: '2rem', marginBottom: '1rem' }}>Totais do Período ({daysRange} dias)</h3>
+          <h3 style={{ color: '#000000', marginTop: '2rem', marginBottom: '1rem' }}>Totais do Período ({daysRange} dias)</h3>
           <div className="comparativos-grid">
           {comparisonData.map((item, index) => {
             const direction = item.lineDirection === 'MAIN' ? 'Ida' : 'Volta';
