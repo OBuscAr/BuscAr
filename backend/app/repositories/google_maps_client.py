@@ -16,7 +16,15 @@ def find_bus_routes(origin_address: str, destination_address: str) -> dict:
         "routes.legs.steps.travelMode,"
         "routes.legs.steps.distanceMeters,"
         "routes.legs.steps.transitDetails.transitLine," 
-        "routes.polyline.encodedPolyline"
+        "routes.polyline.encodedPolyline,"
+        "routes.legs.steps.navigationInstruction,"
+        "routes.legs.steps.transitDetails.headsign,"
+        "routes.legs.steps.transitDetails.transitLine.nameShort,"
+        "routes.legs.steps.transitDetails.transitLine.vehicle,"
+        "routes.legs.steps.transitDetails.transitLine.color,"
+        "routes.legs.steps.polyline.encodedPolyline,"
+        "routes.description,"
+        "routes.legs.steps.staticDuration"
     )
     
     headers = {
@@ -34,7 +42,8 @@ def find_bus_routes(origin_address: str, destination_address: str) -> dict:
             # ESSENCIAL para filtrar "só com ônibus"
             "allowedTravelModes": ["BUS"] 
         },
-        "languageCode": "pt-BR"
+        "languageCode": "pt-BR",
+        "units": "METRIC"
     }
 
     response = requests.post(GOOGLE_ROUTES_API_URL, json=body, headers=headers)
