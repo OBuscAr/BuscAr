@@ -1,28 +1,15 @@
 from fastapi import APIRouter, Depends
+from enum import Enum
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 from app.services.route_comparison_service import RouteComparisonService 
+
+from app.schemas.route_comparison import RouteRequest, RouteResponse
 
 router = APIRouter(
     prefix="/api/v1",
     tags=["Route Comparison"],
 )
-
-class RouteRequest(BaseModel):
-    origin_address: str
-    destination_address: str
-
-class PolylineData(BaseModel):
-    encodedPolyline: str
-
-class RouteInfo(BaseModel):
-    description: str
-    distance_km: float
-    emission_kg_co2: float
-    polyline: PolylineData  
-
-class RouteResponse(BaseModel):
-    routes: List[RouteInfo]
 
 @router.post("/compare-bus-routes", response_model=RouteResponse)
 def compare_routes(
