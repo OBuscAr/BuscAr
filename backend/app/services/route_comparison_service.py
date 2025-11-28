@@ -24,7 +24,9 @@ class RouteComparisonService:
         
         # Buscar rotas na API do Google
         google_response = google_maps_client.find_bus_routes(origin, destination)
-
+        
+        unique_routes_map = {}
+        
         if "routes" not in google_response:
             return [] 
 
@@ -94,6 +96,16 @@ class RouteComparisonService:
 
             distance_km = total_bus_distance_meters / 1000.0
             
+            unique_lines = sorted(list(set(line_names)))
+            
+            if not unique_lines:
+                continue
+            
+            route_signature = tuple(unique_lines)
+            
+            if route_signature in unique_routes_map:
+                            continue
+            
             # Calcular a emissão de carbono com o MyClimate
             try:
                 emission_kg = myclimate_client.calculate_carbon_emission(
@@ -106,15 +118,18 @@ class RouteComparisonService:
                 
             polyline_data = route.get("polyline", {"encodedPolyline": ""})
             
-            calculated_routes.append({
+            route_obj = {
                 "description": f"Rota via {', '.join(list(set(line_names)))}", # ex: Rota via 8000-10, 8022-10
                 "distance_km": round(distance_km, 2),
                 "emission_kg_co2": round(emission_kg, 2),
                 "polyline": polyline_data,
                 "segments": segments 
-            })
-
+            }
+            
+            unique_routes_map[route_signature] = route_obj
         #Ordenar a lista da menor emissão para a maior
+        calculated_routes = list(unique_routes_map.values())
+        
         sorted_routes = sorted(calculated_routes, key=lambda x: x["emission_kg_co2"])
         
         return sorted_routes
