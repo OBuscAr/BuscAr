@@ -72,6 +72,7 @@ function FleetPhotosPage() {
   const [filteredLines, setFilteredLines] = useState<Line[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [searchMode, setSearchMode] = useState<'line' | 'route'>('line');
+  const [expandedRoutes, setExpandedRoutes] = useState<Set<number>>(new Set());
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedMetric, setSelectedMetric] = useState<'velocidade' | 'emissao' | 'iqar'>('velocidade');
   const [loading, setLoading] = useState(false);
@@ -578,7 +579,7 @@ function FleetPhotosPage() {
                       📍 Trechos ({route.segments.length}):
                     </h4>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                      {route.segments.slice(0, 3).map((segment, segIndex) => (
+                      {(expandedRoutes.has(index) ? route.segments : route.segments.slice(0, 3)).map((segment, segIndex) => (
                         <div 
                           key={segIndex}
                           style={{ 
@@ -592,7 +593,8 @@ function FleetPhotosPage() {
                           {segment.type === 'WALK' ? '🚶' : '🚌'}
                           <span style={{ 
                             color: segment.type === 'BUS' ? '#2563eb' : '#64748b',
-                            fontWeight: segment.type === 'BUS' ? '600' : '400'
+                            fontWeight: segment.type === 'BUS' ? '600' : '400',
+                            flex: 1
                           }}>
                             {segment.line_name || segment.instruction.substring(0, 40)}
                           </span>
@@ -602,9 +604,35 @@ function FleetPhotosPage() {
                         </div>
                       ))}
                       {route.segments.length > 3 && (
-                        <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>
-                          +{route.segments.length - 3} trechos
-                        </span>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setExpandedRoutes(prev => {
+                              const newSet = new Set(prev);
+                              if (newSet.has(index)) {
+                                newSet.delete(index);
+                              } else {
+                                newSet.add(index);
+                              }
+                              return newSet;
+                            });
+                          }}
+                          style={{
+                            fontSize: '0.8rem',
+                            color: '#2563eb',
+                            background: 'none',
+                            border: 'none',
+                            padding: '0.25rem 0',
+                            cursor: 'pointer',
+                            textAlign: 'left',
+                            fontWeight: '500',
+                            textDecoration: 'underline'
+                          }}
+                        >
+                          {expandedRoutes.has(index) 
+                            ? '▲ Mostrar menos' 
+                            : `▼ +${route.segments.length - 3} trechos`}
+                        </button>
                       )}
                     </div>
                   </div>
