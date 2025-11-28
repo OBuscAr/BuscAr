@@ -1,14 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../style/FleetPhotosPage.css';
 import { FiSearch, FiMapPin, FiTrendingUp, FiCalendar, FiSave, FiDownload } from 'react-icons/fi';
 import RouteMap from '../components/RouteMap';
-
+import { linesService } from '../services/linesService';
+import { emissionsService } from '../services/emissionsService';
+import type { Line } from '../types/api.types';
+import Loading from '../components/Loading';
 
 interface PhotoData {
   id: string;
   linha: string;
+  lineNumber: string;
   velocidadeMedia: number;
   emissaoCarbono: number;
+  distancia: number;
   iqar: number;
   data: string;
 }
@@ -30,20 +35,46 @@ interface RoutePoint {
 
 function FleetPhotosPage() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedLine, setSelectedLine] = useState<string | null>(null);
+  const [selectedLine, setSelectedLine] = useState<Line | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedMetric, setSelectedMetric] = useState<'velocidade' | 'emissao' | 'iqar'>('velocidade');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [photoData, setPhotoData] = useState<PhotoData | null>(null);
+  const [allLines, setAllLines] = useState<Line[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [filteredLines, setFilteredLines] = useState<Line[]>([]);
   const itemsPerPage = 6;
 
-  // Dados mockados - expandido
-  const photoData: PhotoData = {
-    id: '8084',
-    linha: '8084',
-    velocidadeMedia: 45,
-    emissaoCarbono: 120,
-    iqar: 85,
-    data: '10 de Outubro, 2025'
-  };
+  // Carregar todas as linhas ao iniciar
+  useEffect(() => {
+    async function loadLines() {
+      try {
+        const lines = await linesService.searchLines('');
+        setAllLines(lines);
+      } catch (err) {
+        console.error('Erro ao carregar linhas:', err);
+      }
+    }
+    loadLines();
+  }, []);
+
+  // Filtrar linhas conforme o usuário digita
+  useEffect(() => {
+    if (searchQuery.trim().length >= 2) {
+      const term = searchQuery.toLowerCase().trim();
+      const filtered = allLines.filter(line => {
+        const lineCode = line.name.toLowerCase();
+        const description = line.description?.toLowerCase() || '';
+        return lineCode.includes(term) || description.includes(term);
+      }).slice(0, 10); // Limitar a 10 sugestões
+      setFilteredLines(filtered);
+      setShowSuggestions(filtered.length > 0);
+    } else {
+      setShowSuggestions(false);
+      setFilteredLines([]);
+    }
+  }, [searchQuery, allLines]);
 
   // Pontos de rota de exemplo (São Paulo - ajuste conforme necessário)
   const routePoints: RoutePoint[] = [
@@ -71,9 +102,95 @@ function FleetPhotosPage() {
     currentPage * itemsPerPage
   );
 
-  const handleSearch = () => {
-    if (searchQuery.trim()) {
-      setSelectedLine(searchQuery);
+  const handleSearch = async () => {
+    if (!searchQuery.trim()) {
+      setError('Por favor, digite o número da linha');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    setPhotoData(null);
+
+    try {
+      // Buscar a linha pelo número
+      const lines = await linesService.searchLines(searchQuery.trim());
+      
+      if (lines.length === 0) {
+        setError(`Linha "${searchQuery}" não encontrada`);
+        setSelectedLine(null);
+        return;
+      }
+
+      // Pegar a primeira linha encontrada
+      const line = lines[0];
+      setSelectedLine(line);
+
+      // Buscar dados de emissão da linha
+      const emissionData = await emissionsService.getTotalLineEmission(line.name);
+      
+      if (emissionData.length === 0) {
+        setError('Dados de emissão não disponíveis para esta linha');
+        return;
+      }
+
+      // Usar os dados da linha correspondente (considerando direção)
+      const lineEmission = emissionData.find(e => e.line.id === line.id) || emissionData[0];
+
+      // Calcular IQAr estimado baseado na emissão por km
+      // IQAr: 0-50 = Bom, 51-100 = Moderado, 101-200 = Ruim, 201+ = Péssimo
+      // Fórmula: quanto maior a emissão por km, pior o IQAr
+      const emissaoPorKm = lineEmission.emission / lineEmission.distance;
+      
+      console.log(`Linha ${line.name}:`, {
+        emission: lineEmission.emission,
+        distance: lineEmission.distance,
+        emissaoPorKm: emissaoPorKm.toFixed(3)
+      });
+      
+      // Normalizar para escala de IQAr (valores típicos de emissão/km estão entre 1.5 e 3.5)
+      // Usar uma escala exponencial para criar maior variação
+      let iqarEstimado: number;
+      if (emissaoPorKm < 2.0) {
+        // Emissão baixa -> IQAr bom (0-50)
+        iqarEstimado = Math.round(emissaoPorKm * 25);
+      } else if (emissaoPorKm < 2.5) {
+        // Emissão média -> IQAr moderado (51-100)
+        iqarEstimado = Math.round(50 + (emissaoPorKm - 2.0) * 100);
+      } else if (emissaoPorKm < 3.5) {
+        // Emissão alta -> IQAr ruim (101-200)
+        iqarEstimado = Math.round(100 + (emissaoPorKm - 2.5) * 100);
+      } else {
+        // Emissão muito alta -> IQAr péssimo (201+)
+        iqarEstimado = Math.round(200 + (emissaoPorKm - 3.5) * 50);
+      }
+      
+      iqarEstimado = Math.max(0, Math.min(300, iqarEstimado)); // Limitar entre 0 e 300
+      
+      console.log(`IQAr calculado: ${iqarEstimado}`);
+
+      const data: PhotoData = {
+        id: line.id.toString(),
+        linha: line.description || line.name,
+        lineNumber: line.name,
+        velocidadeMedia: 0, // Backend não fornece este dado ainda
+        emissaoCarbono: lineEmission.emission,
+        distancia: lineEmission.distance,
+        iqar: iqarEstimado,
+        data: new Date().toLocaleDateString('pt-BR', { 
+          day: 'numeric', 
+          month: 'long', 
+          year: 'numeric' 
+        })
+      };
+
+      setPhotoData(data);
+    } catch (err: any) {
+      console.error('Erro ao buscar dados:', err);
+      setError(err.response?.data?.detail || 'Erro ao buscar dados da linha');
+      setSelectedLine(null);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -84,11 +201,48 @@ function FleetPhotosPage() {
   };
 
   const handleSavePhoto = () => {
-    alert('Fotografia de frota salva com sucesso! 📸');
+    if (!photoData) {
+      alert('Nenhum dado para salvar. Por favor, busque uma linha primeiro.');
+      return;
+    }
+    
+    const message = `Dados da linha ${photoData.lineNumber} salvos:\n\n` +
+      `• Emissão CO₂: ${photoData.emissaoCarbono.toFixed(2)} kg\n` +
+      `• Distância: ${photoData.distancia.toFixed(2)} km\n` +
+      `• Emissão/km: ${(photoData.emissaoCarbono / photoData.distancia).toFixed(3)} kg/km\n` +
+      `• IQAr estimado: ${photoData.iqar}`;
+    
+    alert(message + '\n\n📸 Fotografia de frota salva com sucesso!');
   };
 
   const handleExportData = () => {
-    alert('Exportando dados da frota... 📊');
+    if (!photoData) {
+      alert('Nenhum dado para exportar. Por favor, busque uma linha primeiro.');
+      return;
+    }
+    
+    // Criar CSV com os dados
+    const csvContent = `Linha,Descrição,Emissão CO2 (kg),Distância (km),Emissão por km (kg/km),IQAr Estimado,Data\n` +
+      `${photoData.lineNumber},"${photoData.linha}",${photoData.emissaoCarbono.toFixed(2)},${photoData.distancia.toFixed(2)},${(photoData.emissaoCarbono / photoData.distancia).toFixed(3)},${photoData.iqar},${photoData.data}`;
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `frota_${photoData.lineNumber}_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    alert('📊 Dados exportados com sucesso!');
+  };
+
+  const getIQArQuality = (iqar: number) => {
+    if (iqar <= 50) return { label: 'Bom', color: '#4CAF50', bg: '#E8F5E9' };
+    if (iqar <= 100) return { label: 'Moderado', color: '#FF9800', bg: '#FFF3E0' };
+    if (iqar <= 200) return { label: 'Ruim', color: '#F44336', bg: '#FFEBEE' };
+    return { label: 'Péssimo', color: '#9C27B0', bg: '#F3E5F5' };
   };
 
   return (
@@ -106,40 +260,87 @@ function FleetPhotosPage() {
       </div>
 
       <div className="search-section">
-        <div className="search-input-wrapper">
+        <div className="search-input-wrapper" style={{ position: 'relative' }}>
           <FiSearch className="search-icon" />
           <input
             type="text"
-            placeholder="Digite o número da frota (ex: 8084)"
+            placeholder="Digite o número da linha (ex: 8055-10)"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyPress={handleKeyPress}
+            onFocus={() => searchQuery.length >= 2 && setShowSuggestions(true)}
+            onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
             className="search-input"
           />
+          {showSuggestions && filteredLines.length > 0 && (
+            <div className="search-suggestions">
+              {filteredLines.map((line) => (
+                <div
+                  key={line.id}
+                  className="suggestion-item"
+                  onClick={() => {
+                    setSearchQuery(line.name);
+                    setShowSuggestions(false);
+                    // Buscar automaticamente quando seleciona da lista
+                    setTimeout(() => handleSearch(), 100);
+                  }}
+                >
+                  <strong>{line.name}</strong>
+                  {line.description && <span> - {line.description}</span>}
+                  <span style={{ fontSize: '0.85rem', color: '#64748b', marginLeft: '8px' }}>
+                    ({line.direction === 'MAIN' ? 'Ida' : 'Volta'})
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
         <div className="search-buttons">
-          <button className="search-btn primary" onClick={handleSearch}>
-            <FiSearch /> Buscar Frota
+          <button className="search-btn primary" onClick={handleSearch} disabled={loading}>
+            <FiSearch /> {loading ? 'Buscando...' : 'Buscar Linha'}
           </button>
-          <button className="search-btn secondary" onClick={handleSavePhoto}>
+          <button 
+            className="search-btn secondary" 
+            onClick={handleSavePhoto}
+            disabled={!photoData}
+          >
             <FiSave /> Salvar Fotografia
           </button>
         </div>
       </div>
 
-      {selectedLine && (
+      {loading && (
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '3rem' }}>
+          <Loading />
+        </div>
+      )}
+
+      {error && (
+        <div style={{
+          padding: '16px',
+          backgroundColor: '#FEE2E2',
+          color: '#991B1B',
+          borderRadius: 8,
+          fontSize: '14px',
+          margin: '1rem 0'
+        }}>
+          ⚠️ {error}
+        </div>
+      )}
+
+      {selectedLine && photoData && !loading && (
         <div className="results-container">
           <div className="results-header">
             <h2>
               <FiMapPin className="header-icon" />
-              Resultados para a linha "{selectedLine}"
+              Resultados para a linha "{selectedLine.name}" - {selectedLine.description}
             </h2>
             <div className="results-meta">
               <span className="meta-item">
                 <FiCalendar /> {photoData.data}
               </span>
               <span className="meta-item">
-                <FiTrendingUp /> Velocidade média: {photoData.velocidadeMedia}km/h
+                <FiTrendingUp /> Distância: {photoData.distancia.toFixed(2)}km
               </span>
             </div>
           </div>
@@ -176,7 +377,7 @@ function FleetPhotosPage() {
                 <RouteMap
                   routePoints={routePoints}
                   selectedMetric={selectedMetric}
-                  linha={photoData.linha}
+                  linha={photoData.lineNumber}
                   iqar={photoData.iqar}
                 />
                 
@@ -340,8 +541,8 @@ function FleetPhotosPage() {
                       <span style={{color: '#2196F3'}}>🚌</span>
                     </div>
                     <div className="stat-content">
-                      <span className="stat-label">Velocidade Média</span>
-                      <span className="stat-value">{photoData.velocidadeMedia} km/h</span>
+                      <span className="stat-label">Distância Total</span>
+                      <span className="stat-value">{photoData.distancia.toFixed(2)} km</span>
                     </div>
                   </div>
                   
@@ -351,17 +552,39 @@ function FleetPhotosPage() {
                     </div>
                     <div className="stat-content">
                       <span className="stat-label">CO₂ Emitido</span>
-                      <span className="stat-value">{photoData.emissaoCarbono} kg</span>
+                      <span className="stat-value">{photoData.emissaoCarbono.toFixed(2)} kg</span>
                     </div>
                   </div>
                   
                   <div className="stat-card">
-                    <div className="stat-icon" style={{background: '#E8F5E9'}}>
-                      <span style={{color: '#4CAF50'}}>🍃</span>
+                    <div className="stat-icon" style={{background: '#FFF3E0'}}>
+                      <span style={{color: '#F57C00'}}>📊</span>
                     </div>
                     <div className="stat-content">
-                      <span className="stat-label">IQAr Médio</span>
-                      <span className="stat-value">{photoData.iqar}</span>
+                      <span className="stat-label">Emissão/km</span>
+                      <span className="stat-value">{(photoData.emissaoCarbono / photoData.distancia).toFixed(3)} kg/km</span>
+                    </div>
+                  </div>
+                  
+                  <div className="stat-card">
+                    <div className="stat-icon" style={{background: getIQArQuality(photoData.iqar).bg}}>
+                      <span style={{color: getIQArQuality(photoData.iqar).color}}>🍃</span>
+                    </div>
+                    <div className="stat-content">
+                      <span className="stat-label">IQAr Estimado</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span className="stat-value">{photoData.iqar}</span>
+                        <span style={{ 
+                          fontSize: '0.75rem', 
+                          color: getIQArQuality(photoData.iqar).color,
+                          fontWeight: 600,
+                          padding: '2px 8px',
+                          background: getIQArQuality(photoData.iqar).bg,
+                          borderRadius: '12px'
+                        }}>
+                          {getIQArQuality(photoData.iqar).label}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
