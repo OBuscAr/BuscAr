@@ -350,7 +350,7 @@ function FleetPhotosPage() {
               transition: 'all 0.2s'
             }}
           >
-            🚌 Buscar por Linha
+            Buscar por Linha
           </button>
           <button
             className={`mode-btn ${searchMode === 'route' ? 'active' : ''}`}
@@ -366,7 +366,7 @@ function FleetPhotosPage() {
               transition: 'all 0.2s'
             }}
           >
-            📍 Comparar Rotas
+            Comparar Rotas
           </button>
         </div>
 
@@ -374,7 +374,6 @@ function FleetPhotosPage() {
         {searchMode === 'line' && (
           <>
             <div className="search-input-wrapper" style={{ position: 'relative' }}>
-              <FiSearch className="search-icon" />
               <input
                 type="text"
                 placeholder="Digite o número da linha (ex: 8055-10)"
@@ -427,7 +426,6 @@ function FleetPhotosPage() {
           <>
             <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
               <div className="search-input-wrapper" style={{ flex: 1, position: 'relative' }}>
-                <FiMapPin className="search-icon" />
                 <input
                   type="text"
                   placeholder="Endereço de origem (ex: Av. Paulista, 1000, São Paulo)"
@@ -438,7 +436,6 @@ function FleetPhotosPage() {
                 />
               </div>
               <div className="search-input-wrapper" style={{ flex: 1, position: 'relative' }}>
-                <FiMapPin className="search-icon" />
                 <input
                   type="text"
                   placeholder="Endereço de destino (ex: Rua da Consolação, 500, São Paulo)"
@@ -486,14 +483,14 @@ function FleetPhotosPage() {
       {searchMode === 'route' && routes.length > 0 && !loading && (
         <div className="route-comparison-results" style={{ marginBottom: '2rem' }}>
           <h2 style={{ marginBottom: '1rem', color: '#1e293b' }}>
-            📊 Rotas Encontradas ({routes.length})
+            Rotas Encontradas ({routes.length})
           </h2>
 
           {/* Mapa da rota selecionada */}
           {selectedRoute && (
             <div className="map-section" style={{ marginBottom: '2rem' }}>
               <div className="section-header">
-                <h3>🗺️ Visualização da Rota Selecionada</h3>
+                <h3>Visualização da Rota Selecionada</h3>
                 <span style={{ fontSize: '0.9rem', color: '#64748b' }}>
                   {selectedRoute.description}
                 </span>
