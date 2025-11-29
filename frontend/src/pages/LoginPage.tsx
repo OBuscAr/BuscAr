@@ -45,11 +45,13 @@ function LoginPage() {
         },
       });
 
-      const { access_token, token_type } = response.data;
+      const { access_token, token_type, nome, email } = response.data;
       
-      // Armazena o token no localStorage
+      // Armazena o token e dados do usuário no localStorage
       localStorage.setItem('access_token', access_token);
       localStorage.setItem('token_type', token_type);
+      localStorage.setItem('userName', nome);
+      localStorage.setItem('userEmail', email);
 
       // Redireciona para o painel
       navigate('/painel');

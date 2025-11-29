@@ -234,50 +234,50 @@ const DashboardPage = () => {
         {/* Cards de métricas principais */}
         <div style={{ 
           display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', 
-          gap: '1.5rem',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+          gap: '1rem',
           marginBottom: '2rem'
         }}>
           {/* Total de Emissões */}
           <div style={{ 
             backgroundColor: '#fff', 
-            borderRadius: 16, 
-            padding: '1.5rem',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+            borderRadius: 12, 
+            padding: '1rem',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
             border: '1px solid #f0f0f0'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
               <div style={{ 
-                width: 48, 
-                height: 48, 
-                borderRadius: 12, 
+                width: 36, 
+                height: 36, 
+                borderRadius: 10, 
                 backgroundColor: '#fee2e2', 
                 display: 'flex', 
                 alignItems: 'center', 
                 justifyContent: 'center',
-                fontSize: '24px'
+                fontSize: '18px'
               }}>
                 🏭
               </div>
               <span style={{ 
-                fontSize: '12px', 
+                fontSize: '11px', 
                 fontWeight: 600, 
                 color: emissionTrend > 0 ? '#ef4444' : '#10b981',
                 backgroundColor: emissionTrend > 0 ? '#fee2e2' : '#d1fae5',
-                padding: '4px 8px',
-                borderRadius: 6
+                padding: '3px 6px',
+                borderRadius: 4
               }}>
                 {emissionTrend > 0 ? '↑' : '↓'} {Math.abs(emissionTrend).toFixed(1)}%
               </span>
             </div>
-            <h3 style={{ fontSize: '14px', color: '#666', marginBottom: '0.5rem', fontWeight: 500 }}>
+            <h3 style={{ fontSize: '12px', color: '#666', marginBottom: '0.4rem', fontWeight: 500 }}>
               {userRoutes.length > 0 ? 'Suas Emissões' : 'Emissões Totais'}
             </h3>
-            <p style={{ fontSize: '32px', fontWeight: 700, color: '#1a1a1a', marginBottom: '0.5rem' }}>
+            <p style={{ fontSize: '26px', fontWeight: 700, color: '#1a1a1a', marginBottom: '0.3rem' }}>
               {totalEmissions.toFixed(1)}
-              <span style={{ fontSize: '16px', fontWeight: 500, color: '#666', marginLeft: '0.5rem' }}>kg</span>
+              <span style={{ fontSize: '13px', fontWeight: 500, color: '#666', marginLeft: '0.3rem' }}>kg</span>
             </p>
-            <p style={{ fontSize: '12px', color: '#999' }}>
+            <p style={{ fontSize: '10px', color: '#999' }}>
               {userRoutes.length > 0 ? `Suas rotas nos últimos ${daysRange} dias` : `Período de ${daysRange} dias`}
             </p>
           </div>
@@ -285,33 +285,33 @@ const DashboardPage = () => {
           {/* Média Diária */}
           <div style={{ 
             backgroundColor: '#fff', 
-            borderRadius: 16, 
-            padding: '1.5rem',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+            borderRadius: 12, 
+            padding: '1rem',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
             border: '1px solid #f0f0f0'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.75rem' }}>
               <div style={{ 
-                width: 48, 
-                height: 48, 
-                borderRadius: 12, 
+                width: 36, 
+                height: 36, 
+                borderRadius: 10, 
                 backgroundColor: '#dbeafe', 
                 display: 'flex', 
                 alignItems: 'center', 
                 justifyContent: 'center',
-                fontSize: '24px'
+                fontSize: '18px'
               }}>
                 📊
               </div>
             </div>
-            <h3 style={{ fontSize: '14px', color: '#666', marginBottom: '0.5rem', fontWeight: 500 }}>
+            <h3 style={{ fontSize: '12px', color: '#666', marginBottom: '0.4rem', fontWeight: 500 }}>
               Média Diária
             </h3>
-            <p style={{ fontSize: '32px', fontWeight: 700, color: '#1a1a1a', marginBottom: '0.5rem' }}>
+            <p style={{ fontSize: '26px', fontWeight: 700, color: '#1a1a1a', marginBottom: '0.3rem' }}>
               {avgDailyEmission.toFixed(1)}
-              <span style={{ fontSize: '16px', fontWeight: 500, color: '#666', marginLeft: '0.5rem' }}>kg/dia</span>
+              <span style={{ fontSize: '13px', fontWeight: 500, color: '#666', marginLeft: '0.3rem' }}>kg/dia</span>
             </p>
-            <p style={{ fontSize: '12px', color: '#999' }}>
+            <p style={{ fontSize: '10px', color: '#999' }}>
               CO₂ emitido por dia
             </p>
           </div>
@@ -319,33 +319,33 @@ const DashboardPage = () => {
           {/* Distância Total */}
           <div style={{ 
             backgroundColor: '#fff', 
-            borderRadius: 16, 
-            padding: '1.5rem',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+            borderRadius: 12, 
+            padding: '1rem',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
             border: '1px solid #f0f0f0'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.75rem' }}>
               <div style={{ 
-                width: 48, 
-                height: 48, 
-                borderRadius: 12, 
+                width: 36, 
+                height: 36, 
+                borderRadius: 10, 
                 backgroundColor: '#fef3c7', 
                 display: 'flex', 
                 alignItems: 'center', 
                 justifyContent: 'center',
-                fontSize: '24px'
+                fontSize: '18px'
               }}>
                 🚌
               </div>
             </div>
-            <h3 style={{ fontSize: '14px', color: '#666', marginBottom: '0.5rem', fontWeight: 500 }}>
+            <h3 style={{ fontSize: '12px', color: '#666', marginBottom: '0.4rem', fontWeight: 500 }}>
               {userRoutes.length > 0 ? 'Sua Distância' : 'Distância Percorrida'}
             </h3>
-            <p style={{ fontSize: '32px', fontWeight: 700, color: '#1a1a1a', marginBottom: '0.5rem' }}>
+            <p style={{ fontSize: '26px', fontWeight: 700, color: '#1a1a1a', marginBottom: '0.3rem' }}>
               {totalDistance.toFixed(1)}
-              <span style={{ fontSize: '16px', fontWeight: 500, color: '#666', marginLeft: '0.5rem' }}>km</span>
+              <span style={{ fontSize: '13px', fontWeight: 500, color: '#666', marginLeft: '0.3rem' }}>km</span>
             </p>
-            <p style={{ fontSize: '12px', color: '#999' }}>
+            <p style={{ fontSize: '10px', color: '#999' }}>
               {userRoutes.length > 0 ? `Nas suas rotas (${statistics.length} dias)` : `Total de ${statistics.length} dias`}
             </p>
           </div>
@@ -353,33 +353,33 @@ const DashboardPage = () => {
           {/* Economia de CO₂ */}
           <div style={{ 
             backgroundColor: '#fff', 
-            borderRadius: 16, 
-            padding: '1.5rem',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+            borderRadius: 12, 
+            padding: '1rem',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
             border: '1px solid #f0f0f0'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.75rem' }}>
               <div style={{ 
-                width: 48, 
-                height: 48, 
-                borderRadius: 12, 
+                width: 36, 
+                height: 36, 
+                borderRadius: 10, 
                 backgroundColor: '#d1fae5', 
                 display: 'flex', 
                 alignItems: 'center', 
                 justifyContent: 'center',
-                fontSize: '24px'
+                fontSize: '18px'
               }}>
                 🌱
               </div>
             </div>
-            <h3 style={{ fontSize: '14px', color: '#666', marginBottom: '0.5rem', fontWeight: 500 }}>
+            <h3 style={{ fontSize: '12px', color: '#666', marginBottom: '0.4rem', fontWeight: 500 }}>
               Suas Economias
             </h3>
-            <p style={{ fontSize: '32px', fontWeight: 700, color: '#10b981', marginBottom: '0.5rem' }}>
+            <p style={{ fontSize: '26px', fontWeight: 700, color: '#10b981', marginBottom: '0.3rem' }}>
               {totalSavings.toFixed(1)}
-              <span style={{ fontSize: '16px', fontWeight: 500, color: '#666', marginLeft: '0.5rem' }}>kg</span>
+              <span style={{ fontSize: '13px', fontWeight: 500, color: '#666', marginLeft: '0.3rem' }}>kg</span>
             </p>
-            <p style={{ fontSize: '12px', color: '#999' }}>
+            <p style={{ fontSize: '10px', color: '#999' }}>
               {userRoutes.length} rotas salvas
             </p>
           </div>
