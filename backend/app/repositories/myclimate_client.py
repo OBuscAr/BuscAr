@@ -135,7 +135,11 @@ def bulk_calculate_carbon_emission(
         raise NotImplementedError(f"O tipo {vehicle_type} não foi implementado")
 
     payload = {
-        "trips": [base_single_payload | {"km": distance} for distance in distances]
+        "trips": [
+            base_single_payload
+            | {"km": min(distance, MAXIMUM_ACCEPTED_DISTANCE), "id": i}
+            for i, distance in enumerate(distances)
+        ]
     }
     response = requests.post(
         BULK_CARBON_EMISSION_URL,
@@ -145,4 +149,12 @@ def bulk_calculate_carbon_emission(
     response.raise_for_status()
 
     trips = MyclimateBulkCarbonEmission(**response.json()).trips
-    return [trip.emission for trip in trips]
+    trips.sort(key=lambda e: e.id)
+    return [
+        (
+            trip.emission
+            if distance < MAXIMUM_ACCEPTED_DISTANCE
+            else trip.emission * distance / MAXIMUM_ACCEPTED_DISTANCE
+        )
+        for trip, distance in zip(trips, distances, strict=True)
+    ]
