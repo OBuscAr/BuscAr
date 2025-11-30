@@ -106,6 +106,8 @@ class RouteComparisonService:
             if route_signature in unique_routes_map:
                             continue
             
+            ordered_lines_display = list(dict.fromkeys(line_names))
+            
             # Calcular a emissão de carbono com o MyClimate
             try:
                 emission_kg = myclimate_client.calculate_carbon_emission(
@@ -119,7 +121,7 @@ class RouteComparisonService:
             polyline_data = route.get("polyline", {"encodedPolyline": ""})
             
             route_obj = {
-                "description": f"Rota via {', '.join(list(set(line_names)))}", # ex: Rota via 8000-10, 8022-10
+                "description": f"Rota via {', '.join(ordered_lines_display)}", # ex: Rota via 8000-10, 8022-10
                 "distance_km": round(distance_km, 2),
                 "emission_kg_co2": round(emission_kg, 2),
                 "polyline": polyline_data,
