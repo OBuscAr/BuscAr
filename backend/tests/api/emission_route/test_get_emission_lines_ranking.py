@@ -1,11 +1,10 @@
 from datetime import date
 
-from app.schemas import LinesEmissionsResponse, MyclimateBulkCarbonEmission
+from app.schemas import LinesEmissionsResponse
 from fastapi import status
 from fastapi.testclient import TestClient
 
 from tests.factories.models import DailyLineStatisticsFactory
-from tests.factories.schemas import MyclimateCarbonEmissionFactory
 from tests.helpers import MyclimateHelper
 
 ENDPOINT_URL = "/emissions/lines"
@@ -21,13 +20,7 @@ def test_successful_response(client: TestClient):
     target_date = date(year=2025, month=11, day=20)
     n_objects = 5
     DailyLineStatisticsFactory.create_batch_sync(size=n_objects, date=target_date)
-    MyclimateHelper.mock_bulk_carbon_emission(
-        distances=None,
-        vehicle_type=None,
-        response=MyclimateBulkCarbonEmission(
-            trips=MyclimateCarbonEmissionFactory.batch(size=n_objects)
-        ),
-    )
+    MyclimateHelper.mock_simplified_bulk_carbon_emission()
     params = {"date": str(target_date)}
 
     # WHEN
@@ -49,7 +42,9 @@ def test_myclimate_error(client: TestClient):
     # GIVEN
     target_date = date(year=2025, month=11, day=20)
     DailyLineStatisticsFactory.create_batch_sync(size=5, date=target_date)
-    MyclimateHelper.mock_carbon_emission_error()
+    MyclimateHelper.mock_bulk_carbon_emission_exception(
+        status_code=status.HTTP_503_SERVICE_UNAVAILABLE
+    )
     params = {"date": str(target_date)}
 
     # WHEN
