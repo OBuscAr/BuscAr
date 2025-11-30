@@ -62,7 +62,7 @@
 }
 
 /* --- Responsive Design --- */
-@media (max-width: 1200px) {
+@media (max-width: 1400px) {
   .dashboard-main {
     flex: 1 1 60%;
   }
@@ -76,7 +76,7 @@
   }
 }
 
-@media (max-width: 992px) {
+@media (max-width: 1024px) {
   .dashboard-main {
     flex: 1 1 100%;
   }
@@ -86,7 +86,7 @@
   }
   
   .metric-cards-container {
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
@@ -100,4 +100,29 @@
   .metric-cards-container {
     grid-template-columns: 1fr;
   }
+}
+
+/* Dashboard Grid Responsive */
+.dashboard-grid-responsive {
+  display: grid;
+  gap: 1.5rem;
+}
+
+@media (max-width: 1024px) {
+  .dashboard-grid-responsive {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Smooth transitions */
+button {
+  transition: all 0.2s ease-in-out;
+}
+
+button:hover {
+  transform: translateY(-2px);
+}
+
+button:active {
+  transform: translateY(0);
 }

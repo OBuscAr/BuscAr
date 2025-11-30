@@ -60,6 +60,8 @@
 .search-box {
   position: relative;
   margin-bottom: 1rem;
+  background: rgb(255, 255, 255);
+  border-radius: 10px;
 }
 
 .search-box input {

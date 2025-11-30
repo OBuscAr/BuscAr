@@ -33,23 +33,41 @@ function EmissionHistoryPage() {
       try {
         const routes = await routesService.getRoutes();
         
-        // Mapear rotas para o formato do componente
-        const records: EmissionRecord[] = routes.map((route, index) => {
+        // Mapear rotas para o formato do componente e calcular emissão por km
+        const routesWithEfficiency = routes.map(route => {
           const lineCode = route.line.name.split(' - ')[0];
+          const emissionPerKm = route.distance > 0 ? route.emission / route.distance : Infinity;
           
           return {
             id: route.id,
             linha: lineCode,
             origem: route.departure_stop.name,
             destino: route.arrival_stop.name,
-            ranking: index + 1,
             data: route.created_at,
             carbono: route.emission,
             distance: route.distance,
             emissionSaving: route.emission_saving,
-            acao: 'download'
+            acao: 'download',
+            emissionPerKm
           };
         });
+
+        // Ordenar por menor emissão por km (mais eficiente = ranking melhor)
+        const sortedRoutes = routesWithEfficiency.sort((a, b) => a.emissionPerKm - b.emissionPerKm);
+        
+        // Atribuir ranking baseado na eficiência
+        const records: EmissionRecord[] = sortedRoutes.map((route, index) => ({
+          id: route.id,
+          linha: route.linha,
+          origem: route.origem,
+          destino: route.destino,
+          ranking: index + 1,
+          data: route.data,
+          carbono: route.carbono,
+          distance: route.distance,
+          emissionSaving: route.emissionSaving,
+          acao: route.acao
+        }));
 
         setEmissionData(records);
       } catch (error: any) {
@@ -93,7 +111,7 @@ function EmissionHistoryPage() {
 
   const handleNewSearch = () => {
     // Navega para a página de busca/dashboard
-    navigate('/painel/');
+    navigate('/painel/comparativos');
   };
 
   const handleDownload = (record: EmissionRecord) => {
@@ -137,7 +155,6 @@ function EmissionHistoryPage() {
 
       <div className="search-section">
         <div className="search-input-wrapper">
-          <FiSearch className="search-icon" />
           <input
             type="text"
             placeholder="O que você busca?"

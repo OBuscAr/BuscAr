@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import ProtectedRoute from './components/ProtectedRoute';
 import Loading from './components/Loading';
 
+const LandingPage = lazy(() => import('./pages/LandingPage'));
 const LoginPage = lazy(() => import('./pages/LoginPage'));
 const RegisterPage = lazy(() => import('./pages/RegisterPage'));
 const PainelLayout = lazy(() => import('./pages/PainelLayout'));
@@ -21,7 +22,7 @@ function App() {
       <Suspense fallback={<Loading />}>
         <Routes>
           {/* --- Rotas Públicas --- */}
-          <Route path="/"         element={<PlaceholderPage title="Início" />} />
+          <Route path="/"         element={<LandingPage />} />
           <Route path="/login"    element={<LoginPage />} />
           <Route path="/cadastro" element={<RegisterPage />} />
           <Route path="/analise"  element={<PlaceholderPage title="Análise" />} />

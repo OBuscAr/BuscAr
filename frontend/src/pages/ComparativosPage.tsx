@@ -451,7 +451,7 @@ const ComparativosPage = () => {
                   <span style={{ fontSize: '0.85rem', color: '#9BA1AD' }}>({direction}) - {line?.description}</span>
                 </div>
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                  <span className="period-badge">Trajeto completo</span>
+                  <span className="period-badge">Salve no histórico</span>
                   <button 
                     className="save-route-btn-comp"
                     onClick={() => {

@@ -26,11 +26,57 @@ interface RoutePoint {
   value?: number;
 }
 
+interface RouteSegment {
+  type: 'WALK' | 'BUS';
+  instruction: string;
+  distance_km: number;
+  line_name: string | null;
+  line_color: string | null;
+  polyline: {
+    encodedPolyline: string;
+  };
+}
+
 interface RouteMapProps {
   routePoints?: RoutePoint[];
   selectedMetric: 'velocidade' | 'emissao' | 'iqar';
   linha: string;
   iqar?: number;
+  encodedPolyline?: string;
+  segments?: RouteSegment[];
+  mode?: 'line' | 'route';
+  useGooglePolyline?: boolean; // Nova prop para usar polyline do Google no modo line
+}
+
+// Função para decodificar polyline do Google
+function decodePolyline(encoded: string): Array<[number, number]> {
+  const poly: Array<[number, number]> = [];
+  let index = 0, len = encoded.length;
+  let lat = 0, lng = 0;
+
+  while (index < len) {
+    let b, shift = 0, result = 0;
+    do {
+      b = encoded.charCodeAt(index++) - 63;
+      result |= (b & 0x1f) << shift;
+      shift += 5;
+    } while (b >= 0x20);
+    const dlat = ((result & 1) ? ~(result >> 1) : (result >> 1));
+    lat += dlat;
+
+    shift = 0;
+    result = 0;
+    do {
+      b = encoded.charCodeAt(index++) - 63;
+      result |= (b & 0x1f) << shift;
+      shift += 5;
+    } while (b >= 0x20);
+    const dlng = ((result & 1) ? ~(result >> 1) : (result >> 1));
+    lng += dlng;
+
+    poly.push([lat / 1e5, lng / 1e5]);
+  }
+  return poly;
 }
 
 // Componente para ajustar o mapa aos bounds
@@ -48,7 +94,11 @@ function MapBounds({ routePoints }: { routePoints: RoutePoint[] }) {
 }
 
 const RouteMap: React.FC<RouteMapProps> = ({ 
-  routePoints, 
+  routePoints,
+  encodedPolyline,
+  segments,
+  mode = 'line',
+  useGooglePolyline = false, 
   selectedMetric, 
   linha,
   iqar = 85 
@@ -81,8 +131,8 @@ const RouteMap: React.FC<RouteMapProps> = ({
   };
 
   // Ícone customizado para pontos de parada
-  const createCustomIcon = (value?: number) => {
-    const color = getColor();
+  const createCustomIcon = (value?: number, metricColor?: string) => {
+    const color = metricColor || getColor();
     return L.divIcon({
       className: 'custom-marker',
       html: `
@@ -161,10 +211,19 @@ const RouteMap: React.FC<RouteMapProps> = ({
     popupAnchor: [0, -20]
   });
 
-  const lineCoordinates: [number, number][] = points.map(p => [p.lat, p.lng]);
-  const center: [number, number] = points.length > 0 
-    ? [points[0].lat, points[0].lng] 
-    : [-23.5505, -46.6333];
+  // Processar polyline se estiver no modo route OU se usar Google polyline no modo line
+  let decodedPolylines: Array<[number, number]> = [];
+  if ((mode === 'route' || useGooglePolyline) && encodedPolyline) {
+    decodedPolylines = decodePolyline(encodedPolyline);
+  }
+
+  const lineCoordinates: [number, number][] = (mode === 'line' && !useGooglePolyline)
+    ? points.map(p => [p.lat, p.lng])
+    : decodedPolylines;
+
+  const center: [number, number] = lineCoordinates.length > 0 
+    ? lineCoordinates[0]
+    : (points.length > 0 ? [points[0].lat, points[0].lng] : [-23.5505, -46.6333]);
 
   return (
     <div className="route-map-wrapper">
@@ -179,59 +238,183 @@ const RouteMap: React.FC<RouteMapProps> = ({
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         
-        {/* Linha da rota */}
-        <Polyline
-          positions={lineCoordinates}
-          color={getColor()}
-          weight={5}
-          opacity={0.8}
-        />
+        {/* Renderizar segmentos no modo route */}
+        {mode === 'route' && segments && segments.map((segment, index) => {
+          const segmentPolyline = decodePolyline(segment.polyline.encodedPolyline);
+          // Cores mais vibrantes e visíveis
+          const color = segment.type === 'WALK' 
+            ? '#475569' // Cinza escuro para caminhada
+            : segment.line_color || '#3b82f6'; // Cor da linha ou azul mais forte
+          
+          return (
+            <Polyline
+              key={index}
+              positions={segmentPolyline}
+              color={color}
+              weight={segment.type === 'BUS' ? 8 : 6} // Mais espesso
+              opacity={0.9} // Mais opaco
+              dashArray={segment.type === 'WALK' ? '15, 10' : undefined} // Tracejado mais visível
+              eventHandlers={{
+                mouseover: (e) => {
+                  const layer = e.target;
+                  layer.setStyle({
+                    weight: segment.type === 'BUS' ? 10 : 8,
+                    opacity: 1
+                  });
+                  layer.openPopup();
+                },
+                mouseout: (e) => {
+                  const layer = e.target;
+                  layer.setStyle({
+                    weight: segment.type === 'BUS' ? 8 : 6,
+                    opacity: 0.9
+                  });
+                  layer.closePopup();
+                }
+              }}
+            >
+              <Popup>
+                <div className="map-popup">
+                  <strong>{segment.type === 'WALK' ? '🚶 Caminhada' : '🚌 Ônibus'}</strong>
+                  {segment.line_name && <p><strong>Linha:</strong> {segment.line_name}</p>}
+                  <p><strong>Distância:</strong> {segment.distance_km.toFixed(2)} km</p>
+                  <p style={{ fontSize: '0.85rem', color: '#64748b' }}>{segment.instruction}</p>
+                </div>
+              </Popup>
+            </Polyline>
+          );
+        })}
 
-        {/* Marcador de início */}
-        <Marker position={[points[0].lat, points[0].lng]} icon={startIcon}>
-          <Popup>
-            <div className="map-popup">
-              <strong>🚌 Início da Rota</strong>
-              <p>{points[0].name || 'Ponto Inicial'}</p>
-              <p>Linha {linha}</p>
-            </div>
-          </Popup>
-        </Marker>
-
-        {/* Marcadores intermediários */}
-        {points.slice(1, -1).map((point, index) => (
-          <Marker
-            key={index}
-            position={[point.lat, point.lng]}
-            icon={createCustomIcon(point.value)}
+        {/* Linha da rota no modo line (pode ser linear ou Google polyline) */}
+        {mode === 'line' && lineCoordinates.length > 0 && (
+          <Polyline
+            positions={lineCoordinates}
+            color={getColor()}
+            weight={8}
+            opacity={0.9}
+            eventHandlers={{
+              mouseover: (e) => {
+                const layer = e.target;
+                layer.setStyle({
+                  weight: 10,
+                  opacity: 1
+                });
+                layer.openPopup();
+              },
+              mouseout: (e) => {
+                const layer = e.target;
+                layer.setStyle({
+                  weight: 8,
+                  opacity: 0.9
+                });
+                layer.closePopup();
+              }
+            }}
           >
             <Popup>
               <div className="map-popup">
-                <strong>{point.name || `Parada ${index + 1}`}</strong>
-                <p>
-                  {selectedMetric === 'velocidade' && `Velocidade: ${point.value || 40} km/h`}
-                  {selectedMetric === 'emissao' && `Emissão: ${point.value || 100} kg CO₂`}
-                  {selectedMetric === 'iqar' && `IQAr: ${point.value || 85}`}
+                <strong>🚌 Linha {linha}</strong>
+                <p style={{ fontSize: '0.85rem', color: '#64748b' }}>
+                  {useGooglePolyline ? '🗺️ Rota real (Google Maps)' : '📍 Rota conectando paradas'}
+                </p>
+                <p style={{ fontSize: '0.85rem', color: '#64748b' }}>
+                  {selectedMetric === 'velocidade' && 'Métrica: Velocidade'}
+                  {selectedMetric === 'emissao' && 'Métrica: Emissões'}
+                  {selectedMetric === 'iqar' && 'Métrica: IQAr'}
                 </p>
               </div>
             </Popup>
-          </Marker>
-        ))}
-
-        {/* Marcador de fim */}
-        {points.length > 1 && (
-          <Marker position={[points[points.length - 1].lat, points[points.length - 1].lng]} icon={endIcon}>
-            <Popup>
-              <div className="map-popup">
-                <strong>🏁 Fim da Rota</strong>
-                <p>{points[points.length - 1].name || 'Ponto Final'}</p>
-                <p>Linha {linha}</p>
-              </div>
-            </Popup>
-          </Marker>
+          </Polyline>
         )}
 
-        <MapBounds routePoints={points} />
+        {/* Marcadores no modo line (sempre mostrar se houver pontos) */}
+        {mode === 'line' && points && points.length > 0 && (
+          <>
+            {/* Marcador de início */}
+            {points[0] && (
+              <Marker 
+                position={[points[0].lat, points[0].lng]} 
+                icon={startIcon}
+                eventHandlers={{
+                  mouseover: (e) => e.target.openPopup(),
+                  mouseout: (e) => e.target.closePopup()
+                }}
+              >
+                <Popup>
+                  <div className="map-popup">
+                    <strong>🚌 Início da Rota</strong>
+                    <p>{points[0].name || 'Ponto Inicial'}</p>
+                    <p>Linha {linha}</p>
+                  </div>
+                </Popup>
+              </Marker>
+            )}
+
+            {/* Marcadores intermediários - mostrar TODAS as paradas */}
+            {points.slice(1, -1).map((point, index) => (
+              <Marker
+                key={`stop-${index}-${selectedMetric}`}
+                position={[point.lat, point.lng]}
+                icon={createCustomIcon(point.value, getColor())}
+                eventHandlers={{
+                  mouseover: (e) => e.target.openPopup(),
+                  mouseout: (e) => e.target.closePopup()
+                }}
+              >
+                <Popup>
+                  <div className="map-popup">
+                    <strong>{point.name || `Parada ${index + 1}`}</strong>
+                    <p style={{ fontSize: '0.9rem', margin: '4px 0' }}>
+                      {point.name && point.name.length > 30 ? point.name.substring(0, 30) + '...' : point.name}
+                    </p>
+                  </div>
+                </Popup>
+              </Marker>
+            ))}
+
+            {/* Marcador de fim */}
+            {points.length > 1 && points[points.length - 1] && (
+              <Marker 
+                position={[points[points.length - 1].lat, points[points.length - 1].lng]} 
+                icon={endIcon}
+                eventHandlers={{
+                  mouseover: (e) => e.target.openPopup(),
+                  mouseout: (e) => e.target.closePopup()
+                }}
+              >
+                <Popup>
+                  <div className="map-popup">
+                    <strong>🏁 Fim da Rota</strong>
+                    <p>{points[points.length - 1].name || 'Ponto Final'}</p>
+                    <p>Linha {linha}</p>
+                  </div>
+                </Popup>
+              </Marker>
+            )}
+          </>
+        )}
+
+        {/* Marcadores de origem e destino no modo route */}
+        {mode === 'route' && lineCoordinates.length > 0 && (
+          <>
+            <Marker position={lineCoordinates[0]} icon={startIcon}>
+              <Popup>
+                <div className="map-popup">
+                  <strong>📍 Origem</strong>
+                </div>
+              </Popup>
+            </Marker>
+            <Marker position={lineCoordinates[lineCoordinates.length - 1]} icon={endIcon}>
+              <Popup>
+                <div className="map-popup">
+                  <strong>🎯 Destino</strong>
+                </div>
+              </Popup>
+            </Marker>
+          </>
+        )}
+
+        <MapBounds routePoints={mode === 'line' ? points : lineCoordinates.map(c => ({ lat: c[0], lng: c[1] }))} />
       </MapContainer>
 
       {/* Info overlay */}
