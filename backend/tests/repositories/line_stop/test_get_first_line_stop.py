@@ -16,17 +16,17 @@ def test_first_line_stop():
 
     line = LineFactory.create_sync()
     stop = StopFactory.create_sync()
-    expected_line_stop = LineStopFactory.create_sync(
-        line=line, stop=stop, stop_order=minimum_stop_order
-    )
 
     for i in range(7):
         LineStopFactory.create_sync(
             line=line,
             stop=stop,
-            stop_order=expected_line_stop.stop_order + i + 1,
+            stop_order=minimum_stop_order + i + 1,
         )
 
+    expected_line_stop = LineStopFactory.create_sync(
+        line=line, stop=stop, stop_order=minimum_stop_order
+    )
     # WHEN
     returned_line_stop = LineStopRepository.get_first_line_stop(
         line_id=line.id,
@@ -52,12 +52,11 @@ def test_minimum_stop_order_filter():
     line = LineFactory.create_sync()
     stop = StopFactory.create_sync()
 
-    for i in range(7):
-        LineStopFactory.create_sync(
-            line=line,
-            stop=stop,
-            stop_order=minimum_stop_order - i - 1,
-        )
+    LineStopFactory.create_sync(
+        line=line,
+        stop=stop,
+        stop_order=minimum_stop_order - 1,
+    )
 
     # WHEN
     returned_line_stop = LineStopRepository.get_first_line_stop(
