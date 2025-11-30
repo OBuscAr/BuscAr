@@ -8,6 +8,7 @@ from app.repositories.myclimate_client import (
     calculate_carbon_emission,
 )
 from app.schemas import VehicleType
+from fastapi import status
 
 from tests.factories.schemas import MyclimateCarbonEmissionFactory
 from tests.helpers import MyclimateHelper
@@ -88,14 +89,33 @@ def test_bigger_distances():
     )
 
 
-def test_error():
+def test_json_error():
     """
-    GIVEN  a carbon emission error to be returned by the Myclimate API
+    GIVEN  a carbon emission json error to be returned by the Myclimate API
     WHEN   the `calculate_carbon_emission` is called
     THEN   a `MyclimateError` should be raised
     """
     # GIVEN
     endpoint_mock = MyclimateHelper.mock_carbon_emission_error()
+
+    # WHEN
+    # THEN
+    with pytest.raises(MyclimateError):
+        calculate_carbon_emission(distance=3, vehicle_type=VehicleType.BUS)
+    assert endpoint_mock.call_count > 0
+
+
+def test_exception():
+    """
+    GIVEN  a carbon emission http exception to be returned by the Myclimate API
+    WHEN   the `calculate_carbon_emission` is called
+    THEN   a `MyclimateError` should be raised
+    """
+    # GIVEN
+    endpoint_mock = MyclimateHelper.mock_carbon_emission_exception(
+        status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+        detail="",
+    )
 
     # WHEN
     # THEN

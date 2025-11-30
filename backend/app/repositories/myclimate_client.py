@@ -6,6 +6,7 @@ from requests.auth import HTTPBasicAuth
 from tenacity import (
     before_sleep_log,
     retry,
+    retry_if_exception_type,
     stop_after_attempt,
     wait_random_exponential,
 )
@@ -43,6 +44,7 @@ def _calculate_mock_emission(distance: float, vehicle_type: VehicleType) -> floa
 
 @retry(
     reraise=True,
+    retry=retry_if_exception_type(MyclimateError),
     before_sleep=before_sleep_log(logger, logging.INFO),
     stop=stop_after_attempt(max_attempt_number=3),
     wait=wait_random_exponential(multiplier=1, min=2, max=6),
@@ -96,7 +98,11 @@ def calculate_carbon_emission(distance: float, vehicle_type: VehicleType) -> flo
         json=payload,
         timeout=5,
     )
-    response.raise_for_status()
+    try:
+        response.raise_for_status()
+    except Exception as e:
+        raise MyclimateError(e) from e
+
     json_response = response.json()
     if "errors" in json_response:
         raise MyclimateError(json_response["errors"])
@@ -111,6 +117,7 @@ BULK_CARBON_EMISSION_URL = (
 
 @retry(
     reraise=True,
+    retry=retry_if_exception_type(MyclimateError),
     before_sleep=before_sleep_log(logger, logging.INFO),
     stop=stop_after_attempt(max_attempt_number=3),
     wait=wait_random_exponential(multiplier=1, min=2, max=6),
@@ -150,7 +157,10 @@ def bulk_calculate_carbon_emission(
         auth=AUTH,
         json=payload,
     )
-    response.raise_for_status()
+    try:
+        response.raise_for_status()
+    except Exception as e:
+        raise MyclimateError(e) from e
 
     trips = MyclimateBulkCarbonEmission(**response.json()).trips
     trips.sort(key=lambda e: e.id)
