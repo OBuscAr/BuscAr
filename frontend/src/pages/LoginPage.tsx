@@ -28,95 +28,54 @@ function LoginPage() {
     setKeepLoggedIn(e.target.checked);
   };
 
-  // const handleSubmit = async (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   setMensagem('');
-  //   setLoading(true); // Ativa o estado de loading
-
-  //   if (!formData.email || !formData.senha) {
-  //     setMensagem('Por favor, preencha todos os campos.');
-  //     setLoading(false);
-  //     return;
-  //   }
-
-  //   try {
-  //     // Chama o serviço de mock de login
-  //     const response = await mockLogin(formData);
-
-  //     if (response && response.token) {
-  //       setMensagem('Login realizado com sucesso!');
-  //       // Em um cenário real, salva o token aqui
-  //       // Ex: localStorage.setItem('authToken', response.token);
-  //       // E redirecionaria para o dashboard
-  //       navigate('/dashboard'); // Redireciona para o dashboard
-  //     } else {
-  //       setMensagem('E-mail ou senha inválidos.');
-  //     }
-  //   } catch (error) {
-  //     setMensagem('Ocorreu um erro ao tentar fazer login.');
-  //     console.error('Erro de login:', error);
-  //   } finally {
-  //     setLoading(false); // Desativa o estado de loading
-  //   }
-  // };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMensagem('');
-    setLoading(true); // Ativa o estado de loading
-
-    // Validação de campos
-    if (!formData.email || !formData.senha) {
-      setMensagem('Por favor, preencha todos os campos.');
-      setLoading(false);
-      return;
-    }
+    setLoading(true);
 
     try {
-      // Define a URL da API e os dados para enviar
-      const API_URL = 'http://localhost:8000/login/';
+      // OAuth2 espera 'username' e 'password' como form data
+      const formDataToSend = new URLSearchParams();
+      formDataToSend.append('username', formData.email);  // Usar formData.email
+      formDataToSend.append('password', formData.senha);   // Usar formData.senha
+
+      const response = await axios.post('http://localhost:8000/login/', formDataToSend, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      });
+
+      const { access_token, token_type, nome, email } = response.data;
       
-      const dadosParaEnviar = {
-        email: formData.email,
-        senha: formData.senha,
-      };
-
-      // Faz a chamada ao backend
-      const response = await axios.post(API_URL, dadosParaEnviar);
-
-      // Lida com a resposta de SUCESSO
-      const { access_token, nome } = response.data;
-
-      // Salva o token e o nome do usuário no localStorage
-      localStorage.setItem('authToken', access_token);
+      // Armazena o token e dados do usuário no localStorage
+      localStorage.setItem('access_token', access_token);
+      localStorage.setItem('token_type', token_type);
       localStorage.setItem('userName', nome);
+      localStorage.setItem('userEmail', email);
 
-      setMensagem('Login bem-sucedido! Redirecionando...');
-
-      // Redireciona para o dashboard após um breve delay
-      setTimeout(() => {
-        navigate('/painel'); 
-      }, 1500);
-
-    } catch (error) {
-      // Lida com os erros da API
-      if (axios.isAxiosError(error) && error.response) {
-        if (error.response.status === 401) {
-          // Erro de credencial inválida
-          setMensagem(error.response.data.detail || 'E-mail ou senha incorretos.');
+      // Redireciona para o painel
+      navigate('/painel');
+    } catch (error: any) {
+      if (error.response?.status === 401) {
+        setMensagem('Email ou senha incorretos.');
+      } else if (error.response?.data?.detail) {
+        const detail = error.response.data.detail;
+        if (typeof detail === 'string') {
+          setMensagem(detail);
+        } else if (Array.isArray(detail)) {
+          const mensagens = detail.map((err: any) => err.msg || JSON.stringify(err)).join(', ');
+          setMensagem(mensagens);
         } else {
-          // Outros erros do servidor (ex: 500)
-          setMensagem('Erro no servidor. Tente novamente mais tarde.');
+          setMensagem('Erro ao fazer login.');
         }
       } else {
-        // Erro de rede (API fora do ar, etc)
-        setMensagem('Não foi possível conectar ao servidor.');
+        setMensagem('Erro no servidor. Tente novamente mais tarde.');
       }
-      console.error('Erro no login:', error);
     } finally {
-      setLoading(false); // Desativa o estado de loading
+      setLoading(false);
     }
   };
+
 
   return (
     <div className="auth-page-container">
@@ -150,7 +109,6 @@ function LoginPage() {
               />
               {}
             </div>
-            <Link to="/cadastro" className="forgot-password-link">Esqueceu a senha?</Link>
           </div>
           
           <div className="form-group-checkbox">

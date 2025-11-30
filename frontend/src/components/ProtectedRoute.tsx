@@ -1,8 +1,8 @@
 import { Navigate, Outlet } from 'react-router-dom';
 
 const ProtectedRoute = () => {
-  // Verifique se o token de autenticação existe no localStorage
-  const token = localStorage.getItem('authToken');
+  // Verifica token salvo pelo fluxo real (access_token) ou legado (authToken)
+  const token = localStorage.getItem('access_token') || localStorage.getItem('authToken');
 
   if (!token) {
     // Se não houver token, redirecione para a página de login

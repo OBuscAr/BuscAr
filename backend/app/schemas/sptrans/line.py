@@ -14,4 +14,6 @@ class SPTransLine(BaseModel):
     id: int = Field(alias="cl")
     base_name: str = Field(alias="lt")
     operation_mode: int = Field(alias="tl")
-    direction: SPTransLineDirection = Field(alias="sl")
+    direction: SPTransLineDirection = Field(alias="sl")    
+    principal_name: str = Field(alias="tp") # Nome do Terminal Principal
+    secondary_name: str = Field(alias="ts") # Nome do Terminal Secundário

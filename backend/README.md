@@ -18,3 +18,13 @@ Para executar os testes, execute este comando.
 ```bash
     make test
 ```
+
+Para abrir o relatório dos testes:
+```bash
+    make open-test-report
+```
+
+Para abrir o relatório do coverage:
+```bash
+    make open-test-coverage
+```

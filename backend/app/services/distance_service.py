@@ -17,7 +17,7 @@ def calculate_distance_between_stops(
     Calculates the actual distance (in kilometers) between two stops on the same line,
     using the accumulated distance (distance_traveled) saved in the database.
 
-    distance = |dist(stopB) - dist(stopA)|
+    distance = dist(stopB) - dist(stopA)
     """
 
     stop_a = LineStopRepository.get_first_line_stop(
@@ -27,13 +27,19 @@ def calculate_distance_between_stops(
         raise NotFoundError(f"A parada {stop_a_id} não pertence à linha {line_id}")
 
     stop_b = LineStopRepository.get_first_line_stop(
-        db=db, line_id=line_id, stop_id=stop_b_id
+        db=db,
+        line_id=line_id,
+        stop_id=stop_b_id,
+        minimum_stop_order=stop_a.stop_order,
     )
     if stop_b is None:
-        raise NotFoundError(f"A parada {stop_a_id} não pertence à linha {line_id}")
+        raise NotFoundError(
+            f"A parada {stop_b_id} não está depois da parada {stop_a_id} "
+            f"na linha {line_id}"
+        )
 
     # distância real em quilômetros
-    return abs(stop_b.distance_traveled - stop_a.distance_traveled)
+    return stop_b.distance_traveled - stop_a.distance_traveled
 
 
 T = TypeVar("T", bound=Point)

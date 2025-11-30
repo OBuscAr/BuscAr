@@ -9,6 +9,7 @@ from app.commands.sptrans_static_data import SPTRANS_DATA_PATH
 from app.core.database import SessionLocal
 from app.models import LineDirection, LineModel
 from app.repositories import sptrans_client
+from app.schemas import SPTransLineDirection
 
 FILE_LOCATION = os.path.join(SPTRANS_DATA_PATH, "fare_rules.txt")
 
@@ -43,6 +44,14 @@ def create_lines(max_rows: Optional[int] = None) -> None:
 
         for line in lines:
             line_name = f"{line.base_name}-{line.operation_mode}"
+
+            if line.direction == SPTransLineDirection.MAIN:
+                # Na Ida, o destino é o Terminal Secundário
+                line_desc = f"{line.secondary_name} - {line.principal_name}"
+            else:
+                # Na Volta, o destino é o Terminal Principal
+                line_desc = f"{line.principal_name} - {line.secondary_name}"
+
             if line.id in processed_line_ids:
                 continue
             processed_line_ids.add(line.id)
@@ -51,6 +60,7 @@ def create_lines(max_rows: Optional[int] = None) -> None:
                 id=line.id,
                 name=line_name,
                 direction=LineDirection(line.direction.name),
+                description=line_desc,
             )
             if line.id in existing_ids:
                 lines_to_update.append(line_model.dict())

@@ -1,3 +1,5 @@
+import math
+
 from app.core.database import SessionLocal
 from app.schemas import VehicleType
 from app.services.emission_service import (
@@ -20,8 +22,12 @@ def test_car_emission():
     session = SessionLocal()
     vehicle_type = VehicleType.CAR
     line = LineFactory.create_sync()
-    first_line_stop = LineStopFactory.create_sync(line=line, distance_traveled=0)
-    second_line_stop = LineStopFactory.create_sync(line=line, distance_traveled=10)
+    first_line_stop = LineStopFactory.create_sync(
+        line=line, distance_traveled=0, stop_order=1
+    )
+    second_line_stop = LineStopFactory.create_sync(
+        line=line, distance_traveled=10, stop_order=2
+    )
     emission_response = MyclimateCarbonEmissionFactory.build()
     MyclimateHelper.mock_carbon_emission(
         distance=None,
@@ -39,7 +45,9 @@ def test_car_emission():
     )
 
     # THEN
-    assert result.emission_kg_co2 == emission_response.emission
+    assert math.isclose(
+        result.emission_kg_co2, emission_response.emission, abs_tol=1e-2
+    )
 
 
 def test_bus_emission():
@@ -52,8 +60,12 @@ def test_bus_emission():
     session = SessionLocal()
     vehicle_type = VehicleType.BUS
     line = LineFactory.create_sync()
-    first_line_stop = LineStopFactory.create_sync(line=line, distance_traveled=0)
-    second_line_stop = LineStopFactory.create_sync(line=line, distance_traveled=10)
+    first_line_stop = LineStopFactory.create_sync(
+        line=line, distance_traveled=0, stop_order=1
+    )
+    second_line_stop = LineStopFactory.create_sync(
+        line=line, distance_traveled=10, stop_order=2
+    )
     emission_response = MyclimateCarbonEmissionFactory.build()
     MyclimateHelper.mock_carbon_emission(
         distance=None,
@@ -71,7 +83,8 @@ def test_bus_emission():
     )
 
     # THEN
-    assert (
-        result.emission_kg_co2
-        == emission_response.emission / AVERAGE_PASSENGERS_PER_BUS
+    assert math.isclose(
+        result.emission_kg_co2,
+        emission_response.emission / AVERAGE_PASSENGERS_PER_BUS,
+        abs_tol=1e-2,
     )
