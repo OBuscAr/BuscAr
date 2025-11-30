@@ -1,3 +1,4 @@
+import json
 from typing import Optional, Sequence
 
 import responses
@@ -12,6 +13,7 @@ from app.schemas import (
     VehicleType,
 )
 from fastapi import status
+from requests import PreparedRequest
 from responses import BaseResponse, matchers
 
 
@@ -73,15 +75,73 @@ class MyclimateHelper:
         )
 
     @staticmethod
+    def mock_simplified_bulk_carbon_emission(multiplier: float = 2) -> BaseResponse:
+        """
+        Mock the bulk carbon emission endpoint returning a dynamically
+        response equal to distance * `multiplier`.
+        """
+
+        def request_callback(request: PreparedRequest) -> tuple[int, dict, str]:
+            assert request.body is not None
+            payload: dict = json.loads(request.body)
+            trips: list[dict] = payload["trips"]
+            return (
+                status.HTTP_200_OK,
+                {},
+                MyclimateBulkCarbonEmission(
+                    trips=[
+                        MyclimateCarbonEmission(
+                            id=trip["id"], kg=trip["km"] * multiplier
+                        )
+                        for trip in trips
+                    ]
+                ).model_dump_json(by_alias=True),
+            )
+
+        return responses.add_callback(
+            method=responses.POST,
+            url=BULK_CARBON_EMISSION_URL,
+            callback=request_callback,
+        )
+
+    @staticmethod
+    def mock_simplified_bulk_carbon_emission_by_value(
+        emission_response: float,
+    ) -> BaseResponse:
+        """
+        Mock the bulk carbon emission endpoint returning a dynamically
+        response equal to `emission_response` for each distance.
+        """
+
+        def request_callback(request: PreparedRequest) -> tuple[int, dict, str]:
+            assert request.body is not None
+            payload: dict = json.loads(request.body)
+            trips: list[dict] = payload["trips"]
+            return (
+                status.HTTP_200_OK,
+                {},
+                MyclimateBulkCarbonEmission(
+                    trips=[
+                        MyclimateCarbonEmission(id=trip["id"], kg=emission_response)
+                        for trip in trips
+                    ]
+                ).model_dump_json(by_alias=True),
+            )
+
+        return responses.add_callback(
+            method=responses.POST,
+            url=BULK_CARBON_EMISSION_URL,
+            callback=request_callback,
+        )
+
+    @staticmethod
     def mock_bulk_carbon_emission(
-        distances: Optional[Sequence[float]],
+        distances: Sequence[float],
         vehicle_type: Optional[VehicleType],
         response: MyclimateBulkCarbonEmission,
     ) -> BaseResponse:
         """
         Mock the bulk carbon emission endpoint.
-
-        If `distances` is null, no parameters will be validated.
         """
         expected_main_body = {"fuel_type": "diesel"}
         if vehicle_type is not None:
@@ -92,17 +152,26 @@ class MyclimateHelper:
             else:
                 raise NotImplementedError(f"Type {vehicle_type} not implemented")
 
-        expected_body = {}
-        if distances is not None:
-            expected_body |= {
-                "trips": [
-                    expected_main_body | {"km": distance} for distance in distances
-                ]
-            }
+        expected_body = {
+            "trips": [
+                expected_main_body | {"id": i, "km": distance}
+                for i, distance in enumerate(distances)
+            ]
+        }
 
         return responses.post(
             BULK_CARBON_EMISSION_URL,
             status=status.HTTP_200_OK,
             match=[matchers.json_params_matcher(expected_body, strict_match=False)],
             json=response.model_dump(by_alias=True),
+        )
+
+    @staticmethod
+    def mock_bulk_carbon_emission_exception(status_code: int) -> BaseResponse:
+        """
+        Mock an exception for the bulk carbon emission endpoint.
+        """
+        return responses.post(
+            BULK_CARBON_EMISSION_URL,
+            status=status_code,
         )
