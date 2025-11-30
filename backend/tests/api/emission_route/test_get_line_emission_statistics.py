@@ -7,7 +7,6 @@ from fastapi.testclient import TestClient
 from pydantic import TypeAdapter
 
 from tests.factories.models import DailyLineStatisticsFactory, LineFactory
-from tests.factories.schemas import MyclimateCarbonEmissionFactory
 from tests.helpers import MyclimateHelper
 
 ENDPOINT_URL = "/emissions/lines/{line_id}/statistics"
@@ -27,11 +26,7 @@ def test_successful_response(client: TestClient):
             line=line,
             date=start_date + timedelta(days=d),
         )
-    MyclimateHelper.mock_carbon_emission(
-        distance=None,
-        vehicle_type=None,
-        response=MyclimateCarbonEmissionFactory.build(),
-    )
+    MyclimateHelper.mock_simplified_bulk_carbon_emission()
     params = {"start_date": start_date, "days_range": 10}
 
     # WHEN
@@ -78,7 +73,9 @@ def test_myclimate_error(client: TestClient):
         line=line,
         date=start_date,
     )
-    MyclimateHelper.mock_carbon_emission_error()
+    MyclimateHelper.mock_bulk_carbon_emission_exception(
+        status_code=status.HTTP_503_SERVICE_UNAVAILABLE
+    )
     params = {"start_date": start_date, "days_range": 1}
 
     # WHEN

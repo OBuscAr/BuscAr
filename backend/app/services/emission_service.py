@@ -1,13 +1,15 @@
 import datetime
 from datetime import timedelta
+from typing import List
 
 from paginate_sqlalchemy import SqlalchemyOrmPage
 from pydantic import TypeAdapter
 from sqlalchemy.orm import Session
 
 from app.constants import SAO_PAULO_ZONE
-from app.exceptions import ValidationError
-from app.repositories import daily_line_statistics_repository, myclimate_client 
+from app.exceptions import NotFoundError, ValidationError
+from app.models import LineModel
+from app.repositories import daily_line_statistics_repository, myclimate_client
 from app.repositories.line_stop_repository import LineStopRepository
 from app.schemas import (
     DailyLineStatistics,
@@ -19,10 +21,7 @@ from app.schemas import (
     VehicleType,
 )
 from app.services import distance_service
-from app.models.line import LineDirection
-from app.models import LineModel
-from app.exceptions import NotFoundError
-from typing import List
+
 
 def get_emission_lines_ranking(
     date: datetime.date,
@@ -46,17 +45,22 @@ def get_emission_lines_ranking(
     lines_statistics = TypeAdapter(list[DailyLineStatistics]).validate_python(
         paginated_results.items
     )
+    emissions = myclimate_client.bulk_calculate_carbon_emission(
+        distances=[
+            line_statistics.distance_traveled for line_statistics in lines_statistics
+        ],
+        vehicle_type=VehicleType.BUS,
+    )
     return LinesEmissionsResponse(
         lines_emissions=[
             LineEmissionResponse(
                 line=line_statistics.line,
-                emission=myclimate_client.calculate_carbon_emission(
-                    distance=line_statistics.distance_traveled,
-                    vehicle_type=VehicleType.BUS,
-                ),
+                emission=emission,
                 distance=line_statistics.distance_traveled,
             )
-            for line_statistics in lines_statistics
+            for line_statistics, emission in zip(
+                lines_statistics, emissions, strict=True
+            )
         ],
         pagination=PaginationResponse(
             total_count=paginated_results.item_count,
@@ -92,16 +96,23 @@ def get_line_emission_statistics(
         queryset
     )
 
+    emissions = myclimate_client.bulk_calculate_carbon_emission(
+        distances=[
+            line_statistics.distance_traveled
+            for line_statistics in daily_lines_statistics
+        ],
+        vehicle_type=VehicleType.BUS,
+    )
+
     return [
         EmissionStatisticsReponse(
-            total_emission=myclimate_client.calculate_carbon_emission(
-                distance=line_statistics.distance_traveled,
-                vehicle_type=VehicleType.BUS,
-            ),
+            total_emission=emission,
             total_distance=line_statistics.distance_traveled,
             date=line_statistics.date,
         )
-        for line_statistics in daily_lines_statistics
+        for line_statistics, emission in zip(
+            daily_lines_statistics, emissions, strict=True
+        )
     ]
 
 
@@ -126,16 +137,20 @@ def get_emission_statistics(
         db=db, minimum_date=start_date, maximum_date=end_date
     ).all()
 
+    emissions = myclimate_client.bulk_calculate_carbon_emission(
+        distances=[distance for _, distance in raw_distance_statistics],
+        vehicle_type=VehicleType.BUS,
+    )
+
     return [
         EmissionStatisticsReponse(
             date=date,
-            total_emission=myclimate_client.calculate_carbon_emission(
-                distance=distance,
-                vehicle_type=VehicleType.BUS,
-            ),
+            total_emission=emission,
             total_distance=distance,
         )
-        for date, distance in raw_distance_statistics
+        for (date, distance), emission in zip(
+            raw_distance_statistics, emissions, strict=True
+        )
     ]
 
 
@@ -172,38 +187,34 @@ def calculate_emission_stops(
         distance_km=distance_ab_km,
         emission_kg_co2=emission_calculate_kg,
     )
-    
+
+
 def calculate_total_emission_by_line_number(
-    db: Session, 
-    line_number: str, 
+    db: Session,
+    line_number: str,
 ) -> List[LineEmissionResponse]:
     """
     Calculates the total carbon emission for all directions of a given line number.
     """
-        
+
     lines = db.query(LineModel).filter(LineModel.name == line_number).all()
-    
+
     if not lines:
         raise NotFoundError(f"Linha {line_number} não encontrada.")
 
     results = []
-    
+
     for line in lines:
-    
+
         last_stop = LineStopRepository.get_last_stop(db, line.id)
         total_distance = last_stop.distance_traveled if last_stop else 0.0
 
         emission = myclimate_client.calculate_carbon_emission(
-            distance=total_distance, 
-            vehicle_type=VehicleType.BUS
+            distance=total_distance, vehicle_type=VehicleType.BUS
         )
 
         results.append(
-                    LineEmissionResponse(
-                        line=line,
-                        distance=total_distance,
-                        emission=emission
-                    )
-                )
-                
+            LineEmissionResponse(line=line, distance=total_distance, emission=emission)
+        )
+
     return results

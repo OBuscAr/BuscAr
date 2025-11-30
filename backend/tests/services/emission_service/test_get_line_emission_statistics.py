@@ -6,12 +6,10 @@ from app.constants import SAO_PAULO_ZONE
 from app.core.database import SessionLocal
 from app.exceptions import ValidationError
 from app.repositories.daily_line_statistics_repository import get_daily_line_statistics
-from app.schemas import VehicleType
 from app.services.emission_service import get_line_emission_statistics
 from pytest_mock import MockerFixture
 
 from tests.factories.models import DailyLineStatisticsFactory, LineFactory
-from tests.factories.schemas import MyclimateCarbonEmissionFactory
 from tests.helpers import MyclimateHelper
 
 REPOSITORY_FUNCTION = (
@@ -93,11 +91,9 @@ def test_emission():
     daily_line_statistics = DailyLineStatisticsFactory.create_sync(
         date=target_date, line=target_line
     )
-    emission_response = MyclimateCarbonEmissionFactory.build()
-    MyclimateHelper.mock_carbon_emission(
-        distance=daily_line_statistics.distance_traveled,
-        vehicle_type=VehicleType.BUS,
-        response=emission_response,
+    expected_emission = 7
+    MyclimateHelper.mock_simplified_bulk_carbon_emission_by_value(
+        emission_response=expected_emission
     )
 
     # WHEN
@@ -112,7 +108,7 @@ def test_emission():
     assert len(results) == 1
     [returned_line_emission] = results
     assert math.isclose(
-        returned_line_emission.total_emission, emission_response.emission, abs_tol=1e-2
+        returned_line_emission.total_emission, expected_emission, abs_tol=1e-2
     )
     assert math.isclose(
         returned_line_emission.total_distance,
