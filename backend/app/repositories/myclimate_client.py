@@ -108,6 +108,12 @@ BULK_CARBON_EMISSION_URL = (
 )
 
 
+@retry(
+    reraise=True,
+    before_sleep=before_sleep_log(logger, logging.INFO),
+    stop=stop_after_attempt(max_attempt_number=3),
+    wait=wait_random_exponential(multiplier=1, min=2, max=6),
+)
 def bulk_calculate_carbon_emission(
     distances: Sequence[float], vehicle_type: VehicleType
 ) -> list[float]:
