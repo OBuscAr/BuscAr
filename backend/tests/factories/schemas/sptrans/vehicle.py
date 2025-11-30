@@ -24,3 +24,4 @@ class SPTransLineVehiclesResponseFactory(ModelFactory[SPTransLineVehiclesRespons
 
 class SPTransLinesVehiclesResponseFactory(ModelFactory[SPTransLinesVehiclesResponse]):
     __check_model__ = True
+    __set_as_default_factory_for_type__ = True
