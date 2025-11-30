@@ -20,6 +20,7 @@ from app.schemas import (
 
 BUS_FUEL_CONSUMPTION = 46.2
 MAXIMUM_ACCEPTED_DISTANCE = 1000000
+MINIMUM_ACCEPTED_DISTANCE = 1
 AUTH = HTTPBasicAuth(settings.MYCLIMATE_USERNAME, settings.MYCLIMATE_PASSWORD)
 
 CARBON_EMISSION_URL = f"{settings.MYCLIMATE_PREFIX_URL}/v1/car_calculators.json"
@@ -63,7 +64,7 @@ def calculate_carbon_emission(distance: float, vehicle_type: VehicleType) -> flo
     - `distance`: Distance in km.
     - `vehicle_type`: Bus or car type.
     """
-    if distance < 1:
+    if distance < MINIMUM_ACCEPTED_DISTANCE:
         return 0
 
     if distance > MAXIMUM_ACCEPTED_DISTANCE:
@@ -124,6 +125,9 @@ def bulk_calculate_carbon_emission(
     - `distances`: Distances list in km.
     - `vehicle_type`: Bus or car type.
     """
+    if len(distances) == 0:
+        return []
+
     base_single_payload = {
         "fuel_type": "diesel",
     }
@@ -137,7 +141,7 @@ def bulk_calculate_carbon_emission(
     payload = {
         "trips": [
             base_single_payload
-            | {"km": min(distance, MAXIMUM_ACCEPTED_DISTANCE), "id": i}
+            | {"km": max(1, min(distance, MAXIMUM_ACCEPTED_DISTANCE)), "id": i}
             for i, distance in enumerate(distances)
         ]
     }
@@ -150,11 +154,14 @@ def bulk_calculate_carbon_emission(
 
     trips = MyclimateBulkCarbonEmission(**response.json()).trips
     trips.sort(key=lambda e: e.id)
-    return [
-        (
-            trip.emission
-            if distance < MAXIMUM_ACCEPTED_DISTANCE
-            else trip.emission * distance / MAXIMUM_ACCEPTED_DISTANCE
-        )
-        for trip, distance in zip(trips, distances, strict=True)
-    ]
+
+    emissions: list[float] = []
+
+    for trip, distance in zip(trips, distances, strict=True):
+        if distance < MINIMUM_ACCEPTED_DISTANCE:
+            emissions.append(0)
+        elif distance > MAXIMUM_ACCEPTED_DISTANCE:
+            emissions.append(trip.emission * distance / MAXIMUM_ACCEPTED_DISTANCE)
+        else:
+            emissions.append(trip.emission)
+    return emissions
