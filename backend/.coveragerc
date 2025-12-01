@@ -1,0 +1,6 @@
+[run]
+omit = 
+    **/__init__.py
+    app/database.py
+    app/commands/create_database_tables.py
+    app/test_db.py

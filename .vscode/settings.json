@@ -1,0 +1,26 @@
+{
+    "python.defaultInterpreterPath": "${workspaceFolder}/backend/.venv",
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/backend/.venv"
+    ],
+    "python-envs.pythonProjects": [],
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.black-formatter",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit"
+        },
+    },
+    "flake8.args": [
+        "--max-line-length=88"
+    ],
+    "search.exclude": {
+        "**/.venv": true,
+        "**/__pycache__": true
+    },
+    "files.exclude": {
+        "**/.venv": true,
+        "**/__pycache__": true
+    },
+    "python.analysis.typeCheckingMode": "basic"
+}

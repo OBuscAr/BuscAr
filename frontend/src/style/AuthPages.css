@@ -1,0 +1,223 @@
+.auth-footer-text {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5em;
+  justify-content: center;
+  color: #666;
+}
+
+.secondary-link {
+  display: inline;
+  font-size: inherit;
+  line-height: inherit;
+  margin: 0;
+}
+
+/* Container principal para as páginas de autenticação */
+.auth-page-container {
+  display: flex; /* Para layout de duas colunas */
+  min-height: 100vh; /* Ocupa a altura total da viewport */
+  width: 100vw; /* Ocupa toda a largura da viewport */
+  background-color: var(--bg-light); /* Cor de fundo suave para o lado do formulário */
+}
+
+/* Seção do Formulário (lado esquerdo) */
+.auth-form-section {
+  flex: 1; /* Ocupa metade do espaço */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  /* box-shadow removido para evitar linha de quebra */
+  position: relative;
+  z-index: 1; /* Para garantir que fique sobre a curva */
+}
+
+.auth-title {
+  font-size: 2.5rem;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.auth-subtitle {
+  color: #666;
+  margin-bottom: 2rem;
+  font-size: 0.9rem;
+}
+
+.auth-form-section form {
+  width: 100%;
+  max-width: 350px; /* Limita a largura do formulário */
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.form-group input {
+  width: calc(100% - 1.5rem); /* Ajusta a largura para o padding */
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  background: white;
+  border-radius: 6px;
+  font-size: 1rem;
+  color: #222;
+}
+
+.password-input-wrapper {
+  position: relative;
+}
+
+.forgot-password-link {
+  display: block;
+  text-align: right;
+  font-size: 0.8rem;
+  color: #007bff;
+  text-decoration: none;
+  margin-top: 0.5rem;
+}
+
+.form-group-checkbox {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.form-group-checkbox input {
+  margin-right: 0.5rem;
+}
+
+/* Botões */
+.primary-button {
+  width: 100%;
+  padding: 0.8rem;
+  background-color: #007bff; /* Azul vibrante */
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.primary-button:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+.primary-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.secondary-link {
+  display: block;
+  text-align: center;
+  margin-top: 1rem;
+  color: #007bff;
+  text-decoration: none;
+}
+
+/* Mensagens de feedback */
+.mensagem {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.mensagem.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.mensagem.success {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+
+/* Seção do Logo (lado direito) */
+.auth-logo-section {
+  flex: 1; /* Ocupa metade do espaço */
+  background: linear-gradient(135deg, #54fa78, #00ff73d6); /* Gradiente verde */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  color: #e6ffe6;
+  position: relative;
+  overflow: hidden;
+  /*
+  */
+  z-index: 2;
+  
+  border-bottom-right-radius: 25% 30%;
+  
+  transform: scaleX(-1);
+  text-decoration: none; /* Remove sublinhado do Link */
+  cursor: pointer; /* Indica que é clicável */
+}
+
+.bus_logo_icon {
+  width: 150px; /* Ajuste o tamanho do logo conforme necessário */
+  height: auto;
+  margin-bottom: 1rem;
+  transform: scaleX(-1);
+}
+
+.logo-text {
+  font-size: 3rem;
+  font-weight: bold;
+  transform: scaleX(-1);
+  color: #e6ffe6;
+}
+
+/* Estilo para a onda no canto inferior direito (opcional, requer SVG ou pseudo-elemento complexo) */
+/* Para simplificar, vou deixar sem a onda por enquanto, mas dá pra adicionar mais tarde com SVG */
+
+/* Responsividade básica */
+@media (max-width: 768px) {
+  .auth-page-container {
+    flex-direction: column; /* Em telas menores, o logo fica em cima/abaixo */
+    background-color: #e6ffe6;
+  }
+  .auth-logo-section {
+    min-height: 200px; /* Garante que o logo não suma */
+  }
+  .auth-form-section {
+    padding: 1.5rem;
+    background-color: #e6ffe6;
+  }
+  .auth-title {
+    font-size: 2rem;
+  }
+  .logo-text {
+    font-size: 2.5rem;
+  }
+}
+
+.terms-text {
+  font-size: 0.8rem;
+  color: #666;
+  margin-bottom: .5rem;
+  text-align: center;
+}
+
+.inline-link {
+  color: #007bff;
+  text-decoration: underline;
+}

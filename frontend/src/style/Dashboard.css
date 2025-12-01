@@ -1,0 +1,128 @@
+/* --- Main --- */
+.dashboard-main {
+  flex: 1 1 65%;
+  min-width: 0;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.metric-cards-container {
+  display: grid;
+  grid-template-columns: repeat(3, 170px);
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+  width: fit-content;
+}
+
+.timeline-card-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 700px;
+}
+
+
+/* --- Sidebar --- */
+.dashboard-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1rem, 2vw, 1.5rem);
+  flex: 1 1 35%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+
+/* --- Pequenos componentes --- */
+.date-picker {
+  cursor: pointer;
+}
+
+.toggle-group {
+  display: flex;
+  border-radius: 6px;
+}
+
+.toggle-group button {
+  background: transparent;
+  border: none;
+  padding: 0.25rem 0.5rem;
+  cursor: pointer;
+  color: var(--text-light);
+  font-weight: 500;
+}
+
+.toggle-group button.active {
+  color: var(--accent-green);
+  font-weight: 600;
+  border-radius: 6px;
+}
+
+/* --- Responsive Design --- */
+@media (max-width: 1400px) {
+  .dashboard-main {
+    flex: 1 1 60%;
+  }
+  
+  .dashboard-sidebar {
+    flex: 1 1 40%;
+  }
+  
+  .metric-cards-container {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+}
+
+@media (max-width: 1024px) {
+  .dashboard-main {
+    flex: 1 1 100%;
+  }
+
+  .dashboard-sidebar {
+    flex: 1 1 100%;
+  }
+  
+  .metric-cards-container {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .metric-cards-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .metric-cards-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Dashboard Grid Responsive */
+.dashboard-grid-responsive {
+  display: grid;
+  gap: 1.5rem;
+}
+
+@media (max-width: 1024px) {
+  .dashboard-grid-responsive {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Smooth transitions */
+button {
+  transition: all 0.2s ease-in-out;
+}
+
+button:hover {
+  transform: translateY(-2px);
+}
+
+button:active {
+  transform: translateY(0);
+}
