@@ -6,6 +6,8 @@ from numpy.typing import NDArray
 from sqlalchemy.orm import Session
 
 from app.exceptions import NotFoundError
+from app.repositories import stop_repository
+from app.repositories.line_repository import LineRepository
 from app.repositories.line_stop_repository import LineStopRepository
 from app.schemas import Point
 
@@ -19,27 +21,29 @@ def calculate_distance_between_stops(
 
     distance = dist(stopB) - dist(stopA)
     """
-
-    stop_a = LineStopRepository.get_first_line_stop(
+    line = LineRepository.get_line(db=db, line_id=line_id)
+    stop_a = stop_repository.get_stop(db=db, stop_id=stop_a_id)
+    stop_b = stop_repository.get_stop(db=db, stop_id=stop_b_id)
+    line_stop_a = LineStopRepository.get_first_line_stop(
         db=db, line_id=line_id, stop_id=stop_a_id
     )
-    if stop_a is None:
-        raise NotFoundError(f"A parada {stop_a_id} não pertence à linha {line_id}")
+    if line_stop_a is None:
+        raise NotFoundError(f"A parada {stop_a.name} não pertence à linha {line.name}")
 
-    stop_b = LineStopRepository.get_first_line_stop(
+    line_stop_b = LineStopRepository.get_first_line_stop(
         db=db,
         line_id=line_id,
         stop_id=stop_b_id,
-        minimum_stop_order=stop_a.stop_order,
+        minimum_stop_order=line_stop_a.stop_order,
     )
-    if stop_b is None:
+    if line_stop_b is None:
         raise NotFoundError(
-            f"A parada {stop_b_id} não está depois da parada {stop_a_id} "
-            f"na linha {line_id}"
+            f"A parada {stop_b.name} não está depois da parada {stop_a.name} "
+            f"na linha {line.name}"
         )
 
     # distância real em quilômetros
-    return stop_b.distance_traveled - stop_a.distance_traveled
+    return line_stop_b.distance_traveled - line_stop_a.distance_traveled
 
 
 T = TypeVar("T", bound=Point)
