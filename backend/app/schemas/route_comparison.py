@@ -1,6 +1,7 @@
 from enum import Enum
 from typing import List, Optional
 from pydantic import BaseModel
+from app.schemas.air_quality import AirQualityResponse
 
 class SegmentType(str, Enum):
     BUS = "BUS"
@@ -37,5 +38,7 @@ class RouteInfo(BaseModel):
 
         
 class RouteResponse(BaseModel):
+    origin_air_quality: Optional[AirQualityResponse] = None
+    destination_air_quality: Optional[AirQualityResponse] = None
     routes: List[RouteInfo]
     
