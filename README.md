@@ -16,7 +16,7 @@ Sistema web para análise das linhas de ônibus de São Paulo em relação à em
 - Naili Marques (backend)
 
 ## 📌 Tecnologias
-- **Frontend:** a TypeScript  
+- **Frontend:** TypeScript  
 - **Backend:** Python 3.11
 - **Banco de Dados:** PostgreSQL  
 - **API:** SPTrans Olho Vivo + MyClimate API + Google Maps API
