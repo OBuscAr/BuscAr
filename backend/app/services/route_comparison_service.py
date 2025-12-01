@@ -1,6 +1,7 @@
 from app.repositories import google_maps_client
 from app.schemas.vehicle_type import VehicleType
 from app.repositories import myclimate_client
+from app.services import air_quality_service
 
 class RouteComparisonService:
 
@@ -25,6 +26,35 @@ class RouteComparisonService:
         # Buscar rotas na API do Google
         google_response = google_maps_client.find_bus_routes(origin, destination)
         
+        routes_data = []
+        origin_aqi = None
+        destination_aqi = None
+
+        if "routes" in google_response and len(google_response["routes"]) > 0:
+            #  Extrair coordenadas da primeira rota encontrada para buscar qualidade do ar
+            try:
+                first_route = google_response["routes"][0]
+                legs = first_route.get("legs", [])
+                
+                if legs:         
+                    start_loc = legs[0].get("startLocation", {}).get("latLng", {})
+                    end_loc = legs[-1].get("endLocation", {}).get("latLng", {})
+                    
+                    # Buscar Qualidade do Ar na Origem
+                    if start_loc.get("latitude") is not None and start_loc.get("longitude") is not None:
+                        origin_aqi = air_quality_service.get_air_quality_by_coords(
+                            start_loc["latitude"], start_loc["longitude"]
+                        )
+                    
+                    # Buscar Qualidade do Ar no Destino
+                    if end_loc.get("latitude") is not None and end_loc.get("longitude") is not None:
+                        destination_aqi = air_quality_service.get_air_quality_by_coords(
+                            end_loc["latitude"], end_loc["longitude"]
+                        )
+            except Exception as e:
+                logger.error(f"Erro ao extrair coordenadas ou buscar qualidade do ar: {e}")
+        
+
         unique_routes_map = {}
         
         if "routes" not in google_response:
@@ -134,6 +164,11 @@ class RouteComparisonService:
         
         sorted_routes = sorted(calculated_routes, key=lambda x: x["emission_kg_co2"])
         
-        return sorted_routes
+        return {
+            "origin_air_quality": origin_aqi,
+            "destination_air_quality": destination_aqi,
+            "routes": sorted_routes
+        
+        } 
 
 

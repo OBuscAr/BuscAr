@@ -11,6 +11,7 @@ from app.api import (
     route_route,
     user_route,  # importa a rota de cadastro
     route_comparison_route,
+    air_quality_route,
 )
 
 logging.basicConfig(level=logging.INFO)
@@ -45,4 +46,5 @@ app.include_router(line_route.router) # registra o endpoint /lines
 app.include_router(emission_route.router) # registra o endpoint /emission
 app.include_router(route_route.router)
 app.include_router(route_comparison_route.router) 
+app.include_router(air_quality_route.router)
 
