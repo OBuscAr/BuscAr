@@ -305,7 +305,6 @@ const ComparativosPage = () => {
       {/* Busca de Linhas */}
       <div className="route-search-container">
         <div className="search-box">
-          <FiSearch className="search-icon" />
           <input
             type="text"
             placeholder="Buscar linha para comparar... (escolha no máx. 4 linhas)"

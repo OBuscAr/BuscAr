@@ -284,7 +284,7 @@ function FleetPhotosPage() {
       `• Emissão/km: ${(photoData.emissaoCarbono / photoData.distancia).toFixed(3)} kg/km\n` +
       `• IQAr estimado: ${photoData.iqar}`;
     
-    alert(message + '\n\n📸 Fotografia de frota salva com sucesso!');
+    alert(message + '\n\nFotografia de frota salva com sucesso!');
   };
 
   const handleExportData = () => {
@@ -322,8 +322,8 @@ function FleetPhotosPage() {
       <div className="photos-header">
         <div className="header-content">
           <div className="header-text">
-            <h1>Fotografias de Frota</h1>
-            <p>Visualize e analise dados de qualidade do ar das frotas de transporte</p>
+            <h1>Fotografias de Frota e Comparação de Rotas</h1>
+            <p>Visualize e analise dados de qualidade do ar das frotas de transporte e compare rotas</p>
           </div>
         </div>
       </div>

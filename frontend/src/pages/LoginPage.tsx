@@ -132,11 +132,11 @@ function LoginPage() {
         </p>
       </div>
 
-      <div className="auth-logo-section">
+      <Link to="/" className="auth-logo-section">
         {/*logo*/}
         <img src={BuscArLogo} alt="BuscAr Logo" className="bus_logo_icon" />
         <h2 className="logo-text">BuscAr</h2>
-      </div>
+      </Link>
     </div>
   );
 }

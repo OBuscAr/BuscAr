@@ -168,6 +168,8 @@
   border-bottom-right-radius: 25% 30%;
   
   transform: scaleX(-1);
+  text-decoration: none; /* Remove sublinhado do Link */
+  cursor: pointer; /* Indica que é clicável */
 }
 
 .bus_logo_icon {

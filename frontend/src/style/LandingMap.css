@@ -5,6 +5,18 @@
   overflow: hidden;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   background-color: white;
+  position: relative;
+  z-index: 1;
+}
+
+.landing-map-container .leaflet-container {
+  z-index: 1;
+}
+
+.landing-map-container .leaflet-control-container,
+.landing-map-container .leaflet-control-zoom,
+.landing-map-container .leaflet-control-attribution {
+  z-index: 1 !important;
 }
 
 /* Customização dos controles do Leaflet para landing page */
