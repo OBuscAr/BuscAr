@@ -1,0 +1,37 @@
+services:
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: buscar_user
+      POSTGRES_PASSWORD: buscar123
+      POSTGRES_DB: buscar_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      # Database connection using the service name 'db'
+      DATABASE_URL: postgresql://buscar_user:buscar123@db:5432/buscar_db
+      # Default secrets (override these in production!)
+      SECRET_KEY: "segredo-super-seguro"
+      # Add other API keys here or use an env_file
+      # SPTRANS_API_TOKEN: ...
+      # MYCLIMATE_PASSWORD: ...
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "4173:4173"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
