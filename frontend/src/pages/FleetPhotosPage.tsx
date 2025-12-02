@@ -189,38 +189,6 @@ function FleetPhotosPage() {
       // Usar os dados da linha correspondente (considerando direção)
       const lineEmission = emissionData.find(e => e.line.id === line.id) || emissionData[0];
 
-      // Calcular IQAr estimado baseado na emissão por km
-      // IQAr: 0-50 = Bom, 51-100 = Moderado, 101-200 = Ruim, 201+ = Péssimo
-      // Fórmula: quanto maior a emissão por km, pior o IQAr
-      const emissaoPorKm = lineEmission.emission / lineEmission.distance;
-      
-      console.log(`Linha ${line.name}:`, {
-        emission: lineEmission.emission,
-        distance: lineEmission.distance,
-        emissaoPorKm: emissaoPorKm.toFixed(3)
-      });
-      
-      // Normalizar para escala de IQAr (valores típicos de emissão/km estão entre 1.5 e 3.5)
-      // Usar uma escala exponencial para criar maior variação
-      let iqarEstimado: number;
-      if (emissaoPorKm < 2.0) {
-        // Emissão baixa -> IQAr bom (0-50)
-        iqarEstimado = Math.round(emissaoPorKm * 25);
-      } else if (emissaoPorKm < 2.5) {
-        // Emissão média -> IQAr moderado (51-100)
-        iqarEstimado = Math.round(50 + (emissaoPorKm - 2.0) * 100);
-      } else if (emissaoPorKm < 3.5) {
-        // Emissão alta -> IQAr ruim (101-200)
-        iqarEstimado = Math.round(100 + (emissaoPorKm - 2.5) * 100);
-      } else {
-        // Emissão muito alta -> IQAr péssimo (201+)
-        iqarEstimado = Math.round(200 + (emissaoPorKm - 3.5) * 50);
-      }
-      
-      iqarEstimado = Math.max(0, Math.min(300, iqarEstimado)); // Limitar entre 0 e 300
-      
-      console.log(`IQAr calculado: ${iqarEstimado}`);
-
       const data: PhotoData = {
         id: line.id.toString(),
         linha: line.description || line.name,
@@ -228,7 +196,7 @@ function FleetPhotosPage() {
         velocidadeMedia: 0, // Backend não fornece este dado ainda
         emissaoCarbono: lineEmission.emission,
         distancia: lineEmission.distance,
-        iqar: iqarEstimado,
+        iqar: 0,
         data: new Date().toLocaleDateString('pt-BR', { 
           day: 'numeric', 
           month: 'long', 
@@ -646,16 +614,9 @@ function FleetPhotosPage() {
                   <div style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: '0.5rem' }}>Legenda:</div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                      <div style={{ width: '40px', height: '6px', background: '#3b82f6', borderRadius: '3px' }}></div>
                       <span style={{ fontSize: '0.9rem', fontWeight: '500' }}>🚌 Ônibus</span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                      <div style={{ 
-                        width: '40px', 
-                        height: '6px', 
-                        background: 'repeating-linear-gradient(90deg, #475569 0, #475569 10px, transparent 10px, transparent 15px)',
-                        borderRadius: '3px'
-                      }}></div>
                       <span style={{ fontSize: '0.9rem', fontWeight: '500' }}>🚶 Caminhada</span>
                     </div>
                     <div style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '0.25rem' }}>
@@ -917,31 +878,21 @@ function FleetPhotosPage() {
                       <span className="stat-value">{(photoData.emissaoCarbono / photoData.distancia).toFixed(3)} kg/km</span>
                     </div>
                   </div>
-                  
-                  <div className="stat-card">
-                    <div className="stat-icon" style={{background: getIQArQuality(photoData.iqar).bg}}>
-                      <span style={{color: getIQArQuality(photoData.iqar).color}}>🍃</span>
-                    </div>
-                    <div className="stat-content">
-                      <span className="stat-label">IQAr Estimado</span>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span className="stat-value">{photoData.iqar}</span>
-                        <span style={{ 
-                          fontSize: '0.75rem', 
-                          color: getIQArQuality(photoData.iqar).color,
-                          fontWeight: 600,
-                          padding: '2px 8px',
-                          background: getIQArQuality(photoData.iqar).bg,
-                          borderRadius: '12px'
-                        }}>
-                          {getIQArQuality(photoData.iqar).label}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
                 </div>
 
-                <div className="pie-chart-container">
+                {/* Gráfico de emissões removido - IQAr não disponível */}
+                <div style={{ 
+                  padding: '2rem',
+                  backgroundColor: '#f8fafc',
+                  borderRadius: '12px',
+                  textAlign: 'center',
+                  color: '#64748b',
+                  fontSize: '0.9rem',
+                  marginTop: '1.5rem'
+                }}>
+                </div>
+
+                <div className="pie-chart-container" style={{ display: 'none' }}>
                   <svg width="200" height="200" viewBox="0 0 200 200">
                     {/* Fundo cinza claro */}
                     <circle 
@@ -1000,44 +951,7 @@ function FleetPhotosPage() {
                   </svg>
                 </div>
 
-                <div className="chart-legend-horizontal">
-                  <div style={{ 
-                    padding: '0.75rem', 
-                    background: '#f8fafc', 
-                    borderRadius: '8px',
-                    marginBottom: '0.5rem'
-                  }}>
-                    <div style={{ fontSize: '0.85rem', fontWeight: '600', marginBottom: '0.5rem', color: '#1e293b' }}>
-                      Escala de Qualidade do Ar:
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <span className="legend-dot" style={{background: '#34A853', width: '12px', height: '12px'}}></span>
-                        <span style={{ fontSize: '0.8rem' }}>0-50: Bom</span>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <span className="legend-dot" style={{background: '#FF9800', width: '12px', height: '12px'}}></span>
-                        <span style={{ fontSize: '0.8rem' }}>51-100: Moderado</span>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <span className="legend-dot" style={{background: '#F44336', width: '12px', height: '12px'}}></span>
-                        <span style={{ fontSize: '0.8rem' }}>101-200: Ruim</span>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <span className="legend-dot" style={{background: '#9C27B0', width: '12px', height: '12px'}}></span>
-                        <span style={{ fontSize: '0.8rem' }}>201+: Péssimo</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div style={{ 
-                    fontSize: '0.75rem', 
-                    color: '#64748b', 
-                    fontStyle: 'italic',
-                    textAlign: 'center'
-                  }}>
-                    *Baseado na emissão de CO₂ por km da linha
-                  </div>
-                </div>
+
               </div>
             </div>
           </div>
