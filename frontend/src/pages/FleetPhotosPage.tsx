@@ -30,7 +30,21 @@ interface RouteOption {
   segments: RouteSegment[];
 }
 
+interface AirQualityIndex {
+  code: string;
+  displayName: string;
+  aqi: number;
+  category: string;
+}
+
+interface AirQualityData {
+  indexes: AirQualityIndex[];
+  health_recommendation: string;
+}
+
 interface RouteComparisonResponse {
+  origin_air_quality: AirQualityData;
+  destination_air_quality: AirQualityData;
   routes: RouteOption[];
 }
 
@@ -55,6 +69,8 @@ function FleetPhotosPage() {
   const [selectedRoute, setSelectedRoute] = useState<RouteOption | null>(null);
   const [routes, setRoutes] = useState<RouteOption[]>([]);
   const [photoData, setPhotoData] = useState<PhotoData | null>(null);
+  const [originAirQuality, setOriginAirQuality] = useState<AirQualityData | null>(null);
+  const [destinationAirQuality, setDestinationAirQuality] = useState<AirQualityData | null>(null);
   const [routePoints, setRoutePoints] = useState<Array<{lat: number, lng: number, name?: string, value?: number}>>([]);
   const [allLines, setAllLines] = useState<Line[]>([]);
   const [filteredLines, setFilteredLines] = useState<Line[]>([]);
@@ -248,6 +264,8 @@ function FleetPhotosPage() {
         destinationAddress.trim()
       );
       
+      setOriginAirQuality(result.origin_air_quality);
+      setDestinationAirQuality(result.destination_air_quality);
       setRoutes(result.routes);
       if (result.routes.length > 0) {
         setSelectedRoute(result.routes[0]);
@@ -486,6 +504,118 @@ function FleetPhotosPage() {
             Rotas Encontradas ({routes.length})
           </h2>
 
+          {/* Seção de Qualidade do Ar */}
+          {(originAirQuality || destinationAirQuality) && (
+            <div style={{ 
+              marginBottom: '2rem',
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+              gap: '1rem'
+            }}>
+              {originAirQuality && (
+                <div style={{
+                  background: 'linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%)',
+                  borderRadius: '12px',
+                  padding: '1.5rem',
+                  border: '2px solid #7dd3fc'
+                }}>
+                  <h3 style={{ margin: '0 0 1rem 0', color: '#0c4a6e', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    Qualidade do Ar - Origem
+                  </h3>
+                  {originAirQuality.indexes.map((index, idx) => (
+                    <div key={idx} style={{ 
+                      marginBottom: '1rem',
+                      padding: '0.75rem',
+                      background: 'rgba(255, 255, 255, 0.7)',
+                      borderRadius: '8px'
+                    }}>
+                      <div style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: '0.25rem' }}>
+                        {index.displayName}
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontSize: '1.5rem', fontWeight: '700', color: '#0c4a6e' }}>
+                          {index.aqi}
+                        </span>
+                        <span style={{ 
+                          fontSize: '0.9rem', 
+                          fontWeight: '600',
+                          color: '#0369a1',
+                          background: 'rgba(255, 255, 255, 0.9)',
+                          padding: '0.25rem 0.75rem',
+                          borderRadius: '12px'
+                        }}>
+                          {index.category}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                  <div style={{
+                    marginTop: '1rem',
+                    padding: '0.75rem',
+                    background: 'rgba(255, 255, 255, 0.9)',
+                    borderRadius: '8px',
+                    fontSize: '0.85rem',
+                    color: '#334155',
+                    lineHeight: '1.5'
+                  }}>
+                    💡 {originAirQuality.health_recommendation}
+                  </div>
+                </div>
+              )}
+
+              {destinationAirQuality && (
+                <div style={{
+                  background: 'linear-gradient(135deg, #ddd6fe 0%, #c4b5fd 100%)',
+                  borderRadius: '12px',
+                  padding: '1.5rem',
+                  border: '2px solid #a78bfa'
+                }}>
+                  <h3 style={{ margin: '0 0 1rem 0', color: '#5b21b6', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    Qualidade do Ar - Destino
+                  </h3>
+                  {destinationAirQuality.indexes.map((index, idx) => (
+                    <div key={idx} style={{ 
+                      marginBottom: '1rem',
+                      padding: '0.75rem',
+                      background: 'rgba(255, 255, 255, 0.7)',
+                      borderRadius: '8px'
+                    }}>
+                      <div style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: '0.25rem' }}>
+                        {index.displayName}
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontSize: '1.5rem', fontWeight: '700', color: '#5b21b6' }}>
+                          {index.aqi}
+                        </span>
+                        <span style={{ 
+                          fontSize: '0.9rem', 
+                          fontWeight: '600',
+                          color: '#6d28d9',
+                          background: 'rgba(255, 255, 255, 0.9)',
+                          padding: '0.25rem 0.75rem',
+                          borderRadius: '12px'
+                        }}>
+                          {index.category}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                  <div style={{
+                    marginTop: '1rem',
+                    padding: '0.75rem',
+                    background: 'rgba(255, 255, 255, 0.9)',
+                    borderRadius: '8px',
+                    fontSize: '0.85rem',
+                    color: '#334155',
+                    lineHeight: '1.5'
+                  }}>
+                    💡 {destinationAirQuality.health_recommendation}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Mapa da rota selecionada */}
           {selectedRoute && (
             <div className="map-section" style={{ marginBottom: '2rem' }}>
@@ -501,7 +631,7 @@ function FleetPhotosPage() {
                 segments={selectedRoute.segments}
                 selectedMetric="emissao"
                 linha={selectedRoute.description}
-                iqar={Math.round((selectedRoute.emission_kg_co2 / selectedRoute.distance_km) * 100)}
+                iqar={Math.round(((originAirQuality?.indexes.find(i => i.code === 'bra_saopaulo')?.aqi || 0) + (destinationAirQuality?.indexes.find(i => i.code === 'bra_saopaulo')?.aqi || 0)) / 2)}
               />
               <div style={{ 
                 marginTop: '1rem', 
@@ -628,7 +758,7 @@ function FleetPhotosPage() {
                 {route.segments.length > 0 && (
                   <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #e2e8f0' }}>
                     <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '0.9rem', color: '#64748b' }}>
-                      📍 Trechos ({route.segments.length}):
+                      Trechos ({route.segments.length}):
                     </h4>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                       {(expandedRoutes.has(index) ? route.segments : route.segments.slice(0, 3)).map((segment, segIndex) => (

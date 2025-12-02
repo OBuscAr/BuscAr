@@ -9,13 +9,15 @@ import iconEconomia from '../assets/Captura de tela 2025-10-17 195240.png';
 import iconGraficos from '../assets/Captura de tela 2025-10-17 195316.png';
 import LandingMap from '../components/LandingMap';
 import { routeComparisonService } from '../services/routeComparisonService';
-import type { RouteOption } from '../services/routeComparisonService';
+import type { RouteOption, AirQualityData } from '../services/routeComparisonService';
 
 const LandingPage = () => {
   const [origem, setOrigem] = useState('');
   const [destino, setDestino] = useState('');
   const [showResults, setShowResults] = useState(false);
   const [searchResults, setSearchResults] = useState<RouteOption | null>(null);
+  const [originAirQuality, setOriginAirQuality] = useState<AirQualityData | null>(null);
+  const [destinationAirQuality, setDestinationAirQuality] = useState<AirQualityData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -34,6 +36,8 @@ const LandingPage = () => {
       if (result.routes && result.routes.length > 0) {
         // Pega a primeira rota (melhor opção)
         setSearchResults(result.routes[0]);
+        setOriginAirQuality(result.origin_air_quality);
+        setDestinationAirQuality(result.destination_air_quality);
         setShowResults(true);
       } else {
         setError('Nenhuma rota encontrada para os endereços informados.');
@@ -162,6 +166,53 @@ const LandingPage = () => {
                 <p>{searchResults.description}</p>
               </div>
 
+              {/* Qualidade do Ar */}
+              {(originAirQuality || destinationAirQuality) && (
+                <div className="air-quality-section">
+                  <h4>Qualidade do Ar</h4>
+                  <div className="air-quality-grid">
+                    {originAirQuality && (
+                      <div className="air-quality-card origin">
+                        <div className="air-quality-header">
+                          <span className="location-label">Origem</span>
+                        </div>
+                        {originAirQuality.indexes.map((index, idx) => (
+                          <div key={idx} className="aqi-item">
+                            <span className="aqi-label">{index.displayName}</span>
+                            <div className="aqi-value-row">
+                              <span className="aqi-number">{index.aqi}</span>
+                              <span className="aqi-category">{index.category}</span>
+                            </div>
+                          </div>
+                        ))}
+                        <div className="health-recommendation">
+                          💡 {originAirQuality.health_recommendation}
+                        </div>
+                      </div>
+                    )}
+                    {destinationAirQuality && (
+                      <div className="air-quality-card destination">
+                        <div className="air-quality-header">
+                          <span className="location-label">Destino</span>
+                        </div>
+                        {destinationAirQuality.indexes.map((index, idx) => (
+                          <div key={idx} className="aqi-item">
+                            <span className="aqi-label">{index.displayName}</span>
+                            <div className="aqi-value-row">
+                              <span className="aqi-number">{index.aqi}</span>
+                              <span className="aqi-category">{index.category}</span>
+                            </div>
+                          </div>
+                        ))}
+                        <div className="health-recommendation">
+                          💡 {destinationAirQuality.health_recommendation}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
               <div className="route-details">
                 <h4>Detalhes da rota:</h4>
                 <div className="details-grid">
@@ -188,7 +239,7 @@ const LandingPage = () => {
 
               <div className="results-actions">
                 <Link 
-                  to="/painel/comparativos" 
+                  to="/login" 
                   className="btn-details"
                   onClick={(e) => {
                     console.log('Botão clicado - navegando para /painel/comparativos');
