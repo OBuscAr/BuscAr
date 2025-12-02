@@ -24,7 +24,7 @@ interface HistoricalPoint {
 }
 
 const ComparativosPage = () => {
-  const [daysRange, setDaysRange] = useState(7);
+  const [daysRange, setDaysRange] = useState(5);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLines, setSelectedLines] = useState<number[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
