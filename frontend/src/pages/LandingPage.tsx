@@ -78,7 +78,10 @@ const LandingPage = () => {
         <div className="hero-content">
           <div className="hero-text">
             <h1>Analise as rotas de ônibus de São Paulo e descubra o impacto ambiental do transporte público.</h1>
-            <Link to="/login" className="btn-analise">Analise suas rotas aqui</Link>
+            <a href="#calcular-rota" className="btn-analise" onClick={(e) => {
+              e.preventDefault();
+              document.getElementById('calcular-rota')?.scrollIntoView({ behavior: 'smooth' });
+            }}>Analise suas rotas aqui</a>
             <div className="features">
               <div className="feature-item">
                 <img src={iconAnalise} alt="Analise rotas" className="feature-icon" />
@@ -105,7 +108,7 @@ const LandingPage = () => {
       </section>
 
       {/* Search Section */}
-      <section className="search-section">
+      <section id="calcular-rota" className="search-section">
         <div className="search-container">
           <div className="search-box">
             <h2 className="search-title">Calcule sua rota</h2>
@@ -241,11 +244,8 @@ const LandingPage = () => {
                 <Link 
                   to="/login" 
                   className="btn-details"
-                  onClick={(e) => {
-                    console.log('Botão clicado - navegando para /painel/comparativos');
-                  }}
                 >
-                  Analise suas rotas aqui
+                  Faça login para salvar e analisar mais rotas
                 </Link>
               </div>
             </div>
