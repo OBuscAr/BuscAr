@@ -581,6 +581,19 @@ const DashboardPage = () => {
                     }
                     return null;
                   })}
+                  
+                  {/* Label do eixo Y */}
+                  <text
+                    x={15}
+                    y={160}
+                    fontSize={11}
+                    textAnchor="middle"
+                    fill="#666"
+                    fontWeight={600}
+                    transform="rotate(-90 15 160)"
+                  >
+                    kg CO₂
+                  </text>
                 </svg>
               </div>
             ) : (
@@ -956,14 +969,15 @@ const DashboardPage = () => {
           >
             <div 
               style={{
-                backgroundColor: '#fff',
+                backgroundColor: '#fafafa',
                 borderRadius: 20,
-                padding: '2rem',
-                maxWidth: '1200px',
-                width: '100%',
-                maxHeight: '90vh',
+                padding: '2.5rem',
+                maxWidth: '1400px',
+                width: '95%',
+                maxHeight: '92vh',
                 overflow: 'auto',
-                position: 'relative'
+                position: 'relative',
+                boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
               }}
               onClick={(e) => e.stopPropagation()}
             >
@@ -1003,37 +1017,58 @@ const DashboardPage = () => {
 
               {/* Informações sobre o período */}
               <div style={{
-                padding: '1rem',
-                backgroundColor: '#f9fafb',
-                borderRadius: 12,
-                marginBottom: '1.5rem',
-                display: 'flex',
-                gap: '2rem',
-                flexWrap: 'wrap'
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                gap: '1rem',
+                marginBottom: '1.5rem'
               }}>
-                <div>
-                  <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px' }}>Período</div>
-                  <div style={{ fontSize: '16px', fontWeight: 600, color: '#1a1a1a' }}>
+                <div style={{
+                  padding: '1.25rem',
+                  backgroundColor: '#fff',
+                  borderRadius: 12,
+                  border: '1px solid #e5e7eb',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.04)'
+                }}>
+                  <div style={{ fontSize: '12px', color: '#666', marginBottom: '6px', fontWeight: 500 }}>Período</div>
+                  <div style={{ fontSize: '20px', fontWeight: 700, color: '#1a1a1a' }}>
                     Últimos {daysRange} dias
                   </div>
                 </div>
-                <div>
-                  <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px' }}>Total de Emissões</div>
-                  <div style={{ fontSize: '16px', fontWeight: 600, color: '#ef4444' }}>
-                    {totalEmissions.toFixed(2)} kg CO₂
+                <div style={{
+                  padding: '1.25rem',
+                  backgroundColor: '#fff',
+                  borderRadius: 12,
+                  border: '1px solid #fee2e2',
+                  boxShadow: '0 2px 4px rgba(239,68,68,0.08)'
+                }}>
+                  <div style={{ fontSize: '12px', color: '#666', marginBottom: '6px', fontWeight: 500 }}>Total de Emissões</div>
+                  <div style={{ fontSize: '20px', fontWeight: 700, color: '#ef4444' }}>
+                    {totalEmissions.toFixed(2)} <span style={{ fontSize: '14px', fontWeight: 500 }}>kg CO₂</span>
                   </div>
                 </div>
-                <div>
-                  <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px' }}>Média Diária</div>
-                  <div style={{ fontSize: '16px', fontWeight: 600, color: '#6366f1' }}>
-                    {avgDailyEmission.toFixed(2)} kg/dia
+                <div style={{
+                  padding: '1.25rem',
+                  backgroundColor: '#fff',
+                  borderRadius: 12,
+                  border: '1px solid #dbeafe',
+                  boxShadow: '0 2px 4px rgba(99,102,241,0.08)'
+                }}>
+                  <div style={{ fontSize: '12px', color: '#666', marginBottom: '6px', fontWeight: 500 }}>Média Diária</div>
+                  <div style={{ fontSize: '20px', fontWeight: 700, color: '#6366f1' }}>
+                    {avgDailyEmission.toFixed(2)} <span style={{ fontSize: '14px', fontWeight: 500 }}>kg/dia</span>
                   </div>
                 </div>
-                <div>
-                  <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px' }}>Tendência</div>
+                <div style={{
+                  padding: '1.25rem',
+                  backgroundColor: '#fff',
+                  borderRadius: 12,
+                  border: `1px solid ${emissionTrend > 0 ? '#fee2e2' : '#d1fae5'}`,
+                  boxShadow: `0 2px 4px ${emissionTrend > 0 ? 'rgba(239,68,68,0.08)' : 'rgba(16,185,129,0.08)'}`
+                }}>
+                  <div style={{ fontSize: '12px', color: '#666', marginBottom: '6px', fontWeight: 500 }}>Tendência</div>
                   <div style={{ 
-                    fontSize: '16px', 
-                    fontWeight: 600, 
+                    fontSize: '20px', 
+                    fontWeight: 700, 
                     color: emissionTrend > 0 ? '#ef4444' : '#10b981'
                   }}>
                     {emissionTrend > 0 ? '↑' : '↓'} {Math.abs(emissionTrend).toFixed(1)}%
@@ -1042,8 +1077,16 @@ const DashboardPage = () => {
               </div>
 
               {/* Gráfico Expandido */}
-              <div style={{ position: 'relative', height: '500px', marginBottom: '1.5rem' }}>
-                <svg width="100%" height="100%" viewBox="0 0 1100 500" preserveAspectRatio="xMidYMid meet">
+              <div style={{ 
+                position: 'relative', 
+                height: '500px', 
+                marginBottom: '1.5rem',
+                backgroundColor: '#fff',
+                borderRadius: 12,
+                padding: '1.5rem',
+                border: '1px solid #e5e7eb'
+              }}>
+                <svg width="100%" height="100%" viewBox="0 0 1000 500" preserveAspectRatio="xMidYMid meet">
                   <defs>
                     <linearGradient id="lineGradientModal" x1="0%" y1="0%" x2="0%" y2="100%">
                       <stop offset="0%" stopColor="#6366f1" stopOpacity="0.3" />
@@ -1052,31 +1095,31 @@ const DashboardPage = () => {
                   </defs>
                   
                   {/* Grid horizontal */}
-                  {[0, 1, 2, 3, 4, 5, 6].map(i => (
+                  {[0, 1, 2, 3, 4].map(i => (
                     <line
                       key={i}
-                      x1={80}
-                      y1={40 + i * 65}
-                      x2={1020}
-                      y2={40 + i * 65}
+                      x1={100}
+                      y1={50 + i * 100}
+                      x2={920}
+                      y2={50 + i * 100}
                       stroke="#f0f0f0"
                       strokeWidth={1.5}
                     />
                   ))}
                   
-                  {/* Área preenchida e linha */}
+                  {/* Área preenchida */}
                   {statistics.length > 0 && (() => {
                     const maxEmission = Math.max(...statistics.map(s => s.total_emission), 1);
                     const points = statistics.map((stat, idx) => {
-                      const x = 80 + (idx / Math.max(1, statistics.length - 1)) * 940;
-                      const y = 460 - (stat.total_emission / maxEmission) * 390;
+                      const x = 100 + (idx / Math.max(1, statistics.length - 1)) * 820;
+                      const y = 450 - (stat.total_emission / maxEmission) * 400;
                       return `${x},${y}`;
                     }).join(' ');
 
                     return statistics.length > 1 ? (
                       <>
                         <polygon
-                          points={`80,460 ${points} ${80 + 940},460`}
+                          points={`100,450 ${points} ${100 + 820},450`}
                           fill="url(#lineGradientModal)"
                         />
                         <polyline
@@ -1087,10 +1130,10 @@ const DashboardPage = () => {
                           strokeLinecap="round"
                           strokeLinejoin="round"
                         />
-                        {/* Pontos com tooltip */}
+                        {/* Pontos */}
                         {statistics.map((stat, idx) => {
-                          const x = 80 + (idx / (statistics.length - 1)) * 940;
-                          const y = 460 - (stat.total_emission / maxEmission) * 390;
+                          const x = 100 + (idx / (statistics.length - 1)) * 820;
+                          const y = 450 - (stat.total_emission / maxEmission) * 400;
                           return (
                             <g key={idx}>
                               <circle
@@ -1119,9 +1162,10 @@ const DashboardPage = () => {
                           strokeLinecap="round"
                           strokeLinejoin="round"
                         />
+                        {/* Pontos */}
                         {statistics.map((stat, idx) => {
-                          const x = 550;
-                          const y = 460 - (stat.total_emission / maxEmission) * 390;
+                          const x = 510;
+                          const y = 450 - (stat.total_emission / maxEmission) * 400;
                           return (
                             <g key={idx}>
                               <circle
@@ -1145,17 +1189,16 @@ const DashboardPage = () => {
                   {/* Eixo Y - Labels */}
                   {statistics.length > 0 && (() => {
                     const maxEmission = Math.max(...statistics.map(s => s.total_emission), 1);
-                    return [0, 1, 2, 3, 4, 5, 6].map(i => {
-                      const value = maxEmission * (1 - i / 6);
+                    return [0, 1, 2, 3, 4].map(i => {
+                      const value = maxEmission * (1 - i / 4);
                       return (
                         <text
                           key={i}
-                          x={70}
-                          y={40 + i * 65}
+                          x={85}
+                          y={50 + i * 100}
                           fontSize={14}
                           textAnchor="end"
-                          fill="#666"
-                          fontWeight={500}
+                          fill="#999"
                           dominantBaseline="middle"
                         >
                           {value.toFixed(2)}
@@ -1166,20 +1209,18 @@ const DashboardPage = () => {
                   
                   {/* Eixo X - Datas */}
                   {statistics.map((stat, idx) => {
-                    const showLabel = statistics.length <= 10 || idx % Math.ceil(statistics.length / 10) === 0 || idx === statistics.length - 1;
-                    if (showLabel) {
+                    if (statistics.length <= 7 || idx % Math.ceil(statistics.length / 7) === 0 || idx === statistics.length - 1) {
                       const x = statistics.length > 1 
-                        ? 80 + (idx / (statistics.length - 1)) * 940
-                        : 550;
+                        ? 100 + (idx / (statistics.length - 1)) * 820
+                        : 510;
                       return (
                         <text
                           key={stat.date}
                           x={x}
-                          y={480}
-                          fontSize={13}
+                          y={475}
+                          fontSize={14}
                           textAnchor="middle"
-                          fill="#666"
-                          fontWeight={500}
+                          fill="#999"
                         >
                           {new Date(stat.date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', timeZone: 'UTC' })}
                         </text>
@@ -1192,13 +1233,13 @@ const DashboardPage = () => {
                   <text
                     x={25}
                     y={250}
-                    fontSize={14}
+                    fontSize={13}
                     textAnchor="middle"
                     fill="#666"
                     fontWeight={600}
                     transform="rotate(-90 25 250)"
                   >
-                    Emissões (kg CO₂)
+                    kg CO₂
                   </text>
                 </svg>
               </div>
