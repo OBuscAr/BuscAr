@@ -24,6 +24,6 @@ def compare_routes(
         request.origin_address, 
         request.destination_address
     )
-    return {"routes": routes}
+    return routes
 
 

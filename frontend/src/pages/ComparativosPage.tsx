@@ -24,7 +24,7 @@ interface HistoricalPoint {
 }
 
 const ComparativosPage = () => {
-  const [daysRange, setDaysRange] = useState(7);
+  const [daysRange, setDaysRange] = useState(5);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLines, setSelectedLines] = useState<number[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -69,7 +69,7 @@ const ComparativosPage = () => {
       try {
         setLoading(true);
         const startDate = new Date();
-        startDate.setDate(startDate.getDate() - daysRange);
+        startDate.setDate(startDate.getDate() - daysRange + 1);
         const startDateStr = startDate.toISOString().split('T')[0];
 
         console.log('=== Iniciando fetchComparisonData ===');
@@ -256,7 +256,7 @@ const ComparativosPage = () => {
   };
 
   const formatDate = (dateStr: string) => {
-    return dateStr.slice(5); // MM-DD
+    return new Date(dateStr).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', timeZone: 'UTC' });
   };
 
   if (loading && allLines.length === 0) {
@@ -269,22 +269,22 @@ const ComparativosPage = () => {
         <h2>Dados Comparativos</h2>
         <div className="period-selector">
           <button 
-            className={daysRange === 7 ? 'active' : ''}
-            onClick={() => setDaysRange(7)}
+            className={daysRange === 5 ? 'active' : ''}
+            onClick={() => setDaysRange(5)}
           >
-            7 dias
+            5 dias
           </button>
           <button 
-            className={daysRange === 30 ? 'active' : ''}
-            onClick={() => setDaysRange(30)}
+            className={daysRange === 10 ? 'active' : ''}
+            onClick={() => setDaysRange(10)}
           >
-            30 dias
+            10 dias
           </button>
           <button 
-            className={daysRange === 90 ? 'active' : ''}
-            onClick={() => setDaysRange(90)}
+            className={daysRange === 15 ? 'active' : ''}
+            onClick={() => setDaysRange(15)}
           >
-            90 dias
+            15 dias
           </button>
         </div>
       </div>

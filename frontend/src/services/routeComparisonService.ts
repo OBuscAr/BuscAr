@@ -23,7 +23,21 @@ export interface RouteOption {
   segments: RouteSegment[];
 }
 
+export interface AirQualityIndex {
+  code: string;
+  displayName: string;
+  aqi: number;
+  category: string;
+}
+
+export interface AirQualityData {
+  indexes: AirQualityIndex[];
+  health_recommendation: string;
+}
+
 export interface RouteComparisonResponse {
+  origin_air_quality: AirQualityData;
+  destination_air_quality: AirQualityData;
   routes: RouteOption[];
 }
 

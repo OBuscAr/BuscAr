@@ -3,7 +3,7 @@ import random
 
 import pytest
 from app.exceptions import MyclimateError
-from app.repositories.myclimate_client import (
+from app.clients.myclimate_client import (
     MAXIMUM_ACCEPTED_DISTANCE,
     calculate_carbon_emission,
 )

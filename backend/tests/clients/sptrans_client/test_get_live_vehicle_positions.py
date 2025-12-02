@@ -1,4 +1,4 @@
-from app.repositories.sptrans_client import get_live_vehicles_positions
+from app.clients.sptrans_client import get_live_vehicles_positions
 
 from tests.factories.schemas import SPTransLinesVehiclesResponseFactory
 from tests.helpers import SPTransHelper

@@ -1,4 +1,4 @@
-from app.repositories.sptrans_client import login
+from app.clients.sptrans_client import login
 from tests.helpers import SPTransHelper
 
 

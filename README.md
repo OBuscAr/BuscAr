@@ -16,10 +16,10 @@ Sistema web para análise das linhas de ônibus de São Paulo em relação à em
 - Naili Marques (backend)
 
 ## 📌 Tecnologias
-- **Frontend:** a definir  
+- **Frontend:** TypeScript  
 - **Backend:** Python 3.11
 - **Banco de Dados:** PostgreSQL  
-- **API:** SPTrans Olho Vivo + MyClimate API
+- **API:** SPTrans Olho Vivo + MyClimate API + Google Maps API
 - **Gestão do Projeto:** Scrum + ClickUp + GitHub Issues  
 
 ## 📂 Organização do Repositório
@@ -94,3 +94,21 @@ Sistema web para análise das linhas de ônibus de São Paulo em relação à em
 ```bash
     make update-daily-line-statistics
 ```
+
+### Frontend
+1. Entre na pasta de frontend.
+```bash
+    cd frontend
+```
+
+```bash
+    npm install
+```
+
+2. Execute:
+
+```bash
+    npm run dev
+```
+
+3. Acesse o http://localhost:5173/

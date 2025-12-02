@@ -7,6 +7,14 @@ import { routesService } from '../services/routesService';
 import type { EmissionStatistics, LineEmission } from '../types/api.types';
 import type { UserRoute } from '../services/routesService';
 
+const AnalysisType = {
+  General: "General",
+  Customized: "Customized",
+} as const;
+
+type AnalysisType = (typeof AnalysisType)[keyof typeof AnalysisType];
+
+
 const DashboardPage = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -14,7 +22,8 @@ const DashboardPage = () => {
   const [topLines, setTopLines] = useState<LineEmission[]>([]);
   const [userRoutes, setUserRoutes] = useState<UserRoute[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [daysRange, setDaysRange] = useState(7);
+  const [daysRange, setDaysRange] = useState(5);
+  const [analysisType, setAnalysisType] = useState<AnalysisType>(AnalysisType.General);
 
   useEffect(() => {
     async function fetchData() {
@@ -24,15 +33,14 @@ const DashboardPage = () => {
         
         const today = new Date().toISOString().split('T')[0];
         const startDate = new Date();
-        startDate.setDate(startDate.getDate() - daysRange);
+        startDate.setDate(startDate.getDate() - daysRange + 1);
         const startDateStr = startDate.toISOString().split('T')[0];
 
         // Buscar rotas do usuário primeiro
         const routesData = await routesService.getRoutes().catch(() => []);
         setUserRoutes(routesData);
-
-        // Se o usuário não tem rotas, mostrar ranking global
-        if (routesData.length === 0) {
+        console.log('analysisType', analysisType);
+        if (analysisType === AnalysisType.General) {
           const [statsData, rankingData] = await Promise.all([
             emissionsService.getOverallStatistics(startDateStr, daysRange).catch(() => []),
             emissionsService.getLinesRanking(today, 1, 10).catch(() => ({ lines_emissions: [], total_pages: 0 })),
@@ -88,12 +96,7 @@ const DashboardPage = () => {
       }
     }
     fetchData();
-  }, [daysRange]);
-
-  const formatDate = (dateStr: string): string => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
-  };
+  }, [analysisType, daysRange]);
 
   // Cálculos de métricas gerais
   const totalEmissions = statistics.reduce((sum, stat) => sum + stat.total_emission, 0);
@@ -142,12 +145,12 @@ const DashboardPage = () => {
         {/* Header do Dashboard */}
         <div style={{ marginBottom: '2rem' }}>
           <h1 style={{ fontSize: '28px', fontWeight: 700, color: '#1a1a1a', marginBottom: '0.5rem' }}>
-            {userRoutes.length > 0 ? 'Meu Dashboard' : 'Dashboard de Emissões'}
+            {analysisType === AnalysisType.Customized ? 'Meu Dashboard' : 'Dashboard de Emissões'}
           </h1>
           <p style={{ color: '#666', fontSize: '14px' }}>
-            {userRoutes.length > 0 
+            {analysisType === AnalysisType.Customized
               ? `Suas estatísticas personalizadas com base em ${userRoutes.length} ${userRoutes.length === 1 ? 'rota salva' : 'rotas salvas'}`
-              : 'Salve rotas para ver suas estatísticas personalizadas'}
+              : 'Estatísticas gerales'}
           </p>
         </div>
 
@@ -165,36 +168,16 @@ const DashboardPage = () => {
             gap: '1rem'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span style={{ fontSize: '24px' }}>💡</span>
-              <span style={{ fontWeight: 600, fontSize: '16px' }}>Comece salvando suas rotas!</span>
+              <span style={{ fontWeight: 600, fontSize: '16px' }}>Comece comparando suas rotas!</span>
             </div>
             <p style={{ margin: 0, lineHeight: 1.6 }}>
-              Você ainda não tem rotas salvas. Vá para <strong>Fotografias da Frota</strong> e salve suas rotas frequentes 
+              Você ainda não tem rotas salvas. Vá para <strong style={{ cursor: 'pointer', textDecoration: 'underline' }} onClick={() => navigate('/painel/fotografias')}>Fotografias da Frota</strong> para obter informações de emissões por frota e compare rotas. Veja, também, a comparação de frotas em <strong style={{ cursor: 'pointer', textDecoration: 'underline' }} onClick={() => navigate('/painel/comparativos')}>Dados Comparativos</strong> e salve seus trajetos frequentes 
               para ver estatísticas personalizadas de emissões e economia de CO₂.
             </p>
-            <button
-              onClick={() => navigate('/painel/fotografias')}
-              style={{ 
-                padding: '12px 20px',
-                backgroundColor: '#3b82f6',
-                color: '#fff',
-                border: 'none',
-                borderRadius: 8,
-                fontSize: '14px',
-                fontWeight: 600,
-                cursor: 'pointer',
-                alignSelf: 'flex-start',
-                transition: 'background-color 0.2s'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2563eb'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3b82f6'}
-            >
-              🔍 Buscar Rotas
-            </button>
           </div>
         )}
 
-        {/* Controle de período */}
+
         <div style={{ 
           display: 'flex', 
           alignItems: 'center', 
@@ -205,6 +188,32 @@ const DashboardPage = () => {
           borderRadius: 12,
           boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
         }}>
+          {/* Controle de Tipo */}
+          <label htmlFor="analysisType" style={{ fontWeight: 600, color: '#1a1a1a', fontSize: '14px' }}>
+            Tipo de análise:
+          </label>
+          <select
+            id="analysisType"
+            value={analysisType}
+            onChange={e => setAnalysisType(e.target.value === "General" ? AnalysisType.General : AnalysisType.Customized)}
+            style={{ 
+              padding: '10px 16px', 
+              borderRadius: 8, 
+              border: '2px solid #e0e0e0',
+              backgroundColor: '#fff',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: 500,
+              color: '#1a1a1a',
+              outline: 'none',
+              transition: 'border-color 0.2s'
+            }}
+          >
+            <option value={AnalysisType.General}>Geral</option>
+            <option value={AnalysisType.Customized}>Minhas rotas</option>
+          </select>
+
+          {/* Controle de período */}
           <label htmlFor="daysRange" style={{ fontWeight: 600, color: '#1a1a1a', fontSize: '14px' }}>
             Período de análise:
           </label>
@@ -225,9 +234,9 @@ const DashboardPage = () => {
               transition: 'border-color 0.2s'
             }}
           >
-            <option value={7}>Últimos 7 dias</option>
-            <option value={30}>Últimos 30 dias</option>
-            <option value={90}>Últimos 90 dias</option>
+            <option value={5}>Últimos 5 dias</option>
+            <option value={10}>Últimos 10 dias</option>
+            <option value={15}>Últimos 15 dias</option>
           </select>
         </div>
 
@@ -271,14 +280,14 @@ const DashboardPage = () => {
               </span>
             </div>
             <h3 style={{ fontSize: '12px', color: '#666', marginBottom: '0.4rem', fontWeight: 500 }}>
-              {userRoutes.length > 0 ? 'Suas Emissões' : 'Emissões Totais'}
+              {analysisType === AnalysisType.Customized ? 'Suas Emissões' : 'Emissões Totais'}
             </h3>
             <p style={{ fontSize: '26px', fontWeight: 700, color: '#1a1a1a', marginBottom: '0.3rem' }}>
               {totalEmissions.toFixed(1)}
               <span style={{ fontSize: '13px', fontWeight: 500, color: '#666', marginLeft: '0.3rem' }}>kg</span>
             </p>
             <p style={{ fontSize: '10px', color: '#999' }}>
-              {userRoutes.length > 0 ? `Suas rotas nos últimos ${daysRange} dias` : `Período de ${daysRange} dias`}
+              {analysisType === AnalysisType.Customized ? `Suas rotas nos últimos ${daysRange} dias` : `Período de ${daysRange} dias`}
             </p>
           </div>
 
@@ -339,14 +348,14 @@ const DashboardPage = () => {
               </div>
             </div>
             <h3 style={{ fontSize: '12px', color: '#666', marginBottom: '0.4rem', fontWeight: 500 }}>
-              {userRoutes.length > 0 ? 'Sua Distância' : 'Distância Percorrida'}
+              {analysisType === AnalysisType.Customized ? 'Sua Distância' : 'Distância Percorrida'}
             </h3>
             <p style={{ fontSize: '26px', fontWeight: 700, color: '#1a1a1a', marginBottom: '0.3rem' }}>
               {totalDistance.toFixed(1)}
               <span style={{ fontSize: '13px', fontWeight: 500, color: '#666', marginLeft: '0.3rem' }}>km</span>
             </p>
             <p style={{ fontSize: '10px', color: '#999' }}>
-              {userRoutes.length > 0 ? `Nas suas rotas (${statistics.length} dias)` : `Total de ${statistics.length} dias`}
+              {analysisType === AnalysisType.Customized ? `Nas suas rotas (${statistics.length} dias)` : `Total de ${statistics.length} dias`}
             </p>
           </div>
 
@@ -403,11 +412,11 @@ const DashboardPage = () => {
             border: '1px solid #f0f0f0'
           }}>
             <h3 style={{ fontSize: '18px', fontWeight: 600, color: '#1a1a1a', marginBottom: '1.5rem' }}>
-              {userRoutes.length > 0 ? 'Suas Emissões ao Longo do Tempo' : 'Tendência de Emissões'}
+              {analysisType === AnalysisType.Customized ? 'Suas Emissões ao Longo do Tempo' : 'Tendência de Emissões'}
             </h3>
             {statistics.length > 0 ? (
               <div style={{ position: 'relative', height: '300px' }}>
-                <svg width="100%" height="100%" viewBox="0 0 600 300" preserveAspectRatio="xMidYMid meet">
+                <svg width="100%" height="100%" viewBox="0 0 650 300" preserveAspectRatio="xMidYMid meet">
                   <defs>
                     <linearGradient id="lineGradient" x1="0%" y1="0%" x2="0%" y2="100%">
                       <stop offset="0%" stopColor="#6366f1" stopOpacity="0.3" />
@@ -429,14 +438,15 @@ const DashboardPage = () => {
                   ))}
                   
                   {/* Área preenchida */}
-                  {statistics.length > 1 && (() => {
+                  {statistics.length > 0 && (() => {
                     const maxEmission = Math.max(...statistics.map(s => s.total_emission), 1);
                     const points = statistics.map((stat, idx) => {
-                      const x = 60 + (idx / (statistics.length - 1)) * 520;
+                      const x = 60 + (idx / Math.max(1, statistics.length - 1)) * 520;
                       const y = 280 - (stat.total_emission / maxEmission) * 240;
                       return `${x},${y}`;
                     }).join(' ');
-                    return (
+
+                    return statistics.length > 1 ?(
                       <>
                         <polygon
                           points={`60,280 ${points} ${60 + 520},280`}
@@ -453,6 +463,33 @@ const DashboardPage = () => {
                         {/* Pontos */}
                         {statistics.map((stat, idx) => {
                           const x = 60 + (idx / (statistics.length - 1)) * 520;
+                          const y = 280 - (stat.total_emission / maxEmission) * 240;
+                          return (
+                            <circle
+                              key={idx}
+                              cx={x}
+                              cy={y}
+                              r={4}
+                              fill="#fff"
+                              stroke="#6366f1"
+                              strokeWidth={3}
+                            />
+                          );
+                        })}
+                      </>
+                    ) : (
+                      <>
+                        <polyline
+                          points={points}
+                          fill="none"
+                          stroke="#6366f1"
+                          strokeWidth={3}
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        {/* Pontos */}
+                        {statistics.map((stat, idx) => {
+                          const x = 320;
                           const y = 280 - (stat.total_emission / maxEmission) * 240;
                           return (
                             <circle
@@ -485,7 +522,7 @@ const DashboardPage = () => {
                           fill="#999"
                           dominantBaseline="middle"
                         >
-                          {value.toFixed(0)}
+                          {value.toFixed(2)}
                         </text>
                       );
                     });
@@ -506,7 +543,7 @@ const DashboardPage = () => {
                           textAnchor="middle"
                           fill="#999"
                         >
-                          {new Date(stat.date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
+                          {new Date(stat.date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', timeZone: 'UTC' },)}
                         </text>
                       );
                     }
@@ -540,13 +577,13 @@ const DashboardPage = () => {
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
               <h3 style={{ fontSize: '18px', fontWeight: 600, color: '#1a1a1a' }}>
-                {userRoutes.length > 0 ? 'Suas Linhas' : 'Top 10 Linhas'}
+                {analysisType === AnalysisType.Customized ? 'Suas Linhas' : 'Top 10 Linhas'}
               </h3>
               <span style={{ fontSize: '12px', color: '#999' }}>
-                {userRoutes.length > 0 ? `${userRoutes.length} ${userRoutes.length === 1 ? 'rota' : 'rotas'}` : 'Hoje'}
+                {analysisType === AnalysisType.Customized ? `${userRoutes.length} ${userRoutes.length === 1 ? 'rota' : 'rotas'}` : 'Hoje'}
               </span>
             </div>
-            {userRoutes.length > 0 ? (
+            {analysisType === AnalysisType.Customized ? (userRoutes.length > 0 ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxHeight: '300px', overflowY: 'auto' }}>
                 {userRoutes.slice(0, 10).map((route, index) => {
                   const lineNumber = route.line.name.split(' - ')[0];
@@ -617,7 +654,18 @@ const DashboardPage = () => {
                     </div>
                   );
                 })}
-              </div>
+              </div>) : (<div style={{ 
+                height: '300px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: '#f9fafb',
+                borderRadius: 12,
+                color: '#999',
+                fontSize: '14px'
+              }}>
+                Nenhuma linha encontrada
+              </div>) 
             ) : topLines.length > 0 ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxHeight: '300px', overflowY: 'auto' }}>
                 {topLines.map((line, index) => {

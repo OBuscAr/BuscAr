@@ -1,7 +1,7 @@
 from typing import Optional, Sequence
 
 import responses
-from app.repositories.sptrans_client import LINES_LOOK_UP_URL, LOGIN_URL, POSITION_URL
+from app.clients.sptrans_client import LINES_LOOK_UP_URL, LOGIN_URL, POSITION_URL
 from app.schemas import SPTransLine, SPTransLinesVehiclesResponse
 from fastapi import status
 from requests.cookies import cookiejar_from_dict

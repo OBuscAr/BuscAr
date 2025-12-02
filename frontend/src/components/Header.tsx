@@ -35,8 +35,8 @@ const Header = () => {
     localStorage.removeItem('userName');
     localStorage.removeItem('userEmail');
     
-    // Redireciona para a página de login
-    navigate('/login');
+    // Redireciona para a landing page
+    navigate('/');
   };
 
   return (

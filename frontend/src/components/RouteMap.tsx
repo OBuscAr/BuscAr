@@ -246,14 +246,15 @@ const RouteMap: React.FC<RouteMapProps> = ({
             ? '#475569' // Cinza escuro para caminhada
             : segment.line_color || '#3b82f6'; // Cor da linha ou azul mais forte
           
+          const isBus = segment.type === 'BUS';
+          
           return (
             <Polyline
               key={index}
               positions={segmentPolyline}
               color={color}
-              weight={segment.type === 'BUS' ? 8 : 6} // Mais espesso
-              opacity={0.9} // Mais opaco
-              dashArray={segment.type === 'WALK' ? '15, 10' : undefined} // Tracejado mais visível
+              weight={isBus ? 8 : 6}
+              opacity={0.9}
               eventHandlers={{
                 mouseover: (e) => {
                   const layer = e.target;
@@ -423,12 +424,14 @@ const RouteMap: React.FC<RouteMapProps> = ({
           <span className="badge-label">Linha</span>
           <span className="badge-value">{linha}</span>
         </div>
-        <div className="info-badge-map">
-          <span className="badge-label">IQAr</span>
-          <span className={`badge-value ${iqar > 80 ? 'good' : iqar > 50 ? 'moderate' : 'poor'}`}>
-            {iqar}
-          </span>
-        </div>
+        {mode === 'route' && iqar > 0 && (
+          <div className="info-badge-map">
+            <span className="badge-label">IQAr</span>
+            <span className={`badge-value ${iqar > 80 ? 'good' : iqar > 50 ? 'moderate' : 'poor'}`}>
+              {iqar}
+            </span>
+          </div>
+        )}
         <div className="info-badge-map metric-badge">
           <span className="badge-label">Métrica</span>
           <span className="badge-value" style={{ color: getColor() }}>
