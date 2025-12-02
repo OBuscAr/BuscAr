@@ -854,7 +854,7 @@ const DashboardPage = () => {
                       🏭 {route.emission.toFixed(2)} kg
                     </span>
                     <span style={{ color: '#10b981' }}>
-                      🌱 -{route.emission_saving.toFixed(2)} kg
+                      🌱 {route.emission_saving.toFixed(2)} kg
                     </span>
                   </div>
                 </div>

@@ -381,7 +381,7 @@ function EmissionHistoryPage() {
                       <td>{record.carbono.toFixed(2)} kg CO₂</td>
                       <td>{record.distance.toFixed(2)} km</td>
                       <td style={{ color: '#22c55e', fontWeight: 'bold' }}>
-                        -{record.emissionSaving.toFixed(2)} kg
+                        {record.emissionSaving.toFixed(2)} kg
                       </td>
                       <td>
                         <div className="action-buttons">
@@ -633,7 +633,7 @@ function EmissionHistoryPage() {
                   
                   <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem', backgroundColor: '#dcfce7', borderRadius: '6px', fontWeight: '700' }}>
                     <span style={{ color: '#166534' }}>Economia:</span>
-                    <span style={{ color: '#16a34a' }}>-{routeAnalysis.saving.toFixed(2)} kg CO₂</span>
+                    <span style={{ color: '#16a34a' }}>{routeAnalysis.saving.toFixed(2)} kg CO₂</span>
                   </div>
                 </div>
 
