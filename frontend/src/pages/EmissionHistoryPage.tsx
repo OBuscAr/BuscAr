@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../style/EmissionHistoryPage.css';
-import { FiSearch, FiX } from 'react-icons/fi';
+import { FiX } from 'react-icons/fi';
 import { routesService } from '../services/routesService';
 import { linesService } from '../services/linesService';
 import type { Line, Stop } from '../types/api.types';

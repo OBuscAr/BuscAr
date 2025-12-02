@@ -50,9 +50,11 @@ const LandingPage = () => {
     }
   };
 
-  const handleCloseResults = () => {
-    setShowResults(false);
-  };
+  // temporarily unused
+  //
+  // const handleCloseResults = () => {
+  //   setShowResults(false);
+  // };
 
   return (
     <div className="landing-page">

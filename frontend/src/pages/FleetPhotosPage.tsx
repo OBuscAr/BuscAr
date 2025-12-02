@@ -25,10 +25,14 @@ function FleetPhotosPage() {
   const [allLines, setAllLines] = useState<Line[]>([]);
   const [filteredLines, setFilteredLines] = useState<Line[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [selectedMetric, setSelectedMetric] = useState<'velocidade' | 'emissao'>('emissao');
+  const [selectedMetric] = useState<'velocidade' | 'emissao'>('emissao');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // temporarily unused
+  //
+  // const [setSelectedMetric] = useState<'velocidade' | 'emissao'>('emissao');
+  
   // Carregar todas as linhas ao iniciar
   useEffect(() => {
     async function loadLines() {

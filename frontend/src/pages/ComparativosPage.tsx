@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { LineChart, Line as RechartsLine, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { FiSearch, FiX, FiBookmark } from 'react-icons/fi';
+import { FiX, FiBookmark } from 'react-icons/fi';
 import '../style/Comparativos.css';
 import { linesService } from '../services/linesService';
 import { emissionsService } from '../services/emissionsService';
