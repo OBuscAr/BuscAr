@@ -3,7 +3,7 @@ from pprint import pprint
 from requests.exceptions import HTTPError
 from app.services.route_comparison_service import RouteComparisonService
 from app.core.config import settings
-from app.repositories import google_maps_client 
+from app.clients import google_maps_client 
 
 # Ajustar depois
 sys.path.append('./') 

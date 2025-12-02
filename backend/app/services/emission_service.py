@@ -9,7 +9,8 @@ from sqlalchemy.orm import Session
 from app.constants import SAO_PAULO_ZONE
 from app.exceptions import NotFoundError, ValidationError
 from app.models import LineModel
-from app.repositories import daily_line_statistics_repository, myclimate_client
+from app.repositories import daily_line_statistics_repository
+from app.clients import myclimate_client
 from app.repositories.line_stop_repository import LineStopRepository
 from app.schemas import (
     DailyLineStatistics,

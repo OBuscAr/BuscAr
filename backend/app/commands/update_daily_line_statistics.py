@@ -12,7 +12,7 @@ from tqdm import tqdm as progress_bar
 from app.constants import SAO_PAULO_ZONE
 from app.core.database import SessionLocal
 from app.models import DailyLineStatisticsModel, LineModel, VehicleModel
-from app.repositories import sptrans_client
+from app.clients import sptrans_client
 from app.schemas import SPTransLineVehiclesResponse
 
 logger = logging.getLogger(__name__)

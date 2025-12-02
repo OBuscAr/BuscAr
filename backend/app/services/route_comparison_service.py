@@ -1,6 +1,6 @@
-from app.repositories import google_maps_client
+from app.clients import google_maps_client
 from app.schemas.vehicle_type import VehicleType
-from app.repositories import myclimate_client
+from app.clients import myclimate_client
 
 class RouteComparisonService:
 
