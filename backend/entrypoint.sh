@@ -5,9 +5,9 @@ set -e
 echo "Initializing database tables..."
 make create-database-tables
 
-# # Populate database
-# echo "Populating database..."
-# make populate-database
+# Populate database
+echo "Populating database..."
+make populate-database
 
 # Start the application
 echo "Starting FastAPI server..."

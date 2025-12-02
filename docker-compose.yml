@@ -18,12 +18,12 @@ services:
       - "8000:8000"
     depends_on:
       - db
-    environment:
-      # Database connection using the service name 'db'
-      DATABASE_URL: postgresql://buscar_user:buscar123@db:5433/buscar_db
-      # Default secrets (override these in production!)
-      SECRET_KEY: "segredo-super-seguro"
-      # Add other API keys here or use an env_file
+    # environment:
+      # # Database connection using the service name 'db'
+      # DATABASE_URL: postgresql://buscar_user:buscar123@db:5433/buscar_db
+      # # Default secrets (override these in production!)
+      # SECRET_KEY: "segredo-super-seguro"
+      # # Add other API keys here or use an env_file
       # SPTRANS_API_TOKEN: ...
       # MYCLIMATE_PASSWORD: ...
 
