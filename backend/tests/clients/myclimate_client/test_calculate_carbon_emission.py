@@ -2,11 +2,12 @@ import math
 import random
 
 import pytest
-from app.exceptions import MyclimateError
 from app.clients.myclimate_client import (
     MAXIMUM_ACCEPTED_DISTANCE,
+    MINIMUM_ACCEPTED_DISTANCE,
     calculate_carbon_emission,
 )
+from app.exceptions import MyclimateError
 from app.schemas import VehicleType
 from fastapi import status
 
@@ -44,18 +45,25 @@ def test_smaller_distances():
     """
     GIVEN  a distance less than 1 to be sent to Myclimate API
     WHEN   the `calculate_carbon_emission` is called
-    THEN   the function should return 0 without calling Myclimate
+    THEN   the function should make a call to the API with the minimum allowed distance
     """
     # GIVEN
+    response = MyclimateCarbonEmissionFactory.build()
     vehicle_type = random.choice(list(VehicleType))
-    endpoint_mock = MyclimateHelper.mock_carbon_emission_error()
+    endpoint_mock = MyclimateHelper.mock_carbon_emission(
+        distance=MINIMUM_ACCEPTED_DISTANCE, vehicle_type=vehicle_type, response=response
+    )
+    distance = MINIMUM_ACCEPTED_DISTANCE - 0.5
+    expected_emission = response.emission * distance
 
     # WHEN
-    returned_emission = calculate_carbon_emission(distance=0, vehicle_type=vehicle_type)
+    returned_emission = calculate_carbon_emission(
+        distance=distance, vehicle_type=vehicle_type
+    )
 
     # THEN
-    assert returned_emission == 0
-    assert endpoint_mock.call_count == 0
+    assert endpoint_mock.call_count == 1
+    assert math.isclose(returned_emission, expected_emission, abs_tol=1e-2)
 
 
 def test_bigger_distances():

@@ -7,7 +7,7 @@ class MyclimateCarbonEmissionFactory(ModelFactory[MyclimateCarbonEmission]):
     __check_model__ = True
     __set_as_default_factory_for_type__ = True
 
-    emission = Use(lambda: MyclimateCarbonEmissionFactory.__random__.uniform(0, 1000))
+    emission = Use(lambda: MyclimateCarbonEmissionFactory.__random__.uniform(1, 1000))
 
 
 class MyclimateBulkCarbonEmissionFactory(ModelFactory[MyclimateBulkCarbonEmission]):

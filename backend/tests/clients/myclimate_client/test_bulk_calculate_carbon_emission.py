@@ -2,12 +2,12 @@ import math
 import random
 
 import pytest
-from app.exceptions import MyclimateError
 from app.clients.myclimate_client import (
     MAXIMUM_ACCEPTED_DISTANCE,
     MINIMUM_ACCEPTED_DISTANCE,
     bulk_calculate_carbon_emission,
 )
+from app.exceptions import MyclimateError
 from app.schemas import VehicleType
 from fastapi import status
 
@@ -53,22 +53,25 @@ def test_minimum_distance():
     """
     GIVEN  a distance less than 1
     WHEN   the `bulk_calculate_carbon_emission` is called
-    THEN   the related response should be 0
+    THEN   the function should make a call to the API with the minimum allowed distance
     """
     # GIVEN
+    emission_response = 6
     endpoint_mock = MyclimateHelper.mock_simplified_bulk_carbon_emission_by_value(
-        emission_response=6,
+        emission_response=emission_response,
     )
+    distance = MINIMUM_ACCEPTED_DISTANCE - 0.5
+    expected_emission = emission_response * distance
 
     # WHEN
     returned_emission = bulk_calculate_carbon_emission(
-        distances=[MINIMUM_ACCEPTED_DISTANCE - 1], vehicle_type=VehicleType.BUS
+        distances=[distance], vehicle_type=VehicleType.BUS
     )
 
     # THEN
     assert endpoint_mock.call_count == 1
     assert len(returned_emission) == 1
-    return returned_emission[0] == 0
+    assert math.isclose(returned_emission[0], expected_emission, abs_tol=1e-3)
 
 
 def test_maximum_distance():
@@ -93,7 +96,7 @@ def test_maximum_distance():
     # THEN
     assert endpoint_mock.call_count == 1
     assert len(returned_emission) == 1
-    return returned_emission[0] == raw_emission * multiplier
+    assert math.isclose(returned_emission[0], raw_emission * multiplier, abs_tol=1e-3)
 
 
 def test_simplify_mock():
