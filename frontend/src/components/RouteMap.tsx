@@ -424,12 +424,14 @@ const RouteMap: React.FC<RouteMapProps> = ({
           <span className="badge-label">Linha</span>
           <span className="badge-value">{linha}</span>
         </div>
-        <div className="info-badge-map">
-          <span className="badge-label">IQAr</span>
-          <span className={`badge-value ${iqar > 80 ? 'good' : iqar > 50 ? 'moderate' : 'poor'}`}>
-            {iqar}
-          </span>
-        </div>
+        {mode === 'route' && iqar > 0 && (
+          <div className="info-badge-map">
+            <span className="badge-label">IQAr</span>
+            <span className={`badge-value ${iqar > 80 ? 'good' : iqar > 50 ? 'moderate' : 'poor'}`}>
+              {iqar}
+            </span>
+          </div>
+        )}
         <div className="info-badge-map metric-badge">
           <span className="badge-label">Métrica</span>
           <span className="badge-value" style={{ color: getColor() }}>

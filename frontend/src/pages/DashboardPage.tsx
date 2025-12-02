@@ -14,7 +14,7 @@ const DashboardPage = () => {
   const [topLines, setTopLines] = useState<LineEmission[]>([]);
   const [userRoutes, setUserRoutes] = useState<UserRoute[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [daysRange, setDaysRange] = useState(7);
+  const [daysRange, setDaysRange] = useState(5);
 
   useEffect(() => {
     async function fetchData() {
@@ -165,32 +165,12 @@ const DashboardPage = () => {
             gap: '1rem'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span style={{ fontSize: '24px' }}>💡</span>
-              <span style={{ fontWeight: 600, fontSize: '16px' }}>Comece salvando suas rotas!</span>
+              <span style={{ fontWeight: 600, fontSize: '16px' }}>Comece comparando suas rotas!</span>
             </div>
             <p style={{ margin: 0, lineHeight: 1.6 }}>
-              Você ainda não tem rotas salvas. Vá para <strong>Fotografias da Frota</strong> e salve suas rotas frequentes 
+              Você ainda não tem rotas salvas. Vá para <strong style={{ cursor: 'pointer', textDecoration: 'underline' }} onClick={() => navigate('/painel/fotografias')}>Fotografias da Frota</strong> para obter informações de emissões por frota e compare rotas. Veja, também, a comparação de frotas em <strong style={{ cursor: 'pointer', textDecoration: 'underline' }} onClick={() => navigate('/painel/comparativos')}>Dados Comparativos</strong> e salve seus trajetos frequentes 
               para ver estatísticas personalizadas de emissões e economia de CO₂.
             </p>
-            <button
-              onClick={() => navigate('/painel/fotografias')}
-              style={{ 
-                padding: '12px 20px',
-                backgroundColor: '#3b82f6',
-                color: '#fff',
-                border: 'none',
-                borderRadius: 8,
-                fontSize: '14px',
-                fontWeight: 600,
-                cursor: 'pointer',
-                alignSelf: 'flex-start',
-                transition: 'background-color 0.2s'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2563eb'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3b82f6'}
-            >
-              🔍 Buscar Rotas
-            </button>
           </div>
         )}
 
@@ -225,9 +205,9 @@ const DashboardPage = () => {
               transition: 'border-color 0.2s'
             }}
           >
-            <option value={7}>Últimos 7 dias</option>
-            <option value={30}>Últimos 30 dias</option>
-            <option value={90}>Últimos 90 dias</option>
+            <option value={5}>Últimos 5 dias</option>
+            <option value={10}>Últimos 10 dias</option>
+            <option value={15}>Últimos 15 dias</option>
           </select>
         </div>
 

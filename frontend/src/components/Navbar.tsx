@@ -13,10 +13,10 @@ const Navbar = () => {
   const navigate = useNavigate();
 
   const handleSair = () => {
-    // Limpa o localStorage e redireciona para o login
+    // Limpa o localStorage e redireciona para a landing page
     localStorage.removeItem('authToken');
     localStorage.removeItem('userName');
-    navigate('/login');
+    navigate('/');
   };
 
   return (
