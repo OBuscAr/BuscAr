@@ -24,7 +24,11 @@ def find_bus_routes(origin_address: str, destination_address: str) -> dict:
         "routes.legs.steps.transitDetails.transitLine.color,"
         "routes.legs.steps.polyline.encodedPolyline,"
         "routes.description,"
-        "routes.legs.steps.staticDuration"
+        "routes.legs.steps.staticDuration,"
+        "routes.legs.startLocation.latLng.latitude,"
+        "routes.legs.startLocation.latLng.longitude,"
+        "routes.legs.endLocation.latLng.latitude,"
+        "routes.legs.endLocation.latLng.longitude"
     )
     
     headers = {
@@ -57,3 +61,36 @@ def find_bus_routes(origin_address: str, destination_address: str) -> dict:
         print("-----------------------------")
         raise e
     return response.json()
+
+def get_coordinates_from_address(address: str):
+    field_mask = (
+        "routes.legs.startLocation.latLng.latitude,"
+        "routes.legs.startLocation.latLng.longitude"
+    )
+
+    headers = {
+        "Content-Type": "application/json",
+        "X-Goog-Api-Key": GOOGLE_API_KEY,
+        "X-Goog-FieldMask": field_mask
+    }
+
+    body = {
+        "origin": {"address": address},
+        "destination": {"address": address},  # <-- truque
+        "travelMode": "DRIVE"
+    }
+
+    response = requests.post(GOOGLE_ROUTES_API_URL, json=body, headers=headers)
+    response.raise_for_status()
+
+    data = response.json()
+
+    try:
+        loc = data["routes"][0]["legs"][0]["startLocation"]["latLng"]
+        return {
+            "latitude": loc["latitude"],
+            "longitude": loc["longitude"]
+        }
+    except:
+        return None
+
