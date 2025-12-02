@@ -380,6 +380,104 @@
   line-height: 1.5;
 }
 
+/* Air Quality Section */
+.air-quality-section {
+  margin-bottom: 1.5rem;
+}
+
+.air-quality-section h4 {
+  margin: 0 0 1rem 0;
+  font-size: 1.1rem;
+  color: #1f2937;
+  font-weight: 600;
+}
+
+.air-quality-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.air-quality-card {
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.air-quality-card.origin {
+  background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+  border: 2px solid #7dd3fc;
+}
+
+.air-quality-card.destination {
+  background: linear-gradient(135deg, #ddd6fe 0%, #c4b5fd 100%);
+  border: 2px solid #a78bfa;
+}
+
+.air-quality-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.5);
+}
+
+.location-icon {
+  font-size: 1.25rem;
+}
+
+.location-label {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.aqi-item {
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 8px;
+  padding: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.aqi-label {
+  display: block;
+  font-size: 0.8rem;
+  color: #64748b;
+  margin-bottom: 0.5rem;
+}
+
+.aqi-value-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.aqi-number {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.aqi-category {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #475569;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+}
+
+.health-recommendation {
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 8px;
+  padding: 0.75rem;
+  font-size: 0.85rem;
+  color: #334155;
+  line-height: 1.5;
+  margin-top: 0.5rem;
+}
+
 .btn-buscar:disabled {
   opacity: 0.6;
   cursor: not-allowed;
