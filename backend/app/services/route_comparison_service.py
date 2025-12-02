@@ -1,7 +1,11 @@
+import logging
+
 from app.clients import google_maps_client
 from app.schemas.vehicle_type import VehicleType
 from app.clients import myclimate_client
 from app.services import air_quality_service
+
+logger = logging.getLogger(__name__)
 
 class RouteComparisonService:
 
@@ -18,7 +22,7 @@ class RouteComparisonService:
         points = poly_obj.get("encodedPolyline") or poly_obj.get("points") or ""
         return {"encodedPolyline": points}
         
-    def calculate_bus_route_emissions(self, origin: str, destination: str) -> list:
+    def calculate_bus_route_emissions(self, origin: str, destination: str) -> dict:
         """
          Calculation of emissions for multiple bus routes.
         """
@@ -26,7 +30,6 @@ class RouteComparisonService:
         # Buscar rotas na API do Google
         google_response = google_maps_client.find_bus_routes(origin, destination)
         
-        routes_data = []
         origin_aqi = None
         destination_aqi = None
 
@@ -58,9 +61,11 @@ class RouteComparisonService:
         unique_routes_map = {}
         
         if "routes" not in google_response:
-            return [] 
-
-        calculated_routes = []
+            return {
+                "origin_air_quality": origin_aqi,
+                "destination_air_quality": destination_aqi,
+                "routes": []
+            }
 
         # Iterar sobre cada rota alternativa que o Google retornou
         for route in google_response.get("routes", []):
