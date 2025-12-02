@@ -7,29 +7,6 @@ import { emissionsService } from '../services/emissionsService';
 import type { Line } from '../types/api.types';
 import Loading from '../components/Loading';
 
-interface RouteSegment {
-  type: 'WALK' | 'BUS';
-  instruction: string;
-  distance_km: number;
-  duration_text: string | null;
-  line_name: string | null;
-  line_color: string | null;
-  vehicle_type: string | null;
-  polyline: {
-    encodedPolyline: string;
-  };
-}
-
-interface RouteOption {
-  description: string;
-  distance_km: number;
-  emission_kg_co2: number;
-  polyline: {
-    encodedPolyline: string;
-  };
-  segments: RouteSegment[];
-}
-
 interface PhotoData {
   id: string;
   linha: string;
@@ -43,7 +20,6 @@ interface PhotoData {
 function FleetPhotosPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLine, setSelectedLine] = useState<Line | null>(null);
-  const [selectedRoute, setSelectedRoute] = useState<RouteOption | null>(null);
   const [photoData, setPhotoData] = useState<PhotoData | null>(null);
   const [routePoints, setRoutePoints] = useState<Array<{lat: number, lng: number, name?: string, value?: number}>>([]);
   const [allLines, setAllLines] = useState<Line[]>([]);
@@ -118,28 +94,6 @@ function FleetPhotosPage() {
       
       if (stops.length === 0) {
         console.warn('Nenhuma parada encontrada para esta linha');
-      }
-
-      if (stops.length >= 2) {
-        try {
-          const firstStop = stops[0];
-          const lastStop = stops[stops.length - 1];
-          
-          const originAddress = `${firstStop.latitude},${firstStop.longitude}`;
-          const destinationAddress = `${lastStop.latitude},${lastStop.longitude}`;
-          
-          console.log('Buscando rota real do Google...');
-          const { routeComparisonService } = await import('../services/routeComparisonService');
-          const routeData = await routeComparisonService.compareRoutes(originAddress, destinationAddress);
-          
-          if (routeData.routes.length > 0) {
-            const bestRoute = routeData.routes[0];
-            setSelectedRoute(bestRoute);
-            console.log('Polyline do Google carregada com sucesso');
-          }
-        } catch (err) {
-          console.warn('Erro ao buscar polyline do Google, usando rota linear:', err);
-        }
       }
 
       const emissionData = await emissionsService.getTotalLineEmission(line.name);
@@ -321,7 +275,6 @@ function FleetPhotosPage() {
                 <RouteMap
                   mode="line"
                   routePoints={routePoints}
-                  encodedPolyline={selectedRoute?.polyline.encodedPolyline}
                   selectedMetric={selectedMetric}
                   linha={selectedLine.name}
                 />
