@@ -13,6 +13,7 @@ const ComparativosPage = lazy(() => import('./pages/ComparativosPage'));
 const PlaceholderPage = lazy(() => import('./pages/PlaceholderPage'));
 const EmissionHistoryPage = lazy(() => import('./pages/EmissionHistoryPage'));
 const FleetPhotosPage = lazy(() => import('./pages/FleetPhotosPage'));
+const RouteComparePage = lazy(() => import('./pages/RouteComparePage'));
 
 import './style/App.css'; 
 
@@ -36,6 +37,7 @@ function App() {
               <Route index               element={<DashboardPage />} /> 
               <Route path="comparativos" element={<ComparativosPage />} />
               <Route path="historico"    element={<EmissionHistoryPage />} />
+              <Route path="rotas"        element={<RouteComparePage />} />
               <Route path="fotografias"  element={<FleetPhotosPage />} />
             </Route>
           </Route>

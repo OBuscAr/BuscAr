@@ -6,7 +6,8 @@ import {
   BsGrid1X2Fill, 
   BsBarChartFill, 
   BsClockHistory, 
-  BsCameraFill, 
+  BsCameraFill,
+  BsSignpost2Fill,
 } from 'react-icons/bs';
 
 const Navbar = () => {
@@ -34,6 +35,9 @@ const Navbar = () => {
         </NavLink>
         <NavLink to="/painel/historico" className={({ isActive }) => (isActive ? 'active' : '')}>
           <BsClockHistory /> Histórico de emissões
+        </NavLink>
+        <NavLink to="/painel/rotas" className={({ isActive }) => (isActive ? 'active' : '')}>
+          <BsSignpost2Fill /> Comparar rotas
         </NavLink>
         <NavLink to="/painel/fotografias" className={({ isActive }) => (isActive ? 'active' : '')}>
           <BsCameraFill /> Fotografias da frota

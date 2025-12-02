@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../style/EmissionHistoryPage.css';
-import { FiSearch } from 'react-icons/fi';
+import { FiSearch, FiX } from 'react-icons/fi';
 import { routesService } from '../services/routesService';
+import { linesService } from '../services/linesService';
+import type { Line, Stop } from '../types/api.types';
 import Loading from '../components/Loading';
 
 interface EmissionRecord {
@@ -24,6 +26,52 @@ function EmissionHistoryPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [emissionData, setEmissionData] = useState<EmissionRecord[]>([]);
   const [authError, setAuthError] = useState(false);
+  
+  // Estados para análise de rota
+  const [showAnalyzeModal, setShowAnalyzeModal] = useState(false);
+  const [lines, setLines] = useState<Line[]>([]);
+  const [selectedLine, setSelectedLine] = useState<Line | null>(null);
+  const [stops, setStops] = useState<Stop[]>([]);
+  const [departureStopId, setDepartureStopId] = useState<number | null>(null);
+  const [arrivalStopId, setArrivalStopId] = useState<number | null>(null);
+  const [routeAnalysis, setRouteAnalysis] = useState<any>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [searchLineTerm, setSearchLineTerm] = useState('');
+
+  // Carregar linhas quando abrir o modal
+  useEffect(() => {
+    const loadLines = async () => {
+      try {
+        const linesData = await linesService.searchLines('');
+        setLines(linesData);
+      } catch (error) {
+        console.error('Erro ao carregar linhas:', error);
+      }
+    };
+    
+    if (showAnalyzeModal && lines.length === 0) {
+      loadLines();
+    }
+  }, [showAnalyzeModal]);
+
+  // Carregar paradas quando selecionar uma linha
+  useEffect(() => {
+    const loadStops = async () => {
+      if (!selectedLine) return;
+      
+      try {
+        const stopsData = await linesService.getLineStops(selectedLine.id);
+        setStops(stopsData);
+        setDepartureStopId(null);
+        setArrivalStopId(null);
+        setRouteAnalysis(null);
+      } catch (error) {
+        console.error('Erro ao carregar paradas:', error);
+      }
+    };
+    
+    loadStops();
+  }, [selectedLine]);
 
   // Carregar rotas salvas do usuário
   useEffect(() => {
@@ -141,6 +189,81 @@ function EmissionHistoryPage() {
     }
   };
 
+  const handleAnalyzeRoute = async () => {
+    if (!selectedLine || !departureStopId || !arrivalStopId) {
+      alert('Por favor, selecione uma linha e as paradas de origem e destino.');
+      return;
+    }
+
+    if (departureStopId === arrivalStopId) {
+      alert('As paradas de origem e destino devem ser diferentes.');
+      return;
+    }
+
+    setIsAnalyzing(true);
+    try {
+      // Buscar dados da rota (cria temporariamente para obter os cálculos)
+      const tempRoute = await routesService.createRoute({
+        line_id: selectedLine.id,
+        departure_stop_id: departureStopId,
+        arrival_stop_id: arrivalStopId
+      });
+
+      // Calcular emissão de carro (assumindo 0.192 kg CO2/km como padrão para carros)
+      const carEmission = tempRoute.distance * 0.192;
+
+      setRouteAnalysis({
+        line: selectedLine.name,
+        departureStop: stops.find(s => s.id === departureStopId)?.name || '',
+        arrivalStop: stops.find(s => s.id === arrivalStopId)?.name || '',
+        distance: tempRoute.distance,
+        busEmission: tempRoute.emission,
+        carEmission: carEmission,
+        saving: tempRoute.emission_saving,
+        routeId: tempRoute.id
+      });
+
+      // Adiciona à lista local
+      const newRecord: EmissionRecord = {
+        id: tempRoute.id,
+        linha: selectedLine.name.split(' - ')[0],
+        origem: stops.find(s => s.id === departureStopId)?.name || '',
+        destino: stops.find(s => s.id === arrivalStopId)?.name || '',
+        ranking: emissionData.length + 1,
+        data: tempRoute.created_at,
+        carbono: tempRoute.emission,
+        distance: tempRoute.distance,
+        emissionSaving: tempRoute.emission_saving,
+        acao: 'download'
+      };
+
+      setEmissionData(prev => [...prev, newRecord]);
+      
+    } catch (error) {
+      console.error('Erro ao analisar rota:', error);
+      alert('Erro ao analisar rota. Tente novamente.');
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setShowAnalyzeModal(false);
+    setSelectedLine(null);
+    setStops([]);
+    setDepartureStopId(null);
+    setArrivalStopId(null);
+    setRouteAnalysis(null);
+    setSearchLineTerm('');
+  };
+
+  const filteredLines = searchLineTerm.trim()
+    ? lines.filter(line => 
+        line.name.toLowerCase().includes(searchLineTerm.toLowerCase()) ||
+        line.description?.toLowerCase().includes(searchLineTerm.toLowerCase())
+      )
+    : lines;
+
   return (
     <div className="emission-history-container">
       <div className="history-header">
@@ -148,9 +271,18 @@ function EmissionHistoryPage() {
           <h1>Histórico de emissões</h1>
           <p>Como está seu ar hoje?</p>
         </div>
-        <button className="new-search-button" onClick={handleNewSearch}>
-          Buscar +
-        </button>
+        <div style={{ display: 'flex', gap: '1rem' }}>
+          <button 
+            className="new-search-button"
+            onClick={() => setShowAnalyzeModal(true)}
+            style={{ backgroundColor: '#10b981' }}
+          >
+            Analisar Rota
+          </button>
+          <button className="new-search-button" onClick={handleNewSearch}>
+            Buscar + dados
+          </button>
+        </div>
       </div>
 
       <div className="search-section">
@@ -281,6 +413,242 @@ function EmissionHistoryPage() {
           </>
         )}
       </div>
+
+      {/* Modal de Análise de Rota */}
+      {showAnalyzeModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            padding: '2rem',
+            maxWidth: '600px',
+            width: '90%',
+            maxHeight: '90vh',
+            overflow: 'auto',
+            position: 'relative'
+          }}>
+            <button
+              onClick={handleCloseModal}
+              style={{
+                position: 'absolute',
+                top: '1rem',
+                right: '1rem',
+                background: 'none',
+                border: 'none',
+                fontSize: '1.5rem',
+                cursor: 'pointer',
+                color: '#64748b'
+              }}
+            >
+              <FiX />
+            </button>
+
+            <h2 style={{ marginBottom: '1.5rem', color: '#1e293b' }}>Analisar uma Rota</h2>
+
+            {/* Busca de Linha */}
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#1e293b' }}>
+                Buscar Linha:
+              </label>
+              <input
+                type="text"
+                placeholder="Digite o número ou nome da linha"
+                value={searchLineTerm}
+                onChange={(e) => setSearchLineTerm(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  border: '2px solid #e2e8f0',
+                  borderRadius: '8px',
+                  fontSize: '1rem'
+                }}
+              />
+              {searchLineTerm.trim() && filteredLines.length > 0 && (
+                <div style={{
+                  marginTop: '0.5rem',
+                  fontSize: '0.85rem',
+                  color: '#64748b'
+                }}>
+                  {filteredLines.length} {filteredLines.length === 1 ? 'linha encontrada' : 'linhas encontradas'}
+                </div>
+              )}
+              {searchLineTerm.trim() && filteredLines.length === 0 && (
+                <div style={{
+                  marginTop: '0.5rem',
+                  fontSize: '0.85rem',
+                  color: '#ef4444'
+                }}>
+                  Nenhuma linha encontrada
+                </div>
+              )}
+            </div>
+
+            {/* Seleção de Linha - só mostra se tiver resultados */}
+            {(searchLineTerm.trim() === '' || filteredLines.length > 0) && (
+              <div style={{ marginBottom: '1.5rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#1e293b' }}>
+                  Linha:
+                </label>
+                <select
+                  value={selectedLine?.id || ''}
+                  onChange={(e) => {
+                    const line = lines.find(l => l.id === Number(e.target.value));
+                    setSelectedLine(line || null);
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem',
+                    border: '2px solid #e2e8f0',
+                    borderRadius: '8px',
+                    fontSize: '1rem'
+                  }}
+                >
+                  <option value="">Selecione uma linha</option>
+                  {filteredLines.slice(0, 50).map(line => (
+                    <option key={line.id} value={line.id}>
+                      {line.name} {line.description && `- ${line.description}`}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* Parada de Origem */}
+            {selectedLine && (
+              <div style={{ marginBottom: '1.5rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#1e293b' }}>
+                  Parada de Origem:
+                </label>
+                <select
+                  value={departureStopId || ''}
+                  onChange={(e) => setDepartureStopId(Number(e.target.value))}
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem',
+                    border: '2px solid #e2e8f0',
+                    borderRadius: '8px',
+                    fontSize: '1rem'
+                  }}
+                >
+                  <option value="">Selecione a parada de origem</option>
+                  {stops.map(stop => (
+                    <option key={stop.id} value={stop.id}>
+                      {stop.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* Parada de Destino */}
+            {selectedLine && (
+              <div style={{ marginBottom: '1.5rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: '#1e293b' }}>
+                  Parada de Destino:
+                </label>
+                <select
+                  value={arrivalStopId || ''}
+                  onChange={(e) => setArrivalStopId(Number(e.target.value))}
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem',
+                    border: '2px solid #e2e8f0',
+                    borderRadius: '8px',
+                    fontSize: '1rem'
+                  }}
+                >
+                  <option value="">Selecione a parada de destino</option>
+                  {stops.map(stop => (
+                    <option key={stop.id} value={stop.id}>
+                      {stop.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* Botão Analisar */}
+            <button
+              onClick={handleAnalyzeRoute}
+              disabled={!selectedLine || !departureStopId || !arrivalStopId || isAnalyzing}
+              style={{
+                width: '100%',
+                padding: '0.75rem',
+                backgroundColor: selectedLine && departureStopId && arrivalStopId ? '#3b82f6' : '#94a3b8',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '1rem',
+                fontWeight: '600',
+                cursor: selectedLine && departureStopId && arrivalStopId ? 'pointer' : 'not-allowed',
+                marginBottom: '1rem'
+              }}
+            >
+              {isAnalyzing ? 'Analisando...' : 'Analisar'}
+            </button>
+
+            {/* Resultado da Análise */}
+            {routeAnalysis && (
+              <div style={{
+                marginTop: '1.5rem',
+                padding: '1.5rem',
+                backgroundColor: '#f0fdf4',
+                borderRadius: '8px',
+                border: '2px solid #86efac'
+              }}>
+                <h3 style={{ marginBottom: '1rem', color: '#166534', fontSize: '1.1rem' }}>
+                  ✅ Análise Concluída
+                </h3>
+                
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem', backgroundColor: 'white', borderRadius: '6px' }}>
+                    <span style={{ fontWeight: '600' }}>Distância:</span>
+                    <span>{routeAnalysis.distance.toFixed(2)} km</span>
+                  </div>
+                  
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem', backgroundColor: 'white', borderRadius: '6px' }}>
+                    <span style={{ fontWeight: '600' }}>Emissão Ônibus:</span>
+                    <span>{routeAnalysis.busEmission.toFixed(2)} kg CO₂</span>
+                  </div>
+                  
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem', backgroundColor: 'white', borderRadius: '6px' }}>
+                    <span style={{ fontWeight: '600' }}>Emissão Carro:</span>
+                    <span>{routeAnalysis.carEmission.toFixed(2)} kg CO₂</span>
+                  </div>
+                  
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem', backgroundColor: '#dcfce7', borderRadius: '6px', fontWeight: '700' }}>
+                    <span style={{ color: '#166534' }}>Economia:</span>
+                    <span style={{ color: '#16a34a' }}>-{routeAnalysis.saving.toFixed(2)} kg CO₂</span>
+                  </div>
+                </div>
+
+                <div style={{ 
+                  marginTop: '1rem', 
+                  padding: '0.75rem',
+                  backgroundColor: '#e0f2fe',
+                  borderRadius: '6px',
+                  fontSize: '0.9rem',
+                  color: '#0369a1',
+                  textAlign: 'center'
+                }}>
+                  Rota salva com sucesso no seu histórico!
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
