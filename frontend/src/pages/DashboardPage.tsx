@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useState, Fragment } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Loading from '../components/Loading';
 import '../style/Dashboard.css';
@@ -24,6 +24,7 @@ const DashboardPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [daysRange, setDaysRange] = useState(5);
   const [analysisType, setAnalysisType] = useState<AnalysisType>(AnalysisType.General);
+  const [showChartModal, setShowChartModal] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
@@ -411,9 +412,40 @@ const DashboardPage = () => {
             boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
             border: '1px solid #f0f0f0'
           }}>
-            <h3 style={{ fontSize: '18px', fontWeight: 600, color: '#1a1a1a', marginBottom: '1.5rem' }}>
-              {analysisType === AnalysisType.Customized ? 'Suas Emissões ao Longo do Tempo' : 'Tendência de Emissões'}
-            </h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <h3 style={{ fontSize: '18px', fontWeight: 600, color: '#1a1a1a', margin: 0 }}>
+                {analysisType === AnalysisType.Customized ? 'Suas Emissões ao Longo do Tempo' : 'Tendência de Emissões'}
+              </h3>
+              {statistics.length > 0 && (
+                <button
+                  onClick={() => setShowChartModal(true)}
+                  style={{
+                    padding: '8px 12px',
+                    backgroundColor: '#f3f4f6',
+                    border: 'none',
+                    borderRadius: 8,
+                    cursor: 'pointer',
+                    fontSize: '20px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.2s',
+                    color: '#6366f1'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#e5e7eb';
+                    e.currentTarget.style.transform = 'scale(1.05)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = '#f3f4f6';
+                    e.currentTarget.style.transform = 'scale(1)';
+                  }}
+                  title="Expandir gráfico"
+                >
+                  ⛶
+                </button>
+              )}
+            </div>
             {statistics.length > 0 ? (
               <div style={{ position: 'relative', height: '300px' }}>
                 <svg width="100%" height="100%" viewBox="0 0 650 300" preserveAspectRatio="xMidYMid meet">
@@ -903,6 +935,307 @@ const DashboardPage = () => {
             🔄 Dados Comparativos
           </button>
         </div>
+
+        {/* Modal de Zoom do Gráfico */}
+        {showChartModal && (
+          <div 
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.75)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1000,
+              padding: '2rem'
+            }}
+            onClick={() => setShowChartModal(false)}
+          >
+            <div 
+              style={{
+                backgroundColor: '#fff',
+                borderRadius: 20,
+                padding: '2rem',
+                maxWidth: '1200px',
+                width: '100%',
+                maxHeight: '90vh',
+                overflow: 'auto',
+                position: 'relative'
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header do Modal */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                <h2 style={{ fontSize: '24px', fontWeight: 700, color: '#1a1a1a', margin: 0 }}>
+                  {analysisType === AnalysisType.Customized ? 'Suas Emissões ao Longo do Tempo' : 'Tendência de Emissões'}
+                </h2>
+                <button
+                  onClick={() => setShowChartModal(false)}
+                  style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: 10,
+                    border: 'none',
+                    backgroundColor: '#f3f4f6',
+                    cursor: 'pointer',
+                    fontSize: '24px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#666',
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#e5e7eb';
+                    e.currentTarget.style.color = '#1a1a1a';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = '#f3f4f6';
+                    e.currentTarget.style.color = '#666';
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Informações sobre o período */}
+              <div style={{
+                padding: '1rem',
+                backgroundColor: '#f9fafb',
+                borderRadius: 12,
+                marginBottom: '1.5rem',
+                display: 'flex',
+                gap: '2rem',
+                flexWrap: 'wrap'
+              }}>
+                <div>
+                  <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px' }}>Período</div>
+                  <div style={{ fontSize: '16px', fontWeight: 600, color: '#1a1a1a' }}>
+                    Últimos {daysRange} dias
+                  </div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px' }}>Total de Emissões</div>
+                  <div style={{ fontSize: '16px', fontWeight: 600, color: '#ef4444' }}>
+                    {totalEmissions.toFixed(2)} kg CO₂
+                  </div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px' }}>Média Diária</div>
+                  <div style={{ fontSize: '16px', fontWeight: 600, color: '#6366f1' }}>
+                    {avgDailyEmission.toFixed(2)} kg/dia
+                  </div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px' }}>Tendência</div>
+                  <div style={{ 
+                    fontSize: '16px', 
+                    fontWeight: 600, 
+                    color: emissionTrend > 0 ? '#ef4444' : '#10b981'
+                  }}>
+                    {emissionTrend > 0 ? '↑' : '↓'} {Math.abs(emissionTrend).toFixed(1)}%
+                  </div>
+                </div>
+              </div>
+
+              {/* Gráfico Expandido */}
+              <div style={{ position: 'relative', height: '500px', marginBottom: '1.5rem' }}>
+                <svg width="100%" height="100%" viewBox="0 0 1100 500" preserveAspectRatio="xMidYMid meet">
+                  <defs>
+                    <linearGradient id="lineGradientModal" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stopColor="#6366f1" stopOpacity="0.3" />
+                      <stop offset="100%" stopColor="#6366f1" stopOpacity="0" />
+                    </linearGradient>
+                  </defs>
+                  
+                  {/* Grid horizontal */}
+                  {[0, 1, 2, 3, 4, 5, 6].map(i => (
+                    <line
+                      key={i}
+                      x1={80}
+                      y1={40 + i * 65}
+                      x2={1020}
+                      y2={40 + i * 65}
+                      stroke="#f0f0f0"
+                      strokeWidth={1.5}
+                    />
+                  ))}
+                  
+                  {/* Área preenchida e linha */}
+                  {statistics.length > 0 && (() => {
+                    const maxEmission = Math.max(...statistics.map(s => s.total_emission), 1);
+                    const points = statistics.map((stat, idx) => {
+                      const x = 80 + (idx / Math.max(1, statistics.length - 1)) * 940;
+                      const y = 460 - (stat.total_emission / maxEmission) * 390;
+                      return `${x},${y}`;
+                    }).join(' ');
+
+                    return statistics.length > 1 ? (
+                      <>
+                        <polygon
+                          points={`80,460 ${points} ${80 + 940},460`}
+                          fill="url(#lineGradientModal)"
+                        />
+                        <polyline
+                          points={points}
+                          fill="none"
+                          stroke="#6366f1"
+                          strokeWidth={4}
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        {/* Pontos com tooltip */}
+                        {statistics.map((stat, idx) => {
+                          const x = 80 + (idx / (statistics.length - 1)) * 940;
+                          const y = 460 - (stat.total_emission / maxEmission) * 390;
+                          return (
+                            <g key={idx}>
+                              <circle
+                                cx={x}
+                                cy={y}
+                                r={6}
+                                fill="#fff"
+                                stroke="#6366f1"
+                                strokeWidth={4}
+                                style={{ cursor: 'pointer' }}
+                              />
+                              <title>
+                                {new Date(stat.date).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}: {stat.total_emission.toFixed(2)} kg CO₂
+                              </title>
+                            </g>
+                          );
+                        })}
+                      </>
+                    ) : (
+                      <>
+                        <polyline
+                          points={points}
+                          fill="none"
+                          stroke="#6366f1"
+                          strokeWidth={4}
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        {statistics.map((stat, idx) => {
+                          const x = 550;
+                          const y = 460 - (stat.total_emission / maxEmission) * 390;
+                          return (
+                            <g key={idx}>
+                              <circle
+                                cx={x}
+                                cy={y}
+                                r={6}
+                                fill="#fff"
+                                stroke="#6366f1"
+                                strokeWidth={4}
+                              />
+                              <title>
+                                {new Date(stat.date).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}: {stat.total_emission.toFixed(2)} kg CO₂
+                              </title>
+                            </g>
+                          );
+                        })}
+                      </>
+                    );
+                  })()}
+                  
+                  {/* Eixo Y - Labels */}
+                  {statistics.length > 0 && (() => {
+                    const maxEmission = Math.max(...statistics.map(s => s.total_emission), 1);
+                    return [0, 1, 2, 3, 4, 5, 6].map(i => {
+                      const value = maxEmission * (1 - i / 6);
+                      return (
+                        <text
+                          key={i}
+                          x={70}
+                          y={40 + i * 65}
+                          fontSize={14}
+                          textAnchor="end"
+                          fill="#666"
+                          fontWeight={500}
+                          dominantBaseline="middle"
+                        >
+                          {value.toFixed(2)}
+                        </text>
+                      );
+                    });
+                  })()}
+                  
+                  {/* Eixo X - Datas */}
+                  {statistics.map((stat, idx) => {
+                    const showLabel = statistics.length <= 10 || idx % Math.ceil(statistics.length / 10) === 0 || idx === statistics.length - 1;
+                    if (showLabel) {
+                      const x = statistics.length > 1 
+                        ? 80 + (idx / (statistics.length - 1)) * 940
+                        : 550;
+                      return (
+                        <text
+                          key={stat.date}
+                          x={x}
+                          y={480}
+                          fontSize={13}
+                          textAnchor="middle"
+                          fill="#666"
+                          fontWeight={500}
+                        >
+                          {new Date(stat.date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', timeZone: 'UTC' })}
+                        </text>
+                      );
+                    }
+                    return null;
+                  })}
+                  
+                  {/* Label do eixo Y */}
+                  <text
+                    x={25}
+                    y={250}
+                    fontSize={14}
+                    textAnchor="middle"
+                    fill="#666"
+                    fontWeight={600}
+                    transform="rotate(-90 25 250)"
+                  >
+                    Emissões (kg CO₂)
+                  </text>
+                </svg>
+              </div>
+
+              {/* Tabela de dados */}
+              <div style={{
+                backgroundColor: '#f9fafb',
+                borderRadius: 12,
+                padding: '1rem',
+                maxHeight: '200px',
+                overflowY: 'auto'
+              }}>
+                <h3 style={{ fontSize: '14px', fontWeight: 600, color: '#1a1a1a', marginBottom: '0.75rem' }}>
+                  Dados Detalhados
+                </h3>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.5rem', fontSize: '12px' }}>
+                  <div style={{ fontWeight: 600, color: '#666', padding: '0.5rem' }}>Data</div>
+                  <div style={{ fontWeight: 600, color: '#666', padding: '0.5rem' }}>Emissões (kg)</div>
+                  <div style={{ fontWeight: 600, color: '#666', padding: '0.5rem' }}>Distância (km)</div>
+                  {statistics.map((stat, idx) => (
+                    <Fragment key={stat.date}>
+                      <div style={{ padding: '0.5rem', backgroundColor: idx % 2 === 0 ? '#fff' : 'transparent', borderRadius: 6 }}>
+                        {new Date(stat.date).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}
+                      </div>
+                      <div style={{ padding: '0.5rem', backgroundColor: idx % 2 === 0 ? '#fff' : 'transparent', borderRadius: 6, color: '#ef4444', fontWeight: 600 }}>
+                        {stat.total_emission.toFixed(2)}
+                      </div>
+                      <div style={{ padding: '0.5rem', backgroundColor: idx % 2 === 0 ? '#fff' : 'transparent', borderRadius: 6 }}>
+                        {stat.total_distance.toFixed(2)}
+                      </div>
+                    </Fragment>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </Suspense>
   );
