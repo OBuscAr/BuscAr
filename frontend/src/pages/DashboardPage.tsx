@@ -438,14 +438,15 @@ const DashboardPage = () => {
                   ))}
                   
                   {/* Área preenchida */}
-                  {statistics.length > 1 && (() => {
+                  {statistics.length > 0 && (() => {
                     const maxEmission = Math.max(...statistics.map(s => s.total_emission), 1);
                     const points = statistics.map((stat, idx) => {
-                      const x = 60 + (idx / (statistics.length - 1)) * 520;
+                      const x = 60 + (idx / Math.max(1, statistics.length - 1)) * 520;
                       const y = 280 - (stat.total_emission / maxEmission) * 240;
                       return `${x},${y}`;
                     }).join(' ');
-                    return (
+
+                    return statistics.length > 1 ?(
                       <>
                         <polygon
                           points={`60,280 ${points} ${60 + 520},280`}
@@ -462,6 +463,33 @@ const DashboardPage = () => {
                         {/* Pontos */}
                         {statistics.map((stat, idx) => {
                           const x = 60 + (idx / (statistics.length - 1)) * 520;
+                          const y = 280 - (stat.total_emission / maxEmission) * 240;
+                          return (
+                            <circle
+                              key={idx}
+                              cx={x}
+                              cy={y}
+                              r={4}
+                              fill="#fff"
+                              stroke="#6366f1"
+                              strokeWidth={3}
+                            />
+                          );
+                        })}
+                      </>
+                    ) : (
+                      <>
+                        <polyline
+                          points={points}
+                          fill="none"
+                          stroke="#6366f1"
+                          strokeWidth={3}
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        {/* Pontos */}
+                        {statistics.map((stat, idx) => {
+                          const x = 320;
                           const y = 280 - (stat.total_emission / maxEmission) * 240;
                           return (
                             <circle
@@ -494,7 +522,7 @@ const DashboardPage = () => {
                           fill="#999"
                           dominantBaseline="middle"
                         >
-                          {value.toFixed(0)}
+                          {value.toFixed(2)}
                         </text>
                       );
                     });
