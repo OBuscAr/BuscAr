@@ -2,7 +2,7 @@ import json
 from typing import Optional, Sequence
 
 import responses
-from app.repositories.myclimate_client import (
+from app.clients.myclimate_client import (
     BULK_CARBON_EMISSION_URL,
     BUS_FUEL_CONSUMPTION,
     CARBON_EMISSION_URL,

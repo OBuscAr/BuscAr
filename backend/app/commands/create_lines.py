@@ -8,7 +8,7 @@ from tqdm import tqdm as progress_bar
 from app.commands.sptrans_static_data import SPTRANS_DATA_PATH
 from app.core.database import SessionLocal
 from app.models import LineDirection, LineModel
-from app.repositories import sptrans_client
+from app.clients import sptrans_client
 from app.schemas import SPTransLineDirection
 
 FILE_LOCATION = os.path.join(SPTRANS_DATA_PATH, "fare_rules.txt")

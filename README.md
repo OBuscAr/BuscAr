@@ -27,6 +27,16 @@ Sistema web para análise das linhas de ônibus de São Paulo em relação à em
 - `/backend` → código do backend
 - `/docs` → documentação do projeto (mapas de empatia, backlog, relatórios)  
 
+## Banco de Dados (PostgreSQL)
+1. Instale PostgreSQL
+2. Crie o usuário e o banco:
+   - user: buscar_user
+   - senha: buscar123
+   - banco: buscar_db
+3. No backend/app/core/database.py, atualize DATABASE_URL se necessário:
+   postgresql://buscar_user:buscar123@localhost:5432/buscar_db
+
+
 ## 🛠️ Como rodar o projeto (quando implementado)
 
 ### Backend

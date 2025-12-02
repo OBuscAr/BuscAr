@@ -1,9 +1,9 @@
 import logging
 from typing import Optional
 
-from app.repositories import air_quality_client
+from app.clients import air_quality_client
 from app.schemas.air_quality import AirQualityResponse, AirQualityIndex
-from app.repositories import google_maps_client
+from app.clients import google_maps_client
 
 logger = logging.getLogger(__name__)
 
