@@ -256,7 +256,7 @@ const ComparativosPage = () => {
   };
 
   const formatDate = (dateStr: string) => {
-    return dateStr.slice(5); // MM-DD
+    return new Date(dateStr).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', timeZone: 'UTC' });
   };
 
   if (loading && allLines.length === 0) {

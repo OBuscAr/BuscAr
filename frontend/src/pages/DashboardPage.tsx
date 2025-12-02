@@ -90,11 +90,6 @@ const DashboardPage = () => {
     fetchData();
   }, [daysRange]);
 
-  const formatDate = (dateStr: string): string => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
-  };
-
   // Cálculos de métricas gerais
   const totalEmissions = statistics.reduce((sum, stat) => sum + stat.total_emission, 0);
   const avgDailyEmission = statistics.length > 0 ? totalEmissions / statistics.length : 0;
@@ -486,7 +481,7 @@ const DashboardPage = () => {
                           textAnchor="middle"
                           fill="#999"
                         >
-                          {new Date(stat.date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
+                          {new Date(stat.date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', timeZone: 'UTC' },)}
                         </text>
                       );
                     }
