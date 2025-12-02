@@ -57,6 +57,10 @@ function EmissionHistoryPage() {
   // Carregar paradas quando selecionar uma linha
   useEffect(() => {
     const loadStops = async () => {
+      setDepartureStopId(null);
+      setArrivalStopId(null);
+      setRouteAnalysis(null);
+      setStops([]);
       if (!selectedLine) return;
       
       try {
