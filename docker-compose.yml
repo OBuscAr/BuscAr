@@ -6,8 +6,9 @@ services:
       POSTGRES_USER: buscar_user
       POSTGRES_PASSWORD: buscar123
       POSTGRES_DB: buscar_db
+      PGPORT: 5433
     ports:
-      - "5432:5432"
+      - "5433:5433"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
@@ -19,7 +20,7 @@ services:
       - db
     environment:
       # Database connection using the service name 'db'
-      DATABASE_URL: postgresql://buscar_user:buscar123@db:5432/buscar_db
+      DATABASE_URL: postgresql://buscar_user:buscar123@db:5433/buscar_db
       # Default secrets (override these in production!)
       SECRET_KEY: "segredo-super-seguro"
       # Add other API keys here or use an env_file

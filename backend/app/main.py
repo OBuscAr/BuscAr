@@ -20,7 +20,8 @@ app = FastAPI(title="BuscAr API")
 
 # origens que podem acessar a API
 origins = [
-    "http://localhost:5173",  # url do frontend react
+    "http://localhost:5173",  # url do frontend dev build
+    "http://localhost:4173",  # url do frontend production build
 ]
 
 # adiciona o Middleware de CORS
