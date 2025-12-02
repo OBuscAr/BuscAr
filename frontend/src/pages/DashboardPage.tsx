@@ -24,7 +24,7 @@ const DashboardPage = () => {
         
         const today = new Date().toISOString().split('T')[0];
         const startDate = new Date();
-        startDate.setDate(startDate.getDate() - daysRange);
+        startDate.setDate(startDate.getDate() - daysRange + 1);
         const startDateStr = startDate.toISOString().split('T')[0];
 
         // Buscar rotas do usuário primeiro

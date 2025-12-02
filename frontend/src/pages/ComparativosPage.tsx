@@ -69,7 +69,7 @@ const ComparativosPage = () => {
       try {
         setLoading(true);
         const startDate = new Date();
-        startDate.setDate(startDate.getDate() - daysRange);
+        startDate.setDate(startDate.getDate() - daysRange + 1);
         const startDateStr = startDate.toISOString().split('T')[0];
 
         console.log('=== Iniciando fetchComparisonData ===');
