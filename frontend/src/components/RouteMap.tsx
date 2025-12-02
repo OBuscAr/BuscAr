@@ -246,14 +246,15 @@ const RouteMap: React.FC<RouteMapProps> = ({
             ? '#475569' // Cinza escuro para caminhada
             : segment.line_color || '#3b82f6'; // Cor da linha ou azul mais forte
           
+          const isBus = segment.type === 'BUS';
+          
           return (
             <Polyline
               key={index}
               positions={segmentPolyline}
               color={color}
-              weight={segment.type === 'BUS' ? 8 : 6} // Mais espesso
-              opacity={0.9} // Mais opaco
-              dashArray={segment.type === 'WALK' ? '15, 10' : undefined} // Tracejado mais visível
+              weight={isBus ? 8 : 6}
+              opacity={0.9}
               eventHandlers={{
                 mouseover: (e) => {
                   const layer = e.target;

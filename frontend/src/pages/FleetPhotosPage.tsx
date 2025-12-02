@@ -646,17 +646,12 @@ function FleetPhotosPage() {
                   <div style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: '0.5rem' }}>Legenda:</div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                      <div style={{ width: '40px', height: '6px', background: '#3b82f6', borderRadius: '3px' }}></div>
-                      <span style={{ fontSize: '0.9rem', fontWeight: '500' }}>🚌 Ônibus</span>
+                      <div style={{ width: '40px', height: '8px', background: '#3b82f6', borderRadius: '3px' }}></div>
+                      <span style={{ fontSize: '0.9rem', fontWeight: '500' }}>🚌 Ônibus (linha azul)</span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                      <div style={{ 
-                        width: '40px', 
-                        height: '6px', 
-                        background: 'repeating-linear-gradient(90deg, #475569 0, #475569 10px, transparent 10px, transparent 15px)',
-                        borderRadius: '3px'
-                      }}></div>
-                      <span style={{ fontSize: '0.9rem', fontWeight: '500' }}>🚶 Caminhada</span>
+                      <div style={{ width: '40px', height: '6px', background: '#64748b', borderRadius: '3px' }}></div>
+                      <span style={{ fontSize: '0.9rem', fontWeight: '500' }}>🚶 Caminhada (linha cinza)</span>
                     </div>
                     <div style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '0.25rem' }}>
                       💡 Passe o mouse sobre a rota para ver detalhes
