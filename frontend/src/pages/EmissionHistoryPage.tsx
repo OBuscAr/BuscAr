@@ -136,6 +136,14 @@ function EmissionHistoryPage() {
     loadRoutes();
   }, []);
 
+  useEffect(() => {
+    const element = document.getElementById('analysis');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }
+
+  }, [routeAnalysis]);
+
   // Filtrar dados com base na busca
   const filteredData = searchQuery.trim()
     ? emissionData.filter(record =>
@@ -603,7 +611,8 @@ function EmissionHistoryPage() {
             </button>
 
             {/* Resultado da Análise */}
-            {routeAnalysis && (
+            <div id="analysis">
+                {routeAnalysis && (
               <div style={{
                 marginTop: '1.5rem',
                 padding: '1.5rem',
@@ -650,6 +659,9 @@ function EmissionHistoryPage() {
                 </div>
               </div>
             )}
+              
+            </div>
+            
           </div>
         </div>
       )}
