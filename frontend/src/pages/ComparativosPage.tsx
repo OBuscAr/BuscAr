@@ -269,22 +269,22 @@ const ComparativosPage = () => {
         <h2>Dados Comparativos</h2>
         <div className="period-selector">
           <button 
-            className={daysRange === 7 ? 'active' : ''}
-            onClick={() => setDaysRange(7)}
+            className={daysRange === 5 ? 'active' : ''}
+            onClick={() => setDaysRange(5)}
           >
-            7 dias
+            5 dias
           </button>
           <button 
-            className={daysRange === 30 ? 'active' : ''}
-            onClick={() => setDaysRange(30)}
+            className={daysRange === 10 ? 'active' : ''}
+            onClick={() => setDaysRange(10)}
           >
-            30 dias
+            10 dias
           </button>
           <button 
-            className={daysRange === 90 ? 'active' : ''}
-            onClick={() => setDaysRange(90)}
+            className={daysRange === 15 ? 'active' : ''}
+            onClick={() => setDaysRange(15)}
           >
-            90 dias
+            15 dias
           </button>
         </div>
       </div>
