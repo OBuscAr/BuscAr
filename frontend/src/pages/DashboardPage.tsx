@@ -150,7 +150,7 @@ const DashboardPage = () => {
           <p style={{ color: '#666', fontSize: '14px' }}>
             {analysisType === AnalysisType.Customized
               ? `Suas estatísticas personalizadas com base em ${userRoutes.length} ${userRoutes.length === 1 ? 'rota salva' : 'rotas salvas'}`
-              : 'Estatísticas gerales'}
+              : 'Estatísticas gerais'}
           </p>
         </div>
 
