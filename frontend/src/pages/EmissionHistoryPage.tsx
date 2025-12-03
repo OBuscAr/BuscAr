@@ -280,9 +280,14 @@ function EmissionHistoryPage() {
         carEmission: carEmission.emission_kg_co2,
         saving: carEmission.emission_kg_co2 - busEmission.emission_kg_co2,
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao analisar rota:', error);
-      alert('Erro ao analisar rota. Tente novamente.');
+      if (error.response?.status === 404) {
+        alert(error.response?.data?.detail || 'Erro ao analisar rota. Tente novamente.');
+      } else {
+        alert('Erro ao analisar rota. Tente novamente.');
+      }
+      
     } finally {
       setIsAnalyzing(false);
     }

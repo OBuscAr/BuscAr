@@ -150,7 +150,7 @@ const DashboardPage = () => {
           <p style={{ color: '#666', fontSize: '14px' }}>
             {analysisType === AnalysisType.Customized
               ? `Suas estatísticas personalizadas com base em ${userRoutes.length} ${userRoutes.length === 1 ? 'rota salva' : 'rotas salvas'}`
-              : 'Estatísticas gerales'}
+              : 'Estatísticas gerais'}
           </p>
         </div>
 
@@ -549,19 +549,7 @@ const DashboardPage = () => {
                     }
                     return null;
                   })}
-                  
-                  {/* Label do eixo Y */}
-                  <text
-                    x={15}
-                    y={160}
-                    fontSize={11}
-                    textAnchor="middle"
-                    fill="#666"
-                    fontWeight={600}
-                    transform="rotate(-90 15 160)"
-                  >
-                    kg CO₂
-                  </text>
+                
                 </svg>
               </div>
             ) : (
