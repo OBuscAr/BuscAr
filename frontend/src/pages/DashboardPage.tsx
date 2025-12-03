@@ -549,19 +549,7 @@ const DashboardPage = () => {
                     }
                     return null;
                   })}
-                  
-                  {/* Label do eixo Y */}
-                  <text
-                    x={15}
-                    y={160}
-                    fontSize={11}
-                    textAnchor="middle"
-                    fill="#666"
-                    fontWeight={600}
-                    transform="rotate(-90 15 160)"
-                  >
-                    kg CO₂
-                  </text>
+                
                 </svg>
               </div>
             ) : (
