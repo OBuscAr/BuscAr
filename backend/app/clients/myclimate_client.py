@@ -66,8 +66,16 @@ def calculate_carbon_emission(distance: float, vehicle_type: VehicleType) -> flo
     - `distance`: Distance in km.
     - `vehicle_type`: Bus or car type.
     """
-    if distance < MINIMUM_ACCEPTED_DISTANCE:
+    if distance <= 0:
         return 0
+    if distance < MINIMUM_ACCEPTED_DISTANCE:
+        return (
+            calculate_carbon_emission(
+                distance=MINIMUM_ACCEPTED_DISTANCE,
+                vehicle_type=vehicle_type,
+            )
+            * distance
+        )
 
     if distance > MAXIMUM_ACCEPTED_DISTANCE:
         # We would calculate the distance for the biggest allowed value
@@ -148,7 +156,12 @@ def bulk_calculate_carbon_emission(
     payload = {
         "trips": [
             base_single_payload
-            | {"km": max(1, min(distance, MAXIMUM_ACCEPTED_DISTANCE)), "id": i}
+            | {
+                "km": max(
+                    MINIMUM_ACCEPTED_DISTANCE, min(distance, MAXIMUM_ACCEPTED_DISTANCE)
+                ),
+                "id": i,
+            }
             for i, distance in enumerate(distances)
         ]
     }
@@ -168,8 +181,10 @@ def bulk_calculate_carbon_emission(
     emissions: list[float] = []
 
     for trip, distance in zip(trips, distances, strict=True):
-        if distance < MINIMUM_ACCEPTED_DISTANCE:
-            emissions.append(0)
+        if distance < 0:
+            emissions.append(1)
+        elif distance < MINIMUM_ACCEPTED_DISTANCE:
+            emissions.append(trip.emission * distance)
         elif distance > MAXIMUM_ACCEPTED_DISTANCE:
             emissions.append(trip.emission * distance / MAXIMUM_ACCEPTED_DISTANCE)
         else:

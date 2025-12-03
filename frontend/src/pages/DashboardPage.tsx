@@ -150,7 +150,7 @@ const DashboardPage = () => {
           <p style={{ color: '#666', fontSize: '14px' }}>
             {analysisType === AnalysisType.Customized
               ? `Suas estatísticas personalizadas com base em ${userRoutes.length} ${userRoutes.length === 1 ? 'rota salva' : 'rotas salvas'}`
-              : 'Estatísticas gerales'}
+              : 'Estatísticas gerais'}
           </p>
         </div>
 
@@ -549,6 +549,7 @@ const DashboardPage = () => {
                     }
                     return null;
                   })}
+                
                 </svg>
               </div>
             ) : (
@@ -809,7 +810,7 @@ const DashboardPage = () => {
                       🏭 {route.emission.toFixed(2)} kg
                     </span>
                     <span style={{ color: '#10b981' }}>
-                      🌱 -{route.emission_saving.toFixed(2)} kg
+                      🌱 {route.emission_saving.toFixed(2)} kg
                     </span>
                   </div>
                 </div>

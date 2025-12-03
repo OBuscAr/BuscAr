@@ -34,3 +34,16 @@ export interface LinesRankingResponse {
     total_pages: number;
   };
 }
+
+export interface EmissionResponse {
+  distance_km: number;
+  emission_kg_co2: number;
+}
+
+
+export const VehicleType = {
+  BUS: "BUS",
+  CAR: "CAR",
+} as const;
+
+export type VehicleType = (typeof VehicleType)[keyof typeof VehicleType];
