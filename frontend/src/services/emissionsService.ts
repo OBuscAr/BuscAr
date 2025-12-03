@@ -1,10 +1,21 @@
 import api from './api';
-import type { 
-  EmissionStatistics, 
-  LinesRankingResponse 
+import type {
+  EmissionStatistics,
+  LinesRankingResponse,
+  EmissionResponse,
+  VehicleType,
 } from '../types/api.types';
 
+
+
 export const emissionsService = {
+  async calculateEmissionBetweenStops(lineId: number, stopIdA: number, stopIdB: number, vehicleType: VehicleType): Promise<EmissionResponse> {
+    const { data } = await api.get<EmissionResponse>('/emissions', {
+      params: { line_id: lineId, stop_id_a: stopIdA, stop_id_b: stopIdB, vehicle_type: vehicleType }
+    });
+    return data;
+  },
+
   async getLinesRanking(date: string, page = 1, pageSize = 20): Promise<LinesRankingResponse> {
     const { data } = await api.get<LinesRankingResponse>('/emissions/lines', {
       params: { date, page, page_size: pageSize }

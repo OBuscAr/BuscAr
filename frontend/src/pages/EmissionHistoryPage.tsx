@@ -5,7 +5,9 @@ import { FiSearch, FiX } from 'react-icons/fi';
 import { routesService } from '../services/routesService';
 import { linesService } from '../services/linesService';
 import type { Line, Stop } from '../types/api.types';
+import { VehicleType } from '../types/api.types';
 import Loading from '../components/Loading';
+import { emissionsService } from '../services/emissionsService';
 
 interface EmissionRecord {
   id: string;
@@ -26,7 +28,7 @@ function EmissionHistoryPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [emissionData, setEmissionData] = useState<EmissionRecord[]>([]);
   const [authError, setAuthError] = useState(false);
-  
+
   // Estados para análise de rota
   const [showAnalyzeModal, setShowAnalyzeModal] = useState(false);
   const [lines, setLines] = useState<Line[]>([]);
@@ -36,6 +38,7 @@ function EmissionHistoryPage() {
   const [arrivalStopId, setArrivalStopId] = useState<number | null>(null);
   const [routeAnalysis, setRouteAnalysis] = useState<any>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [searchLineTerm, setSearchLineTerm] = useState('');
 
   // Carregar linhas quando abrir o modal
@@ -48,7 +51,7 @@ function EmissionHistoryPage() {
         console.error('Erro ao carregar linhas:', error);
       }
     };
-    
+
     if (showAnalyzeModal && lines.length === 0) {
       loadLines();
     }
@@ -62,7 +65,7 @@ function EmissionHistoryPage() {
       setRouteAnalysis(null);
       setStops([]);
       if (!selectedLine) return;
-      
+
       try {
         const stopsData = await linesService.getLineStops(selectedLine.id);
         setStops(stopsData);
@@ -73,7 +76,7 @@ function EmissionHistoryPage() {
         console.error('Erro ao carregar paradas:', error);
       }
     };
-    
+
     loadStops();
   }, [selectedLine]);
 
@@ -84,12 +87,11 @@ function EmissionHistoryPage() {
       setAuthError(false);
       try {
         const routes = await routesService.getRoutes();
-        
+
         // Mapear rotas para o formato do componente e calcular emissão por km
         const routesWithEfficiency = routes.map(route => {
           const lineCode = route.line.name.split(' - ')[0];
-          const emissionPerKm = route.distance > 0 ? route.emission / route.distance : Infinity;
-          
+
           return {
             id: route.id,
             linha: lineCode,
@@ -100,14 +102,13 @@ function EmissionHistoryPage() {
             distance: route.distance,
             emissionSaving: route.emission_saving,
             acao: 'download',
-            emissionPerKm
           };
         });
 
-        // Ordenar por menor emissão por km (mais eficiente = ranking melhor)
-        const sortedRoutes = routesWithEfficiency.sort((a, b) => a.emissionPerKm - b.emissionPerKm);
-        
-        // Atribuir ranking baseado na eficiência
+        // Ordenar por maior economia
+        const sortedRoutes = routesWithEfficiency.sort((a, b) => b.emissionSaving - a.emissionSaving);
+
+        // Atribuir ranking baseado na economia
         const records: EmissionRecord[] = sortedRoutes.map((route, index) => ({
           id: route.id,
           linha: route.linha,
@@ -144,13 +145,28 @@ function EmissionHistoryPage() {
 
   }, [routeAnalysis]);
 
+  useEffect(() => {
+    const loadLines = async () => {
+      try {
+        const linesData = await linesService.searchLines('');
+        setLines(linesData);
+      } catch (error) {
+        console.error('Erro ao carregar linhas:', error);
+      }
+    };
+
+    if (showAnalyzeModal && lines.length === 0) {
+      loadLines();
+    }
+  }, [showAnalyzeModal]);
+
   // Filtrar dados com base na busca
   const filteredData = searchQuery.trim()
     ? emissionData.filter(record =>
-        record.linha.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        record.origem.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        record.destino.toLowerCase().includes(searchQuery.toLowerCase())
-      )
+      record.linha.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      record.origem.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      record.destino.toLowerCase().includes(searchQuery.toLowerCase())
+    )
     : emissionData;
 
   const paginatedData = filteredData;
@@ -188,12 +204,35 @@ function EmissionHistoryPage() {
     URL.revokeObjectURL(url);
   };
 
+  const reorderRoutes = (routes: EmissionRecord[]) => {
+    const sortedRecords = routes.slice().sort((a, b) => b.emissionSaving - a.emissionSaving);
+
+    // Atribuir ranking baseado na economia
+    const records: EmissionRecord[] = sortedRecords.map((record, index) => ({
+      id: record.id,
+      linha: record.linha,
+      origem: record.origem,
+      destino: record.destino,
+      ranking: index + 1,
+      data: record.data,
+      carbono: record.carbono,
+      distance: record.distance,
+      emissionSaving: record.emissionSaving,
+      acao: record.acao
+    }));
+
+    return records;
+  };
+
+
   const handleDelete = async (routeId: string) => {
     if (window.confirm('Tem certeza que deseja excluir esta rota do histórico?')) {
       try {
         await routesService.deleteRoute(routeId);
         // Remove da lista local
-        setEmissionData(prevData => prevData.filter(record => record.id !== routeId));
+        const records = reorderRoutes(emissionData.filter(record => record.id !== routeId));
+        setEmissionData(records);
+
       } catch (error) {
         console.error('Erro ao deletar rota:', error);
         alert('Erro ao deletar rota. Tente novamente.');
@@ -214,48 +253,78 @@ function EmissionHistoryPage() {
 
     setIsAnalyzing(true);
     try {
-      // Buscar dados da rota (cria temporariamente para obter os cálculos)
-      const tempRoute = await routesService.createRoute({
-        line_id: selectedLine.id,
-        departure_stop_id: departureStopId,
-        arrival_stop_id: arrivalStopId
-      });
+      const busEmission = await emissionsService.calculateEmissionBetweenStops(
+        selectedLine.id,
+        departureStopId,
+        arrivalStopId,
+        VehicleType.BUS,
+      );
 
-      // Calcular emissão de carro (assumindo 0.192 kg CO2/km como padrão para carros)
-      const carEmission = tempRoute.distance * 0.192;
+      const carEmission = await emissionsService.calculateEmissionBetweenStops(
+        selectedLine.id,
+        departureStopId,
+        arrivalStopId,
+        VehicleType.CAR,
+      );
+
 
       setRouteAnalysis({
+        lineId: selectedLine.id,
+        departureStopId: departureStopId,
+        arrivalStopId: arrivalStopId,
         line: selectedLine.name,
         departureStop: stops.find(s => s.id === departureStopId)?.name || '',
         arrivalStop: stops.find(s => s.id === arrivalStopId)?.name || '',
-        distance: tempRoute.distance,
-        busEmission: tempRoute.emission,
-        carEmission: carEmission,
-        saving: tempRoute.emission_saving,
-        routeId: tempRoute.id
+        distance: busEmission.distance_km,
+        busEmission: busEmission.emission_kg_co2,
+        carEmission: carEmission.emission_kg_co2,
+        saving: carEmission.emission_kg_co2 - busEmission.emission_kg_co2,
       });
-
-      // Adiciona à lista local
-      const newRecord: EmissionRecord = {
-        id: tempRoute.id,
-        linha: selectedLine.name.split(' - ')[0],
-        origem: stops.find(s => s.id === departureStopId)?.name || '',
-        destino: stops.find(s => s.id === arrivalStopId)?.name || '',
-        ranking: emissionData.length + 1,
-        data: tempRoute.created_at,
-        carbono: tempRoute.emission,
-        distance: tempRoute.distance,
-        emissionSaving: tempRoute.emission_saving,
-        acao: 'download'
-      };
-
-      setEmissionData(prev => [...prev, newRecord]);
-      
     } catch (error) {
       console.error('Erro ao analisar rota:', error);
       alert('Erro ao analisar rota. Tente novamente.');
     } finally {
       setIsAnalyzing(false);
+    }
+  };
+
+  const handleSaveRoute = async () => {
+    if (!routeAnalysis) {
+      alert('Por favor, analise uma rota.');
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      // Buscar dados da rota (cria temporariamente para obter os cálculos)
+      const route = await routesService.createRoute({
+        line_id: routeAnalysis.lineId,
+        departure_stop_id: routeAnalysis.departureStopId,
+        arrival_stop_id: routeAnalysis.arrivalStopId
+      });
+
+      // Adiciona à lista local
+      const newRecord: EmissionRecord = {
+        id: route.id,
+        linha: routeAnalysis.line.split(' - ')[0],
+        origem: routeAnalysis.departureStop,
+        destino: routeAnalysis.arrivalStop,
+        ranking: emissionData.length + 1,
+        data: route.created_at,
+        carbono: route.emission,
+        distance: route.distance,
+        emissionSaving: route.emission_saving,
+        acao: 'download'
+      };
+
+      setEmissionData(reorderRoutes(emissionData.concat(newRecord)));
+    } catch (error) {
+      console.error('Erro ao criar rota:', error);
+      alert('Erro ao criar rota. Tente novamente.');
+    } finally {
+      setIsSaving(false);
+      alert('Rota salva com sucesso no histórico!');
+      handleCloseModal();
     }
   };
 
@@ -270,10 +339,10 @@ function EmissionHistoryPage() {
   };
 
   const filteredLines = searchLineTerm.trim()
-    ? lines.filter(line => 
-        line.name.toLowerCase().includes(searchLineTerm.toLowerCase()) ||
-        line.description?.toLowerCase().includes(searchLineTerm.toLowerCase())
-      )
+    ? lines.filter(line =>
+      line.name.toLowerCase().includes(searchLineTerm.toLowerCase()) ||
+      line.description?.toLowerCase().includes(searchLineTerm.toLowerCase())
+    )
     : lines;
 
   return (
@@ -284,7 +353,7 @@ function EmissionHistoryPage() {
           <p>Como está seu ar hoje?</p>
         </div>
         <div style={{ display: 'flex', gap: '1rem' }}>
-          <button 
+          <button
             className="new-search-button"
             onClick={() => setShowAnalyzeModal(true)}
             style={{ backgroundColor: '#10b981' }}
@@ -311,7 +380,7 @@ function EmissionHistoryPage() {
 
       <div className="history-table-container">
         <h2>Histórico de linhas</h2>
-        
+
         {isLoading ? (
           <Loading />
         ) : authError ? (
@@ -319,7 +388,7 @@ function EmissionHistoryPage() {
             <p style={{ fontSize: '1.1rem', marginBottom: '1rem', color: '#ef4444' }}>
               ⚠️ Você precisa fazer login para acessar seu histórico de rotas
             </p>
-            <button 
+            <button
               onClick={() => navigate('/login')}
               style={{
                 padding: '0.75rem 2rem',
@@ -338,8 +407,8 @@ function EmissionHistoryPage() {
         ) : filteredData.length === 0 ? (
           <div className="empty-state">
             <p>
-              {searchQuery 
-                ? 'Nenhum resultado encontrado para sua busca.' 
+              {searchQuery
+                ? 'Nenhum resultado encontrado para sua busca.'
                 : 'Nenhum histórico de emissões disponível.'}
             </p>
           </div>
@@ -374,9 +443,9 @@ function EmissionHistoryPage() {
                       <td>
                         <div className="ranking-bar-container">
                           <div className="ranking-bar">
-                            <div 
-                              className="ranking-fill" 
-                              style={{ 
+                            <div
+                              className="ranking-fill"
+                              style={{
                                 width: `${getRankingWidth(record.ranking)}%`,
                                 backgroundColor: getRankingColor(record.ranking)
                               }}
@@ -393,15 +462,15 @@ function EmissionHistoryPage() {
                       </td>
                       <td>
                         <div className="action-buttons">
-                          <button 
-                            className="action-btn download-btn" 
+                          <button
+                            className="action-btn download-btn"
                             title="Baixar"
                             onClick={() => handleDownload(record)}
                           >
                             ⬇
                           </button>
-                          <button 
-                            className="action-btn delete-btn" 
+                          <button
+                            className="action-btn delete-btn"
                             title="Excluir"
                             onClick={() => handleDelete(record.id)}
                           >
@@ -593,17 +662,17 @@ function EmissionHistoryPage() {
             {/* Botão Analisar */}
             <button
               onClick={handleAnalyzeRoute}
-              disabled={!selectedLine || !departureStopId || !arrivalStopId || isAnalyzing}
+              disabled={!selectedLine || !departureStopId || !arrivalStopId || isAnalyzing || isSaving}
               style={{
                 width: '100%',
                 padding: '0.75rem',
-                backgroundColor: selectedLine && departureStopId && arrivalStopId ? '#3b82f6' : '#94a3b8',
+                backgroundColor: selectedLine && departureStopId && arrivalStopId && !isAnalyzing && !isSaving ? '#3b82f6' : '#94a3b8',
                 color: 'white',
                 border: 'none',
                 borderRadius: '8px',
                 fontSize: '1rem',
                 fontWeight: '600',
-                cursor: selectedLine && departureStopId && arrivalStopId ? 'pointer' : 'not-allowed',
+                cursor: selectedLine && departureStopId && arrivalStopId && !isAnalyzing && !isSaving ? 'pointer' : 'not-allowed',
                 marginBottom: '1rem'
               }}
             >
@@ -612,56 +681,65 @@ function EmissionHistoryPage() {
 
             {/* Resultado da Análise */}
             <div id="analysis">
-                {routeAnalysis && (
-              <div style={{
-                marginTop: '1.5rem',
-                padding: '1.5rem',
-                backgroundColor: '#f0fdf4',
-                borderRadius: '8px',
-                border: '2px solid #86efac'
-              }}>
-                <h3 style={{ marginBottom: '1rem', color: '#166534', fontSize: '1.1rem' }}>
-                  ✅ Análise Concluída
-                </h3>
-                
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem', backgroundColor: 'white', borderRadius: '6px' }}>
-                    <span style={{ fontWeight: '600' }}>Distância:</span>
-                    <span>{routeAnalysis.distance.toFixed(2)} km</span>
-                  </div>
-                  
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem', backgroundColor: 'white', borderRadius: '6px' }}>
-                    <span style={{ fontWeight: '600' }}>Emissão Ônibus:</span>
-                    <span>{routeAnalysis.busEmission.toFixed(2)} kg CO₂</span>
-                  </div>
-                  
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem', backgroundColor: 'white', borderRadius: '6px' }}>
-                    <span style={{ fontWeight: '600' }}>Emissão Carro:</span>
-                    <span>{routeAnalysis.carEmission.toFixed(2)} kg CO₂</span>
-                  </div>
-                  
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem', backgroundColor: '#dcfce7', borderRadius: '6px', fontWeight: '700' }}>
-                    <span style={{ color: '#166534' }}>Economia:</span>
-                    <span style={{ color: '#16a34a' }}>{routeAnalysis.saving.toFixed(2)} kg CO₂</span>
-                  </div>
-                </div>
-
-                <div style={{ 
-                  marginTop: '1rem', 
-                  padding: '0.75rem',
-                  backgroundColor: '#e0f2fe',
-                  borderRadius: '6px',
-                  fontSize: '0.9rem',
-                  color: '#0369a1',
-                  textAlign: 'center'
+              {routeAnalysis && (
+                <div style={{
+                  marginTop: '1.5rem',
+                  padding: '1.5rem',
+                  backgroundColor: '#f0fdf4',
+                  borderRadius: '8px',
+                  border: '2px solid #86efac'
                 }}>
-                  Rota salva com sucesso no seu histórico!
+                  <h3 style={{ marginBottom: '1rem', color: '#166534', fontSize: '1.1rem' }}>
+                    ✅ Análise Concluída
+                  </h3>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem', backgroundColor: 'white', borderRadius: '6px' }}>
+                      <span style={{ fontWeight: '600' }}>Distância:</span>
+                      <span>{routeAnalysis.distance.toFixed(2)} km</span>
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem', backgroundColor: 'white', borderRadius: '6px' }}>
+                      <span style={{ fontWeight: '600' }}>Emissão Ônibus:</span>
+                      <span>{routeAnalysis.busEmission.toFixed(2)} kg CO₂</span>
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem', backgroundColor: 'white', borderRadius: '6px' }}>
+                      <span style={{ fontWeight: '600' }}>Emissão Carro:</span>
+                      <span>{routeAnalysis.carEmission.toFixed(2)} kg CO₂</span>
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem', backgroundColor: '#dcfce7', borderRadius: '6px', fontWeight: '700' }}>
+                      <span style={{ color: '#166534' }}>Economia:</span>
+                      <span style={{ color: '#16a34a' }}>{routeAnalysis.saving.toFixed(2)} kg CO₂</span>
+                    </div>
+                  </div>
+
+                  <div></div>
+                  <button
+                    onClick={handleSaveRoute}
+                    disabled={isSaving || isAnalyzing}
+                    style={{
+                      width: '100%',
+                      padding: '0.75rem',
+                      backgroundColor: !isSaving && !isAnalyzing ? '#3b82f6' : '#94a3b8',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontSize: '1rem',
+                      fontWeight: '600',
+                      cursor: !isSaving && !isAnalyzing ? 'pointer' : 'not-allowed',
+                      marginTop: '1rem',
+                      marginBottom: '1rem'
+                    }}
+                  >
+                    {isSaving ? 'Salvando...' : 'Salvar'}
+                  </button>
                 </div>
-              </div>
-            )}
-              
+              )}
+
             </div>
-            
+
           </div>
         </div>
       )}
