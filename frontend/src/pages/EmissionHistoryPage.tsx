@@ -145,6 +145,21 @@ function EmissionHistoryPage() {
 
   }, [routeAnalysis]);
 
+  useEffect(() => {
+    const loadLines = async () => {
+      try {
+        const linesData = await linesService.searchLines('');
+        setLines(linesData);
+      } catch (error) {
+        console.error('Erro ao carregar linhas:', error);
+      }
+    };
+
+    if (showAnalyzeModal && lines.length === 0) {
+      loadLines();
+    }
+  }, [showAnalyzeModal]);
+
   // Filtrar dados com base na busca
   const filteredData = searchQuery.trim()
     ? emissionData.filter(record =>
@@ -189,8 +204,8 @@ function EmissionHistoryPage() {
     URL.revokeObjectURL(url);
   };
 
-  const reorderRoutes = async () => {
-    const sortedRecords = emissionData.slice().sort((a, b) => b.emissionSaving - a.emissionSaving);
+  const reorderRoutes = (routes: EmissionRecord[]) => {
+    const sortedRecords = routes.slice().sort((a, b) => b.emissionSaving - a.emissionSaving);
 
     // Atribuir ranking baseado na economia
     const records: EmissionRecord[] = sortedRecords.map((record, index) => ({
@@ -206,7 +221,7 @@ function EmissionHistoryPage() {
       acao: record.acao
     }));
 
-    setEmissionData(records);
+    return records;
   };
 
 
@@ -215,8 +230,9 @@ function EmissionHistoryPage() {
       try {
         await routesService.deleteRoute(routeId);
         // Remove da lista local
-        setEmissionData(prevData => prevData.filter(record => record.id !== routeId));
-        reorderRoutes();
+        const records = reorderRoutes(emissionData.filter(record => record.id !== routeId));
+        setEmissionData(records);
+
       } catch (error) {
         console.error('Erro ao deletar rota:', error);
         alert('Erro ao deletar rota. Tente novamente.');
@@ -301,8 +317,7 @@ function EmissionHistoryPage() {
         acao: 'download'
       };
 
-      setEmissionData(prev => [...prev, newRecord]);
-      reorderRoutes();
+      setEmissionData(reorderRoutes(emissionData.concat(newRecord)));
     } catch (error) {
       console.error('Erro ao criar rota:', error);
       alert('Erro ao criar rota. Tente novamente.');
